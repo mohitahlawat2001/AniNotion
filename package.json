@@ -1,0 +1,12 @@
+{
+  "name": "aninotion-app",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd aninotion-backend && npm run dev",
+    "client": "cd aninotion-frontend && npm run dev",
+    "seed": "cd backend && node scripts/seedCategories.js"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}
