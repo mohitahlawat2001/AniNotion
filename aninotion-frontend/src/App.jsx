@@ -1,17 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import CategoryPage from './pages/CategoryPage';
 
 function App() {
+  const [activeCategory, setActiveCategory] = useState(null);
+
   return (
     <Router>
-      <Layout>
+      <Layout 
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+      >
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/anime" element={<div>Anime Page</div>} />
-          <Route path="/manga" element={<div>Manga Page</div>} />
-          <Route path="/other" element={<div>Other Page</div>} />
+          <Route 
+            path="/" 
+            element={
+              activeCategory ? 
+                <CategoryPage category={activeCategory} /> : 
+                <Home />
+            } 
+          />
         </Routes>
       </Layout>
     </Router>

@@ -4,22 +4,24 @@ import PostCard from '../components/PostCard';
 import PostForm from '../components/PostForm';
 import { postsAPI } from '../services/api';
 
-const Home = () => {
+const CategoryPage = ({ category }) => {
   const [posts, setPosts] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (category) {
+      fetchCategoryPosts();
+    }
+  }, [category]);
 
-  const fetchPosts = async () => {
+  const fetchCategoryPosts = async () => {
     try {
       setIsLoading(true);
-      const data = await postsAPI.getAll();
+      const data = await postsAPI.getByCategory(category._id);
       setPosts(data);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching category posts:', error);
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +40,7 @@ const Home = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading posts...</div>
+        <div className="text-gray-500">Loading {category.name} posts...</div>
       </div>
     );
   }
@@ -47,7 +49,7 @@ const Home = () => {
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Recent Posts</h1>
+        <h1 className="text-3xl font-bold">{category.name} Posts</h1>
         <button
           onClick={() => setIsFormOpen(true)}
           className="btn-primary flex items-center space-x-2"
@@ -60,12 +62,12 @@ const Home = () => {
       {/* Posts Grid */}
       {posts.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-500 mb-4">No posts yet!</div>
+          <div className="text-gray-500 mb-4">No {category.name.toLowerCase()} posts yet!</div>
           <button
             onClick={() => setIsFormOpen(true)}
             className="btn-primary"
           >
-            Create your first post
+            Create your first {category.name.toLowerCase()} post
           </button>
         </div>
       ) : (
@@ -86,4 +88,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default CategoryPage;
