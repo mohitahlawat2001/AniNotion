@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import CategoryPage from './pages/CategoryPage';
+import RawPage from './pages/RawPage';
 
 function App() {
   const [activeCategory, setActiveCategory] = useState(null);
@@ -22,6 +23,7 @@ function App() {
                 <Home />
             } 
           />
+          <Route path="/raw" element={<RawPage />} />
         </Routes>
       </Layout>
     </Router>

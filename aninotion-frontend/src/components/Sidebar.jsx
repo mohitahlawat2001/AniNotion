@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Film, BookOpen, Plus, X } from 'lucide-react';
+import { Home, Film, BookOpen, Plus, X, Database } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { categoriesAPI } from '../services/api';
 
 const Sidebar = ({ activeCategory, onCategoryChange }) => {
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const location = useLocation();
 
   useEffect(() => {
     fetchCategories();
@@ -50,15 +52,27 @@ const Sidebar = ({ activeCategory, onCategoryChange }) => {
       
       <nav className="space-y-2">
         {/* Home */}
-        <button
+        <Link
+          to="/"
           onClick={() => onCategoryChange(null)}
           className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 ${
-            activeCategory === null ? 'bg-primary/10 text-primary' : ''
+            location.pathname === '/' && activeCategory === null ? 'bg-primary/10 text-primary' : ''
           }`}
         >
           <Home size={20} />
           <span>Home</span>
-        </button>
+        </Link>
+
+        {/* Raw Data */}
+        <Link
+          to="/raw"
+          className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 ${
+            location.pathname === '/raw' ? 'bg-primary/10 text-primary' : ''
+          }`}
+        >
+          <Database size={20} />
+          <span>Raw Data</span>
+        </Link>
         
         {/* Categories */}
         {categories.map((category) => (
@@ -66,7 +80,7 @@ const Sidebar = ({ activeCategory, onCategoryChange }) => {
             key={category._id}
             onClick={() => onCategoryChange(category)}
             className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 ${
-              activeCategory?._id === category._id ? 'bg-primary/10 text-primary' : ''
+              activeCategory?._id === category._id && location.pathname === '/' ? 'bg-primary/10 text-primary' : ''
             }`}
           >
             {getCategoryIcon(category.name)}

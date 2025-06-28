@@ -7,7 +7,7 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -186,18 +186,18 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
           </div>
 
           {/* Submit Buttons */}
-          <div className="flex justify-end space-x-4 pt-4">
+          <div className="flex justify-end space-x-4 pt-4 border-t mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-white"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
               {isLoading ? 'Creating...' : 'Create Post'}
             </button>
