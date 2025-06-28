@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://musical-space-trout-q67j6pxq5vwf4jx6-5000.app.github.dev/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Categories API
 export const categoriesAPI = {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { X, Upload, Image } from 'lucide-react';
 
+
 const PostForm = ({ isOpen, onClose, onSubmit }) => {
   const [categories, setCategories] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
@@ -18,7 +19,7 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://musical-space-trout-q67j6pxq5vwf4jx6-5000.app.github.dev/api/categories');
+      const response = await fetch(import.meta.env.VITE_BACKEND_URL+'/categories');
       const data = await response.json();
       setCategories(data);
     } catch (error) {
