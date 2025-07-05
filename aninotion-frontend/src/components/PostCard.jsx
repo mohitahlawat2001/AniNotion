@@ -1,7 +1,9 @@
-import React from 'react';
-import { Calendar, Tag } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PostCard = ({ post }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -10,16 +12,76 @@ const PostCard = ({ post }) => {
     });
   };
 
+  // Get images array - prioritize 'images' array, fallback to single 'image'
+  const getImages = () => {
+    if (post.images && post.images.length > 0) {
+      return post.images;
+    } else if (post.image && post.image.trim() !== '') {
+      return [post.image];
+    }
+    return [];
+  };
+
+  const images = getImages();
+  const hasMultipleImages = images.length > 1;
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Image */}
-      {post.image && (
-        <div className="h-48 overflow-hidden">
+      {/* Image Section */}
+      {images.length > 0 && (
+        <div className="h-48 overflow-hidden relative group">
           <img
-            src={post.image}
+            src={images[currentImageIndex]}
             alt={post.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
+          
+          {/* Image Navigation for Multiple Images */}
+          {hasMultipleImages && (
+            <>
+              {/* Navigation Buttons */}
+              <button
+                onClick={prevImage}
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <ChevronRight size={16} />
+              </button>
+
+              {/* Image Indicators */}
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === currentImageIndex
+                        ? 'bg-white'
+                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Image Counter */}
+              <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                {currentImageIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
         </div>
       )}
       
