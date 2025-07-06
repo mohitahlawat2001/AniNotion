@@ -90,7 +90,7 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
   try {
     new URL(imageUrl);
   } catch (e) {
-    alert('Please enter a valid URL format (e.g., https://example.com/image.jpg)');
+    alert('Please enter a valid URL format (e.g., https://example.com/image.jpg)' + e.message);
     return;
   }
 
