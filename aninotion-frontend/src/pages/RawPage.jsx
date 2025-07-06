@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import { Database, Search, Key, Eye, EyeOff, Copy, RefreshCw } from 'lucide-react';
 
 const RawPage = () => {
-  const [mongoUrl, setMongoUrl] = useState('');
+  const [mongodbUri, setMongodbUri] = useState('');
   const [rawData, setRawData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [decryptionKey, setDecryptionKey] = useState('');
   const [showDecrypted, setShowDecrypted] = useState({});
+  
+  // Get backend URL from environment variable
+  const API_BASE_URL = import.meta.env.VITE_RAW_PAGE_BACKEND_URL || 'https://neko-hack.vercel.app';
 
   const fetchRawData = async () => {
-    if (!mongoUrl.trim()) {
-      setError('Please enter a MongoDB API URL');
+    if (!mongodbUri.trim()) {
+      setError('Please enter a MongoDB URI');
       return;
     }
 
@@ -19,16 +22,71 @@ const RawPage = () => {
     setError(null);
     
     try {
-      const response = await fetch(mongoUrl);
+      // Use the existing /load-tabs endpoint without date/group filters to get all data
+      const response = await fetch(`${API_BASE_URL}/load-tabs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          mongodbUri: mongodbUri
+          // No date or groupName filters to get all data
+        }),
+      });
+
       if (!response.ok) {
         throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
-      setRawData(Array.isArray(data) ? data : [data]);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch data');
+      }
+      
+      setRawData(result.tabs || []);
     } catch (err) {
       setError(err.message);
       setRawData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testConnection = async () => {
+    if (!mongodbUri.trim()) {
+      setError('Please enter a MongoDB URI');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/test-connection`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          mongodbUri: mongodbUri
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Connection test failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('MongoDB connection successful!');
+      } else {
+        throw new Error(result.error || 'Connection test failed');
+      }
+    } catch (err) {
+      setError(err.message);
+      alert(`Connection failed: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -191,6 +249,20 @@ const RawPage = () => {
                 <p className="text-sm">{item.createdBy}</p>
               </div>
             )}
+
+            {item.createdAt && (
+              <div>
+                <span className="text-sm font-medium text-gray-600">Created At:</span>
+                <p className="text-sm">{new Date(item.createdAt).toLocaleString()}</p>
+              </div>
+            )}
+
+            {item.updatedAt && (
+              <div>
+                <span className="text-sm font-medium text-gray-600">Updated At:</span>
+                <p className="text-sm">{new Date(item.updatedAt).toLocaleString()}</p>
+              </div>
+            )}
           </div>
 
           {!isEncrypted && (
@@ -222,6 +294,13 @@ const RawPage = () => {
                   <p className="text-sm">{item.notes}</p>
                 </div>
               )}
+
+              {item.favicon && (
+                <div>
+                  <span className="text-sm font-medium text-gray-600">Favicon:</span>
+                  <img src={item.favicon} alt="favicon" className="inline-block w-4 h-4 ml-2" />
+                </div>
+              )}
             </>
           )}
         </div>
@@ -239,30 +318,42 @@ const RawPage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold flex items-center space-x-2">
           <Database size={32} />
-          <span>Raw MongoDB Data</span>
+          <span>Raw MongoDB Data Viewer</span>
         </h1>
       </div>
 
-      {/* MongoDB URL Input */}
+      {/* MongoDB URI Input */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">MongoDB Data Source</h2>
+        <h2 className="text-xl font-semibold mb-4">MongoDB Connection</h2>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              MongoDB API URL
+              MongoDB URI
             </label>
             <div className="flex space-x-2">
               <input
-                type="url"
-                value={mongoUrl}
-                onChange={(e) => setMongoUrl(e.target.value)}
-                placeholder="https://api.example.com/data"
+                type="text"
+                value={mongodbUri}
+                onChange={(e) => setMongodbUri(e.target.value)}
+                placeholder="mongodb+srv://username:password@cluster.mongodb.net/database"
                 className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              <button
+                onClick={testConnection}
+                disabled={isLoading}
+                className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                {isLoading ? (
+                  <RefreshCw size={20} className="animate-spin" />
+                ) : (
+                  <Database size={20} />
+                )}
+                <span>Test</span>
+              </button>
               <button
                 onClick={fetchRawData}
                 disabled={isLoading}
@@ -273,9 +364,12 @@ const RawPage = () => {
                 ) : (
                   <Search size={20} />
                 )}
-                <span>{isLoading ? 'Loading...' : 'Fetch Data'}</span>
+                <span>{isLoading ? 'Loading...' : 'Fetch All Data'}</span>
               </button>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Enter your MongoDB URI to connect and fetch all saved tabs data
+            </p>
           </div>
 
           {/* Decryption Key Input */}
@@ -302,7 +396,7 @@ const RawPage = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex items-center space-x-2">
             <div className="text-red-600">⚠️</div>
-            <div className="text-red-800 font-medium">Error fetching data</div>
+            <div className="text-red-800 font-medium">Error</div>
           </div>
           <p className="text-red-700 mt-1">{error}</p>
         </div>
@@ -331,12 +425,26 @@ const RawPage = () => {
       )}
 
       {/* Empty State */}
-      {!isLoading && !error && rawData.length === 0 && mongoUrl && (
+      {!isLoading && !error && rawData.length === 0 && mongodbUri && (
         <div className="text-center py-12">
           <Database size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">No data found</p>
+          <p className="text-gray-500">No data found in the database</p>
         </div>
       )}
+
+      {/* API Info */}
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+        <h3 className="text-sm font-medium text-gray-800 mb-2">API Information</h3>
+        <p className="text-xs text-gray-600">
+          Backend URL: <code className="bg-gray-200 px-1 rounded">{API_BASE_URL}</code>
+        </p>
+        <p className="text-xs text-gray-600 mt-1">
+          Database: <code className="bg-gray-200 px-1 rounded">tabsaver</code>
+        </p>
+        <p className="text-xs text-gray-600 mt-1">
+          Collection: <code className="bg-gray-200 px-1 rounded">tabs</code>
+        </p>
+      </div>
     </div>
   );
 };
