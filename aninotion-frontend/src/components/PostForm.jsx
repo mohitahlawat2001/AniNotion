@@ -225,6 +225,7 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
                       src={preview}
                       alt={`Preview ${index + 1}`}
                       className="w-full h-32 object-cover rounded-lg border"
+                      referrerPolicy="no-referrer"
                     />
                     {/* Badge to show if it's a link */}
                     {imageLinks[index] && (
