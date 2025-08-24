@@ -1,0 +1,10 @@
+// 1) Require and mount the request logger (near your other middleware)
+const requestLogger = require("./middleware/logging");
+app.use(requestLogger());
+
+// 2) Mount the cron router (after your other routes are defined)
+const cronRouter = require("./routes/cron");
+app.use("/cron", cronRouter);
+
+// Now deploy and schedule a daily GET to:
+//   https://your-app.onrender.com/cron/send-daily-logs?secret=YOUR_SECRET
