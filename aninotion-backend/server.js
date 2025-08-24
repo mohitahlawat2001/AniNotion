@@ -1,4 +1,7 @@
 const express = require('express');
+const logTestRouter = require("./routes/log-test");
+const cronRouter = require("./routes/cron");
+const requestLogger = require("./middleware/logging");
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
@@ -8,6 +11,7 @@ const categoryRoutes = require('./routes/categories');
 const postRoutes = require('./routes/posts');
 
 const app = express();
+app.use(requestLogger());
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
@@ -27,6 +31,8 @@ app.get('/', (req, res) => {
   res.json({ message: 'AniNotion API is running!' });
 });
 
+app.use("/", logTestRouter);
+app.use("/cron", cronRouter);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
