@@ -1,0 +1,45 @@
+name: Daily logs email
+
+on:
+  schedule:
+    # Runs every day at 00:05 UTC
+    - cron: "5 0 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Optional YYYY-MM-DD (UTC). Leave empty to use default (yesterday)."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-logs
+  cancel-in-progress: true
+
+jobs:
+  send-daily-logs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # Set these in repo Settings → Secrets and variables → Actions
+      RENDER_URL: ${{ vars.RENDER_URL }}       # e.g., https://your-app.onrender.com
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}  # must match your server's CRON_SECRET
+      DATE: ${{ github.event.inputs.date }}    # only set during manual runs if provided
+    steps:
+      - name: Call /cron endpoint (uses "yesterday" by default)
+        run: |
+          set -euo pipefail
+          BASE_URL="${RENDER_URL%/}"
+          URL="$BASE_URL/cron/send-daily-logs"
+
+          # If a date is provided in a manual run, append it; otherwise your server defaults to yesterday.
+          if [ -n "${DATE:-}" ]; then
+            URL="$URL?date=$DATE"
+          fi
+
+          # Retry a few times in case the service is cold-starting
+          curl --retry 3 --retry-delay 5 --retry-connrefused -fsS \
+            -H "x-cron-secret: $CRON_SECRET" \
+            "$URL"
