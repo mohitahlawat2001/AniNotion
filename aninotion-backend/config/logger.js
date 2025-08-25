@@ -1,4 +1,5 @@
 const pino = require("pino");
+const path = require("path");
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -26,8 +27,8 @@ if (isProd) {
 // Optional: also stream to Upstash Redis for daily email
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
   targets.push({
-    // Resolved relative to process.cwd()
-    target: "./utils/pino-redis-transport.js",
+    // Use absolute path to ensure proper resolution in all environments
+    target: path.join(__dirname, "..", "utils", "pino-redis-transport.js"),
     options: {
       upstashUrl: process.env.UPSTASH_REDIS_REST_URL,
       upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN,

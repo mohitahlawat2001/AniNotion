@@ -28,7 +28,31 @@ jobs:
       CRON_SECRET: ${{ secrets.CRON_SECRET }}  # must match your server's CRON_SECRET
       DATE: ${{ github.event.inputs.date }}    # only set during manual runs if provided
     steps:
-      - name: Call /cron endpoint (uses "yesterday" by default)
+      - name: Context and sanity checks
+        run: |
+          set -euo pipefail
+          echo "UTC now: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "Runner: $(uname -a)"
+          echo "Repo: $GITHUB_REPOSITORY | Run: $GITHUB_RUN_ID (attempt $GITHUB_RUN_ATTEMPT)"
+
+          # Ensure secrets are masked if ever echoed inadvertently
+          if [ -n "${CRON_SECRET:-}" ]; then echo "::add-mask::${CRON_SECRET}"; fi
+
+          # Validate mandatory inputs
+          if [ -z "${RENDER_URL:-}" ]; then
+            echo "RENDER_URL is not set. Define it in Actions Variables." >&2
+            exit 1
+          fi
+
+          # Lightly log env (redacted)
+          echo "Environment (redacted):"
+          env | sort | grep -Ev 'TOKEN|SECRET|PASSWORD|KEY|PASS|AUTH' || true
+
+          # Show URL inputs clearly
+          echo "RENDER_URL: $RENDER_URL"
+          echo "Normalized BASE_URL: ${RENDER_URL%/}"
+
+      - name: Call /cron endpoint (uses "yesterday" by default) with diagnostics
         run: |
           set -euo pipefail
           BASE_URL="${RENDER_URL%/}"
@@ -39,7 +63,71 @@ jobs:
             URL="$URL?date=$DATE"
           fi
 
-          # Retry a few times in case the service is cold-starting
-          curl --retry 3 --retry-delay 5 --retry-connrefused -fsS \
-            -H "x-cron-secret: $CRON_SECRET" \
-            "$URL"
+          echo "Requesting: $URL"
+
+          BODY_FILE="$(mktemp)"
+          HEAD_FILE="$(mktemp)"
+          STATUS_FILE="$(mktemp)"
+
+          # Perform request with retries and timeouts; don't use -f so we can inspect non-2xx responses
+          set +e
+          curl --retry 3 --retry-delay 5 --retry-connrefused \
+               --connect-timeout 10 --max-time 60 \
+               -sS -D "$HEAD_FILE" -o "$BODY_FILE" \
+               --write-out '{"http_code":%{http_code},"time_namelookup":%{time_namelookup},"time_connect":%{time_connect},"time_starttransfer":%{time_starttransfer},"time_total":%{time_total}}' \
+               -H "x-cron-secret: $CRON_SECRET" \
+               "$URL" > "$STATUS_FILE"
+          CURL_EXIT=$?
+          STATUS_JSON=$(cat "$STATUS_FILE")
+          set -e
+
+          echo "Status: $STATUS_JSON"
+
+          # Extract HTTP status code safely using jq if available, else grep
+          if command -v jq >/dev/null 2>&1; then
+            CODE=$(echo "$STATUS_JSON" | jq -r '.http_code') || CODE=
+          else
+            CODE=$(echo "$STATUS_JSON" | sed -n 's/.*"http_code":\([0-9][0-9][0-9]\).*/\1/p')
+          fi
+
+          echo "Response headers (first 20 lines):"
+          head -n 20 "$HEAD_FILE" || true
+
+          # Add a summary
+          {
+            echo "## Daily logs cron call"
+            echo "- URL: $URL"
+            echo "- Status: $STATUS_JSON"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            echo "curl failed with exit $CURL_EXIT" >&2
+            echo "Body (first 2KB):" >&2
+            head -c 2048 "$BODY_FILE" || true
+            exit "$CURL_EXIT"
+          fi
+
+          if [ -z "${CODE:-}" ] || [ "$CODE" -lt 200 ] || [ "$CODE" -ge 300 ]; then
+            echo "Non-2xx or unknown response: ${CODE:-unknown}" >&2
+            echo "Body (first 4KB):" >&2
+            head -c 4096 "$BODY_FILE" || true
+            exit 1
+          fi
+
+          echo "Success. Body (first 1KB):"
+          head -c 1024 "$BODY_FILE" || true
+
+      - name: Failure diagnostics (network/DNS)
+        if: failure()
+        run: |
+          set -euo pipefail
+          echo "Collecting failure diagnostics..."
+          echo "UTC now: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          BASE_URL="${RENDER_URL%/}"
+          echo "BASE_URL: $BASE_URL"
+          HOST=$(echo "$BASE_URL" | sed -E 's#^[a-zA-Z]+://([^/]+)/?.*$#\1#')
+          echo "Resolved host: $HOST"
+          echo "DNS lookup:"
+          getent hosts "$HOST" || true
+          echo "HEAD $BASE_URL:"
+          curl -I -sS "$BASE_URL" || true
