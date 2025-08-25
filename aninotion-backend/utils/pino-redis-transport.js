@@ -1,6 +1,6 @@
 // Pino custom transport: append JSON logs to a Redis list keyed by UTC day.
 // Requires @upstash/redis and pino-abstract-transport.
-const { build } = require("pino-abstract-transport");
+const build = require("pino-abstract-transport");
 const { Redis } = require("@upstash/redis");
 
 module.exports = async function (opts = {}) {
