@@ -21,9 +21,10 @@ concurrency:
 jobs:
   send-daily-logs:
     runs-on: ubuntu-latest
+    environment: Production  # Specify the environment where variables and secrets are stored
     timeout-minutes: 5
     env:
-      # Set these in repo Settings → Secrets and variables → Actions
+      # Set these in repo Settings → Secrets and variables → Actions → Environments → Production
       RENDER_URL: ${{ vars.RENDER_URL }}       # e.g., https://your-app.onrender.com
       CRON_SECRET: ${{ secrets.CRON_SECRET }}  # must match your server's CRON_SECRET
       DATE: ${{ github.event.inputs.date }}    # only set during manual runs if provided
