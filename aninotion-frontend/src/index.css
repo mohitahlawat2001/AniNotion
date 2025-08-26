@@ -1,1 +1,34 @@
 @import "tailwindcss";
+
+/* Custom utilities for line clamping */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Corner sheen animation */
+@keyframes corner-sheen {
+  0%   { background-position: 120% 120%; }
+  100% { background-position: -20% -20%; }
+}
+
+.corner-sheen {
+  background: linear-gradient(135deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    transparent 70%
+  );
+  background-size: 300% 300%;
+  animation: corner-sheen 3s ease-in-out infinite;
+}
