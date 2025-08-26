@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import PostCard from '../components/PostCard';
 import PostForm from '../components/PostForm';
+import PostsContainer from '../components/PostsContainer';
+import LayoutToggle from '../components/LayoutToggle';
 import { postsAPI } from '../services/api';
 
 const CategoryPage = ({ category }) => {
@@ -9,13 +10,7 @@ const CategoryPage = ({ category }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (category) {
-      fetchCategoryPosts();
-    }
-  }, [category]);
-
-  const fetchCategoryPosts = async () => {
+  const fetchCategoryPosts = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await postsAPI.getByCategory(category._id);
@@ -25,7 +20,13 @@ const CategoryPage = ({ category }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [category._id]);
+
+  useEffect(() => {
+    if (category) {
+      fetchCategoryPosts();
+    }
+  }, [category, fetchCategoryPosts]);
 
   const handleCreatePost = async (postData) => {
     try {
@@ -50,33 +51,24 @@ const CategoryPage = ({ category }) => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{category.name} Posts</h1>
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <Plus size={20} />
-          <span>Create Post</span>
-        </button>
-      </div>
-
-      {/* Posts Grid */}
-      {posts.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500 mb-4">No {category.name.toLowerCase()} posts yet!</div>
+        <div className="flex items-center space-x-3">
+          <LayoutToggle />
           <button
             onClick={() => setIsFormOpen(true)}
-            className="btn-primary"
+            className="btn-primary flex items-center space-x-2"
           >
-            Create your first {category.name.toLowerCase()} post
+            <Plus size={20} />
+            <span>Create Post</span>
           </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} />
-          ))}
-        </div>
-      )}
+      </div>
+
+      {/* Posts Container */}
+      <PostsContainer 
+        posts={posts}
+        emptyMessage={`No ${category.name.toLowerCase()} posts yet!`}
+        onCreatePost={() => setIsFormOpen(true)}
+      />
 
       {/* Post Form Modal */}
       <PostForm

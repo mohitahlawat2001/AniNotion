@@ -43,6 +43,12 @@ export const postsAPI = {
     return response.json();
   },
 
+  getById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/posts/${id}`);
+    if (!response.ok) throw new Error('Failed to fetch post');
+    return response.json();
+  },
+
   create: async (postData) => {
     const response = await fetch(`${API_BASE_URL}/posts`, {
       method: 'POST',

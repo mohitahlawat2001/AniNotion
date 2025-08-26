@@ -70,6 +70,40 @@ router.get('/category/:categoryId', async (req, res) => {
   }
 });
 
+// Get single post by ID
+router.get('/:id', async (req, res) => {
+  try {
+    logger.info("📄 Fetching single post", {
+      postId: req.params.id
+    });
+    
+    const post = await Post.findById(req.params.id)
+      .populate('category');
+      
+    if (!post) {
+      logger.warn("❌ Post not found", {
+        postId: req.params.id
+      });
+      return res.status(404).json({ message: 'Post not found' });
+    }
+      
+    logger.info("✅ Post fetched successfully", {
+      postId: req.params.id,
+      title: post.title
+    });
+    
+    res.json(post);
+  } catch (error) {
+    logger.error("❌ Error fetching post:", {
+      error: error.message,
+      stack: error.stack,
+      postId: req.params.id
+    });
+    
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Create new post
 router.post('/', async (req, res) => {
   try {
