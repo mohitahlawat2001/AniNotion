@@ -193,6 +193,15 @@ Err: ${e.err ? (typeof e.err === "string" ? e.err : JSON.stringify(e.err, null, 
 
     const emailResult = await resend.emails.send(emailPayload);
 
+    // Check if there was an error in the response
+    if (emailResult.error) {
+      console.error("💥 Resend API error:", {
+        error: emailResult.error,
+        timestamp: new Date().toISOString()
+      });
+      throw new Error(`Resend API error: ${emailResult.error.error || emailResult.error.message}`);
+    }
+
     console.log("✅ Email sent successfully:", {
       emailId: emailResult.data?.id || emailResult.id,
       timestamp: new Date().toISOString(),
