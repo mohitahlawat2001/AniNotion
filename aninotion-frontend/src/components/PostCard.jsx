@@ -102,12 +102,28 @@ const PostCard = ({ post, layout = 'grid' }) => {
         </div>
       </div>
 
-      {/* Clickable Corner - Using reusable component */}
-      <ClickableCorner
+      {/* Clickable Corner */}
+      <a
         onClick={handlePostClick}
-        layout="list"
+        className="group absolute bottom-2 right-2 block outline-none cursor-pointer"
         title="View full post"
-      />
+      >
+        <span className="sr-only">View full post</span>
+        <span className="relative block w-[var(--sz,3.2rem)] h-[var(--sz,3.2rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.7rem] rounded-br-xl">
+          {/* Fold */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500 rounded-br-xl"></span>
+          {/* Shading */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay rounded-br-xl"></span>
+          {/* Diagonal READ text - adjusted for larger size */}
+          <span className="absolute bottom-[10px] right-[5px] rotate-[-32deg] text-[10px] font-semibold tracking-widest text-emerald-50">
+            READ
+          </span>
+          {/* Ring border */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10 rounded-br-xl"></span>
+        </span>
+        {/* Focus ring for keyboard users */}
+        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-br-xl pointer-events-none"></span>
+      </a>
       </div>
     );
   }
@@ -160,12 +176,28 @@ const PostCard = ({ post, layout = 'grid' }) => {
         <DateDisplay date={post.createdAt} />
       </div>
 
-      {/* Clickable Corner - Using reusable component */}
-      <ClickableCorner
+      {/* Clickable Corner */}
+      <a
         onClick={handlePostClick}
-        layout="grid"
+        className="group absolute bottom-0 right-0 block outline-none cursor-pointer"
         title="View full post"
-      />
+      >
+        <span className="sr-only">View full post</span>
+        <span className="relative block w-[var(--sz,3.4rem)] h-[var(--sz,3.4rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.9rem] rounded-tr-lg">
+          {/* Fold */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500 rounded-tr-lg"></span>
+          {/* Shading */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay rounded-tr-lg"></span>
+          {/* Diagonal READ text - adjusted for larger size */}
+          <span className="absolute bottom-[12px] right-[6px] rotate-[-32deg] text-[10px] font-semibold tracking-widest text-emerald-50">
+            READ
+          </span>
+          {/* Ring border */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10 rounded-tr-lg"></span>
+        </span>
+        {/* Focus ring for keyboard users */}
+        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-tr-lg pointer-events-none"></span>
+      </a>
     </div>
   );
 };
