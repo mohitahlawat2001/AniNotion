@@ -10,6 +10,7 @@ const connectDB = require('./config/database');
 const categoryRoutes = require('./routes/categories');
 const postRoutes = require('./routes/posts');
 const logger = require('./config/logger');
+const BackupScheduler = require('./utils/backupScheduler');
 
 const app = express();
 app.use(requestLogger());
@@ -91,13 +92,23 @@ app.use((req, res) => {
   });
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   logger.info("🎉 Server started successfully", {
     port: PORT,
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString()
   });
   console.log(`Server is running on port ${PORT}`);
+  
+  // Initialize automatic backup scheduler
+  try {
+    const backupScheduler = new BackupScheduler();
+    await backupScheduler.start();
+    logger.info("🔄 Automatic backup scheduler initialized");
+  } catch (error) {
+    logger.error("❌ Failed to initialize backup scheduler:", error);
+    // Don't stop server if backup scheduler fails
+  }
 });
 
 // Graceful shutdown

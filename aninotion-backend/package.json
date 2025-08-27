@@ -5,7 +5,11 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "concurrently \"nodemon server.js\" \"nodemon ./routes/*.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cli": "node scripts/cli.js",
+    "backup": "npm run cli backup",
+    "migrate": "npm run cli migration",
+    "health": "npm run cli health"
   },
   "keywords": [],
   "author": "",
@@ -13,20 +17,22 @@
   "description": "",
   "dependencies": {
     "@upstash/redis": "^1.35.3",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "commander": "^14.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "multer": "^2.0.0",
+    "node-cron": "^4.2.1",
+    "nodemon": "^3.1.10",
     "pino": "^9.9.0",
     "pino-abstract-transport": "^2.0.0",
     "pino-http": "^10.5.0",
-    "resend": "^6.0.1",
-    "nodemon": "^3.1.10"
+    "resend": "^6.0.1"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
