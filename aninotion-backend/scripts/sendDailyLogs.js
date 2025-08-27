@@ -56,7 +56,7 @@ async function sendDailyLogs({ date, label, upstashUrl, upstashToken, emailTo, e
   const lines = (await redis.lrange(key, 0, -1)) || [];
   console.log("📊 Retrieved logs from Redis:", {
     totalLines: lines.length,
-    sampleFirstLine: lines[0] ? lines[0].substring(0, 100) + "..." : "No logs found"
+    sampleFirstLine: (lines[0] && typeof lines[0] === 'string') ? lines[0].substring(0, 100) + "..." : "No logs found"
   });
 
   if (lines.length === 0) {
@@ -71,6 +71,10 @@ async function sendDailyLogs({ date, label, upstashUrl, upstashToken, emailTo, e
 
   for (const line of lines) {
     try {
+      if (typeof line !== 'string') {
+        levelCounts.other += 1;
+        continue;
+      }
       const obj = JSON.parse(line);
       const lvl = typeof obj.level === "number" ? obj.level : obj.level;
       const name =
