@@ -166,16 +166,28 @@ const PostCard = ({ post, layout = 'grid' }) => {
         </div>
       </div>
 
-      {/* Clickable Corner - Page Flip Style */}
-      <div 
+      {/* Clickable Corner - Compact for List View */}
+      <a
         onClick={handlePostClick}
-        className="absolute bottom-0 right-0 w-0 h-0 border-l-[48px] border-b-[48px] border-l-transparent border-b-blue-500 hover:border-b-blue-600 transition-colors cursor-pointer group corner-sheen rounded-br-2xl"
+        className="group absolute bottom-2 right-2 block outline-none cursor-pointer"
         title="View full post"
       >
-        <div className="absolute -bottom-[36px] -left-[36px] w-8 h-8 flex items-center justify-center">
-        {/* <FileText size={14} className="text-white transform rotate-45" /> */}
-        </div>
-      </div>
+        <span className="sr-only">View full post</span>
+        <span className="relative block w-[var(--sz,3.2rem)] h-[var(--sz,3.2rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.7rem] rounded-br-xl">
+          {/* Fold */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500 rounded-br-xl"></span>
+          {/* Shading */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay rounded-br-xl"></span>
+          {/* Diagonal READ text - adjusted for larger size */}
+          <span className="absolute bottom-[10px] right-[5px] rotate-[-32deg] text-[10px] font-semibold tracking-widest text-emerald-50">
+            READ
+          </span>
+          {/* Ring border */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10 rounded-br-xl"></span>
+        </span>
+        {/* Focus ring for keyboard users */}
+        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-br-xl pointer-events-none"></span>
+      </a>
       </div>
     );
   }
@@ -277,16 +289,28 @@ const PostCard = ({ post, layout = 'grid' }) => {
         </div>
       </div>
 
-      {/* Clickable Corner - Page Flip Style */}
-      <div 
+      {/* Clickable Corner - Diagonal VIEW Tag */}
+      <a
         onClick={handlePostClick}
-        className="absolute bottom-0 right-0 w-0 h-0 border-l-[56px] border-b-[56px] border-l-transparent border-b-blue-500 hover:border-b-blue-600 transition-colors cursor-pointer group corner-sheen"
+        className="group absolute bottom-0 right-0 block outline-none cursor-pointer"
         title="View full post"
       >
-        <div className="absolute -bottom-[42px] -left-[42px] w-10 h-10 flex items-center justify-center">
-          {/* <FileText size={16} className="text-white transform rotate-45" /> */}
-        </div>
-      </div>
+        <span className="sr-only">View full post</span>
+        <span className="relative block w-[var(--sz,3.4rem)] h-[var(--sz,3.4rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.9rem]">
+          {/* Fold */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500"></span>
+          {/* Shading */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay"></span>
+          {/* Diagonal VIEW text */}
+          <span className="absolute bottom-[12px] right-[6px] rotate-[-32deg] text-[10px] font-semibold tracking-widest text-emerald-50">
+            READ
+          </span>
+          {/* Ring border */}
+          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10"></span>
+        </span>
+        {/* Focus ring for keyboard users */}
+        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-tr-lg pointer-events-none"></span>
+      </a>
     </div>
   );
 };
