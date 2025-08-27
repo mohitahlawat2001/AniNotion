@@ -121,7 +121,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
           images={images}
           alt={post.title}
           layout="grid"
-          className="mb-6"
+          className=""
         />
       )}
       
