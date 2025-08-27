@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Calendar, Tag, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ClickableCorner from './ClickableCorner';
+import CategoryBadge from './CategoryBadge';
+import ImageGallery from './ImageGallery';
+import DateDisplay from './DateDisplay';
 
 const PostCard = ({ post, layout = 'grid' }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   // Content truncation logic
   const getDisplayContent = () => {
@@ -43,15 +38,6 @@ const PostCard = ({ post, layout = 'grid' }) => {
   };
 
   const images = getImages();
-  const hasMultipleImages = images.length > 1;
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
 
   // List layout rendering - Twitter/X style
   if (layout === 'list') {
@@ -73,17 +59,17 @@ const PostCard = ({ post, layout = 'grid' }) => {
           {post.title}
           </h3>
           <span className="text-gray-500 text-sm">·</span>
-          <span className="text-gray-500 text-sm whitespace-nowrap">
-          {formatDate(post.createdAt)}
-          </span>
+          <DateDisplay
+            date={post.createdAt}
+            showIcon={false}
+            className="text-gray-500 text-sm whitespace-nowrap"
+          />
         </div>
 
         {/* Anime name as subtitle */}
         <div className="flex items-center space-x-2 mb-2">
           <span className="text-gray-600 text-sm">📺 {post.animeName}</span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-          {post.category?.name}
-          </span>
+          <CategoryBadge category={post.category} size="sm" />
         </div>
 
         {/* Post content */}
@@ -102,92 +88,26 @@ const PostCard = ({ post, layout = 'grid' }) => {
           )}
         </div>
 
-        {/* Images - Twitter style */}
+        {/* Images - Using reusable component */}
         {images.length > 0 && (
           <div className="mb-3">
-          {images.length === 1 ? (
-            // Single image
-            <div className="rounded-2xl overflow-hidden border border-gray-200 max-w-lg">
-            <img
-              src={images[0]}
+            <ImageGallery
+              images={images}
               alt={post.title}
-              className="w-full h-auto max-h-80 object-cover"
-              referrerPolicy="no-referrer"
+              layout="list"
             />
-            </div>
-          ) : (
-            // Multiple images with navigation
-            <div className="relative rounded-2xl overflow-hidden border border-gray-200 max-w-lg group">
-            <img
-              src={images[currentImageIndex]}
-              alt={post.title}
-              className="w-full h-auto max-h-80 object-cover"
-              referrerPolicy="no-referrer"
-            />
-            
-            {/* Navigation for multiple images */}
-            <button
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <ChevronRight size={16} />
-            </button>
-
-            {/* Image indicator dots */}
-            <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-1">
-              {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentImageIndex
-                  ? 'bg-white'
-                  : 'bg-white bg-opacity-50 hover:bg-opacity-75'
-                }`}
-              />
-              ))}
-            </div>
-
-            {/* Image counter */}
-            <div className="absolute top-3 right-3 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
-              {currentImageIndex + 1}/{images.length}
-            </div>
-            </div>
-          )}
           </div>
         )}
 
         </div>
       </div>
 
-      {/* Clickable Corner - Compact for List View */}
-      <a
+      {/* Clickable Corner - Using reusable component */}
+      <ClickableCorner
         onClick={handlePostClick}
-        className="group absolute bottom-2 right-2 block outline-none cursor-pointer"
+        layout="list"
         title="View full post"
-      >
-        <span className="sr-only">View full post</span>
-        <span className="relative block w-[var(--sz,3.2rem)] h-[var(--sz,3.2rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.7rem] rounded-br-xl">
-          {/* Fold */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500 rounded-br-xl"></span>
-          {/* Shading */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay rounded-br-xl"></span>
-          {/* Diagonal READ text - adjusted for larger size */}
-          <span className="absolute bottom-[10px] right-[5px] rotate-[-32deg] text-[10px] font-semibold tracking-widest text-emerald-50">
-            READ
-          </span>
-          {/* Ring border */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10 rounded-br-xl"></span>
-        </span>
-        {/* Focus ring for keyboard users */}
-        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-br-xl pointer-events-none"></span>
-      </a>
+      />
       </div>
     );
   }
@@ -197,64 +117,18 @@ const PostCard = ({ post, layout = 'grid' }) => {
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative">
       {/* Image Section */}
       {images.length > 0 && (
-        <div className="h-48 overflow-hidden relative group">
-          <img
-            src={images[currentImageIndex]}
-            alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            referrerPolicy="no-referrer" // Added for enhanced security
-          />
-          
-          {/* Image Navigation for Multiple Images */}
-          {hasMultipleImages && (
-            <>
-              {/* Navigation Buttons */}
-              <button
-                onClick={prevImage}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <ChevronRight size={16} />
-              </button>
-
-              {/* Image Indicators */}
-              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-                {images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentImageIndex
-                        ? 'bg-white'
-                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Image Counter */}
-              <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                {currentImageIndex + 1} / {images.length}
-              </div>
-            </>
-          )}
-        </div>
+        <ImageGallery
+          images={images}
+          alt={post.title}
+          layout="grid"
+          className="mb-6"
+        />
       )}
       
       {/* Content */}
       <div className="p-6">
         {/* Category Badge */}
-        <div className="flex items-center mb-3">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-            <Tag size={12} className="mr-1" />
-            {post.category?.name}
-          </span>
-        </div>
+        <CategoryBadge category={post.category} />
 
         {/* Title */}
         <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -283,34 +157,15 @@ const PostCard = ({ post, layout = 'grid' }) => {
         </div>
 
         {/* Date */}
-        <div className="flex items-center text-sm text-gray-500">
-          <Calendar size={14} className="mr-1" />
-          {formatDate(post.createdAt)}
-        </div>
+        <DateDisplay date={post.createdAt} />
       </div>
 
-      {/* Clickable Corner - Diagonal VIEW Tag */}
-      <a
+      {/* Clickable Corner - Using reusable component */}
+      <ClickableCorner
         onClick={handlePostClick}
-        className="group absolute bottom-0 right-0 block outline-none cursor-pointer"
+        layout="grid"
         title="View full post"
-      >
-        <span className="sr-only">View full post</span>
-        <span className="relative block w-[var(--sz,3.4rem)] h-[var(--sz,3.4rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.9rem]">
-          {/* Fold */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500"></span>
-          {/* Shading */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay"></span>
-          {/* Diagonal VIEW text */}
-          <span className="absolute bottom-[12px] right-[6px] rotate-[-32deg] text-[10px] font-semibold tracking-widest text-emerald-50">
-            READ
-          </span>
-          {/* Ring border */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10"></span>
-        </span>
-        {/* Focus ring for keyboard users */}
-        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-tr-lg pointer-events-none"></span>
-      </a>
+      />
     </div>
   );
 };
