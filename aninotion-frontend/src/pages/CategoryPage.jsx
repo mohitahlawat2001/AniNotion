@@ -5,38 +5,88 @@ import PostsContainer from '../components/PostsContainer';
 import LayoutToggle from '../components/LayoutToggle';
 import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { postsAPI } from '../services/api';
 
 const CategoryPage = ({ category }) => {
   const [posts, setPosts] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [pagination, setPagination] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
 
-  const fetchCategoryPosts = useCallback(async () => {
+  const fetchInitialCategoryPosts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await postsAPI.getByCategory(category._id);
+      const response = await postsAPI.getByCategory(category._id, 1, 20); // Use same limit as API default
       
       // Handle new API response format
       if (response && typeof response === 'object' && Array.isArray(response.posts)) {
         setPosts(response.posts);
+        setPagination(response.pagination);
+        setCurrentPage(1);
+        setHasMorePosts(response.pagination && response.pagination.page < response.pagination.pages);
       } else {
         // Fallback for old format
         setPosts(Array.isArray(response) ? response : []);
+        setHasMorePosts(false);
       }
     } catch (error) {
       console.error('Error fetching category posts:', error);
       setPosts([]);
+      setHasMorePosts(false);
     } finally {
       setIsLoading(false);
     }
   }, [category._id]);
 
+  const fetchMoreCategoryPosts = useCallback(async () => {
+    console.log('fetchMoreCategoryPosts called, hasMorePosts:', hasMorePosts);
+    if (!hasMorePosts || isLoadingMore) {
+      console.log('No more category posts to fetch or already loading, returning early');
+      return;
+    }
+
+    try {
+      setIsLoadingMore(true);
+      console.log('Fetching more category posts, current page:', currentPage, 'next page:', currentPage + 1);
+      const nextPage = currentPage + 1;
+      const response = await postsAPI.getByCategory(category._id, nextPage, 20); // Use same limit as API default
+      
+      console.log('Received category response for page', nextPage, ':', response);
+      
+      if (response && typeof response === 'object' && Array.isArray(response.posts)) {
+        // Check if we already have these posts to prevent duplicates
+        setPosts(prevPosts => {
+          const existingIds = new Set(prevPosts.map(post => post._id));
+          const newPosts = response.posts.filter(post => !existingIds.has(post._id));
+          console.log('Adding', newPosts.length, 'new category posts to existing', prevPosts.length, 'posts');
+          return [...prevPosts, ...newPosts];
+        });
+        setPagination(response.pagination);
+        setCurrentPage(nextPage);
+        const newHasMore = response.pagination && response.pagination.page < response.pagination.pages;
+        console.log('Updated category hasMorePosts to:', newHasMore);
+        setHasMorePosts(newHasMore);
+      }
+    } catch (error) {
+      console.error('Error fetching more category posts:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [category._id, currentPage, hasMorePosts, isLoadingMore]);
+
   useEffect(() => {
     if (category) {
-      fetchCategoryPosts();
+      // Reset state when category changes
+      setPosts([]);
+      setCurrentPage(1);
+      setHasMorePosts(true);
+      fetchInitialCategoryPosts();
     }
-  }, [category, fetchCategoryPosts]);
+  }, [category, fetchInitialCategoryPosts]);
 
   const handleCreatePost = async (postData) => {
     try {
@@ -51,7 +101,8 @@ const CategoryPage = ({ category }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading {category.name} posts...</div>
+        <LoadingSpinner size="lg" />
+        <span className="ml-3 text-gray-500">Loading {category.name} posts...</span>
       </div>
     );
   }
@@ -81,6 +132,43 @@ const CategoryPage = ({ category }) => {
         emptyMessage={`No ${category.name.toLowerCase()} posts yet!`}
         onCreatePost={() => setIsFormOpen(true)}
       />
+
+      {/* Show More Button */}
+      {hasMorePosts && posts.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={fetchMoreCategoryPosts}
+            disabled={isLoadingMore}
+            className="group relative bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 border border-gray-200 hover:border-gray-300 disabled:border-gray-200 text-gray-700 disabled:text-gray-400 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 min-w-[140px] justify-center"
+          >
+            {isLoadingMore ? (
+              <>
+                <LoadingSpinner size="sm" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              <>
+                <span>Show more</span>
+                <svg 
+                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* End of Posts Message */}
+      {!hasMorePosts && posts.length > 0 && pagination && (
+        <div className="text-center py-8 text-gray-500">
+          <p>You've reached the end! Showing all {pagination.total} {category.name.toLowerCase()} posts.</p>
+        </div>
+      )}
 
       {/* Post Form Modal */}
       <PostForm
