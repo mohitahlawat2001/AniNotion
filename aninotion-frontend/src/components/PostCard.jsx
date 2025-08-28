@@ -9,18 +9,25 @@ import DateDisplay from './DateDisplay';
 const PostCard = ({ post, layout = 'grid' }) => {
   const navigate = useNavigate();
 
+  // Safety check for post data
+  if (!post) {
+    return null;
+  }
+
   // Content truncation logic
   const getDisplayContent = () => {
     const maxLength = layout === 'list' ? 200 : 150;
-    if (post.content.length <= maxLength) {
-      return post.content;
+    const content = post.excerpt || post.content || '';
+    if (content.length <= maxLength) {
+      return content;
     }
-    return post.content.substring(0, maxLength);
+    return content.substring(0, maxLength);
   };
 
   const shouldShowExpandButton = () => {
     const maxLength = layout === 'list' ? 300 : 150;
-    return post.content.length > maxLength;
+    const content = post.excerpt || post.content || '';
+    return content.length > maxLength;
   };
 
   const handlePostClick = () => {
@@ -56,7 +63,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
         {/* Header with name, username, and time */}
         <div className="flex items-center space-x-2 mb-1">
           <h3 className="font-bold text-gray-900 text-sm truncate">
-          {post.title}
+          {post.title || 'Untitled'}
           </h3>
           <span className="text-gray-500 text-sm">·</span>
           <DateDisplay
@@ -68,7 +75,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
 
         {/* Anime name as subtitle */}
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-gray-600 text-sm">📺 {post.animeName}</span>
+          {post.animeName && <span className="text-gray-600 text-sm">📺 {post.animeName}</span>}
           <CategoryBadge category={post.category} size="sm" />
         </div>
 
@@ -93,7 +100,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
           <div className="mb-3">
             <ImageGallery
               images={images}
-              alt={post.title}
+              alt={post.title || 'Post image'}
               layout="list"
             />
           </div>
@@ -135,7 +142,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
       {images.length > 0 && (
         <ImageGallery
           images={images}
-          alt={post.title}
+          alt={post.title || 'Post image'}
           layout="grid"
           className=""
         />
@@ -148,13 +155,15 @@ const PostCard = ({ post, layout = 'grid' }) => {
 
         {/* Title */}
         <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          {post.title}
+          {post.title || 'Untitled'}
         </h3>
 
         {/* Anime Name */}
-        <p className="text-sm text-gray-600 mb-3 font-medium">
-          📺 {post.animeName}
-        </p>
+        {post.animeName && (
+          <p className="text-sm text-gray-600 mb-3 font-medium">
+            📺 {post.animeName}
+          </p>
+        )}
 
         {/* Content Preview */}
         <div className="mb-4">

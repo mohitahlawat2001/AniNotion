@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Film, BookOpen, Plus, X, Database } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
 
 const Sidebar = ({ activeCategory, onCategoryChange }) => {
@@ -123,13 +124,14 @@ const Sidebar = ({ activeCategory, onCategoryChange }) => {
             </div>
           </div>
         ) : (
-          <button
+          <AuthButton
             onClick={() => setShowAddCategory(true)}
             className="w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 text-gray-600"
+            requireAuth={true}
           >
             <Plus size={20} />
             <span>Add Category</span>
-          </button>
+          </AuthButton>
         )}
       </nav>
     </div>

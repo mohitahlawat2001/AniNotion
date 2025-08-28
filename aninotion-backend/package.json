@@ -9,6 +9,8 @@
     "cli": "node scripts/cli.js",
     "backup": "npm run cli backup",
     "migrate": "npm run cli migration",
+    "migrate:v0.5": "npm run cli migration:v0.5",
+    "seed:admin": "node scripts/seedAdmin.js",
     "health": "npm run cli health"
   },
   "keywords": [],

@@ -328,6 +328,47 @@ migrationCmd
     }
   });
 
+migrationCmd
+  .command('v0.5')
+  .description('Run AniNotion v0.5 migration (user accounts and enhanced posts)')
+  .option('--dry-run', 'Show what would be migrated without making changes')
+  .action(async (options) => {
+    try {
+      const { runMigration } = require('../utils/migration');
+      
+      console.log('🚀 Running AniNotion v0.5 migration...');
+      console.log('   - Creating admin user if none exists');
+      console.log('   - Adding new fields to existing posts');
+      console.log('   - Creating indexes for performance');
+      
+      if (options.dryRun) {
+        console.log('\n🔍 DRY RUN MODE - No actual changes will be made\n');
+        return;
+      }
+      
+      const result = await runMigration();
+      
+      console.log('\n🎉 Migration completed successfully!');
+      console.log(`   - Admin user created: ${result.adminCreated ? 'Yes' : 'No (already exists)'}`);
+      console.log(`   - Posts updated: ${result.postsUpdated}`);
+      console.log(`   - Posts skipped: ${result.postsSkipped}`);
+      
+      if (result.adminCreated) {
+        console.log('\n⚠️  IMPORTANT: Default admin credentials created:');
+        console.log('   📧 Email: admin@aninotion.com');
+        console.log('   🔑 Password: admin123456');
+        console.log('   🚨 Change this password immediately after first login!');
+      }
+      
+    } catch (error) {
+      console.error('❌ Migration v0.5 failed:', error.message);
+      if (error.stack) {
+        console.error('Stack trace:', error.stack);
+      }
+      process.exit(1);
+    }
+  });
+
 // Environment commands
 const envCmd = program
   .command('env')

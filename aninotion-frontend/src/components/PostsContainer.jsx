@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLayout } from '../hooks/useLayout';
 import PostCard from './PostCard';
+import AuthButton from './AuthButton';
 
 const PostsContainer = ({ posts, emptyMessage, onCreatePost }) => {
   const { layout } = useLayout();
@@ -9,12 +10,13 @@ const PostsContainer = ({ posts, emptyMessage, onCreatePost }) => {
     return (
       <div className="text-center py-12">
         <div className="text-gray-500 mb-4">{emptyMessage}</div>
-        <button
+        <AuthButton
           onClick={onCreatePost}
           className="btn-primary"
+          requireAuth={true}
         >
           Create your first post
-        </button>
+        </AuthButton>
       </div>
     );
   }

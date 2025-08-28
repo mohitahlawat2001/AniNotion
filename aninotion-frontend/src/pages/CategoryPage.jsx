@@ -3,6 +3,8 @@ import { Plus } from 'lucide-react';
 import PostForm from '../components/PostForm';
 import PostsContainer from '../components/PostsContainer';
 import LayoutToggle from '../components/LayoutToggle';
+import AuthButton from '../components/AuthButton';
+import UserProfile from '../components/UserProfile';
 import { postsAPI } from '../services/api';
 
 const CategoryPage = ({ category }) => {
@@ -13,10 +15,18 @@ const CategoryPage = ({ category }) => {
   const fetchCategoryPosts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await postsAPI.getByCategory(category._id);
-      setPosts(data);
+      const response = await postsAPI.getByCategory(category._id);
+      
+      // Handle new API response format
+      if (response && typeof response === 'object' && Array.isArray(response.posts)) {
+        setPosts(response.posts);
+      } else {
+        // Fallback for old format
+        setPosts(Array.isArray(response) ? response : []);
+      }
     } catch (error) {
       console.error('Error fetching category posts:', error);
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -53,13 +63,15 @@ const CategoryPage = ({ category }) => {
         <h1 className="text-3xl font-bold">{category.name} Posts</h1>
         <div className="flex items-center space-x-3">
           <LayoutToggle />
-          <button
+          <AuthButton
             onClick={() => setIsFormOpen(true)}
             className="btn-primary flex items-center space-x-2"
+            requireAuth={true}
           >
             <Plus size={20} />
             <span>Create Post</span>
-          </button>
+          </AuthButton>
+          <UserProfile />
         </div>
       </div>
 
