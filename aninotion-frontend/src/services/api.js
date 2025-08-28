@@ -137,13 +137,17 @@ export const categoriesAPI = {
 
 // Posts API
 export const postsAPI = {
-  getAll: async () => {
+  getAll: async (page = 1, limit = 20) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
     let response;
     // Use authenticated fetch to get drafts if user is logged in
     if (authAPI.isAuthenticated()) {
-      response = await authenticatedFetch(`${API_BASE_URL}/posts`);
+      response = await authenticatedFetch(`${API_BASE_URL}/posts?${params}`);
     } else {
-      const res = await fetch(`${API_BASE_URL}/posts`);
+      const res = await fetch(`${API_BASE_URL}/posts?${params}`);
       if (!res.ok) throw new Error('Failed to fetch posts');
       response = await res.json();
     }
@@ -157,8 +161,12 @@ export const postsAPI = {
     return { posts: response || [], pagination: null };
   },
 
-  getByCategory: async (categoryId) => {
-    const res = await fetch(`${API_BASE_URL}/posts/category/${categoryId}`);
+  getByCategory: async (categoryId, page = 1, limit = 20) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    const res = await fetch(`${API_BASE_URL}/posts/category/${categoryId}?${params}`);
     if (!res.ok) throw new Error('Failed to fetch posts by category');
     const response = await res.json();
     
