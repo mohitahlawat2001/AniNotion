@@ -3,6 +3,8 @@ import { Plus } from 'lucide-react';
 import PostForm from '../components/PostForm';
 import PostsContainer from '../components/PostsContainer';
 import LayoutToggle from '../components/LayoutToggle';
+import AuthButton from '../components/AuthButton';
+import UserProfile from '../components/UserProfile';
 import { postsAPI } from '../services/api';
 
 const Home = () => {
@@ -17,10 +19,19 @@ const Home = () => {
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-      const data = await postsAPI.getAll();
-      setPosts(data);
+      const response = await postsAPI.getAll();
+      
+      // Handle new API response format
+      if (response && typeof response === 'object' && Array.isArray(response.posts)) {
+        setPosts(response.posts);
+        // setPagination(response.pagination); // We can add pagination handling later
+      } else {
+        // Fallback for old format
+        setPosts(Array.isArray(response) ? response : []);
+      }
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -51,13 +62,15 @@ const Home = () => {
         <h1 className="text-3xl font-bold">Recent Posts</h1>
         <div className="flex items-center space-x-3">
           <LayoutToggle />
-          <button
+          <AuthButton
             onClick={() => setIsFormOpen(true)}
             className="btn-primary flex items-center space-x-2"
+            requireAuth={true}
           >
             <Plus size={20} />
             <span>Create Post</span>
-          </button>
+          </AuthButton>
+          <UserProfile />
         </div>
       </div>
 

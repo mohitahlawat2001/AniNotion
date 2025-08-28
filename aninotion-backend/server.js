@@ -9,6 +9,8 @@ require('dotenv').config();
 const connectDB = require('./config/database');
 const categoryRoutes = require('./routes/categories');
 const postRoutes = require('./routes/posts');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 const logger = require('./config/logger');
 const BackupScheduler = require('./utils/backupScheduler');
 
@@ -35,6 +37,8 @@ app.use(express.urlencoded({ limit: '50mb',extended: true }));
 logger.info("✅ Middleware configured successfully");
 
 // Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/posts', postRoutes);
 
