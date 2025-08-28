@@ -110,17 +110,19 @@ const CategoryPage = ({ category }) => {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{category.name} Posts</h1>
-        <div className="flex items-center space-x-3">
+      <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold">{category.name} Posts</h1>
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
           <LayoutToggle />
           <AuthButton
             onClick={() => setIsFormOpen(true)}
-            className="btn-primary flex items-center space-x-2"
+            className="btn-primary flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 text-sm sm:text-base"
             requireAuth={true}
           >
-            <Plus size={20} />
-            <span>Create Post</span>
+            <Plus size={18} className="sm:hidden" />
+            <Plus size={20} className="hidden sm:block" />
+            <span className="hidden sm:inline">Create Post</span>
+            <span className="sm:hidden">Create</span>
           </AuthButton>
           <UserProfile />
         </div>
@@ -135,11 +137,11 @@ const CategoryPage = ({ category }) => {
 
       {/* Show More Button */}
       {hasMorePosts && posts.length > 0 && (
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-6 sm:mt-8 px-4 sm:px-0">
           <button
             onClick={fetchMoreCategoryPosts}
             disabled={isLoadingMore}
-            className="group relative bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 border border-gray-200 hover:border-gray-300 disabled:border-gray-200 text-gray-700 disabled:text-gray-400 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 min-w-[140px] justify-center"
+            className="group relative bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 border border-gray-200 hover:border-gray-300 disabled:border-gray-200 text-gray-700 disabled:text-gray-400 px-6 sm:px-4 py-3 sm:py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 min-w-[140px] justify-center touch-target w-full sm:w-auto max-w-xs sm:max-w-none"
           >
             {isLoadingMore ? (
               <>

@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
 
-const Sidebar = ({ activeCategory, onCategoryChange }) => {
+const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile }) => {
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -37,6 +37,13 @@ const Sidebar = ({ activeCategory, onCategoryChange }) => {
     }
   };
 
+  const handleNavClick = (callback) => {
+    callback();
+    if (isMobile && onMobileItemClick) {
+      onMobileItemClick();
+    }
+  };
+
   const getCategoryIcon = (categoryName) => {
     switch (categoryName.toLowerCase()) {
       case 'anime':
@@ -49,47 +56,48 @@ const Sidebar = ({ activeCategory, onCategoryChange }) => {
   };
 
   return (
-    <div className="w-64 bg-white shadow-lg h-screen p-4">
-      <h1 className="text-2xl font-bold text-primary mb-8">AniNotion</h1>
+    <div className="w-64 lg:w-64 bg-white shadow-lg h-screen p-4 overflow-y-auto">
+      <h1 className="text-xl lg:text-2xl font-bold text-primary mb-6 lg:mb-8 mt-8 lg:mt-0">AniNotion</h1>
       
       <nav className="space-y-2">
         {/* Home */}
         <Link
           to="/"
-          onClick={() => onCategoryChange(null)}
-          className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 ${
+          onClick={() => handleNavClick(() => onCategoryChange(null))}
+          className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
             location.pathname === '/' && activeCategory === null ? 'bg-primary/10 text-primary' : ''
           }`}
         >
           <Home size={20} />
-          <span>Home</span>
+          <span className="text-sm lg:text-base">Home</span>
         </Link>
 
         {/* Raw Data */}
         <Link
           to="/raw"
-          className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 ${
+          onClick={() => isMobile && onMobileItemClick && onMobileItemClick()}
+          className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
             location.pathname === '/raw' ? 'bg-primary/10 text-primary' : ''
           }`}
         >
           <Database size={20} />
-          <span>Raw Data</span>
+          <span className="text-sm lg:text-base">Raw Data</span>
         </Link>
         
         {/* Categories */}
         {categories.map((category) => (
           <button
             key={category._id}
-            onClick={() => {
+            onClick={() => handleNavClick(() => {
               onCategoryChange(category);
               navigate('/');
-            }}
-            className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 ${
+            })}
+            className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
               activeCategory?._id === category._id && location.pathname === '/' ? 'bg-primary/10 text-primary' : ''
             }`}
           >
             {getCategoryIcon(category.name)}
-            <span>{category.name}</span>
+            <span className="text-sm lg:text-base">{category.name}</span>
           </button>
         ))}
 
