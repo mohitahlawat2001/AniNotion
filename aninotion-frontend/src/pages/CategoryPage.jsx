@@ -100,9 +100,28 @@ const CategoryPage = ({ category }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner size="lg" />
-        <span className="ml-3 text-gray-500">Loading {category.name} posts...</span>
+      <div>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+          <h1 className="text-2xl sm:text-3xl font-bold">{category.name} Posts</h1>
+          <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+            <LayoutToggle />
+            <AuthButton
+              onClick={() => setIsFormOpen(true)}
+              className="btn-primary flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 text-sm sm:text-base"
+              requireAuth={true}
+            >
+              <Plus size={18} className="sm:hidden" />
+              <Plus size={20} className="hidden sm:block" />
+              <span className="hidden sm:inline">Create Post</span>
+              <span className="sm:hidden">Create</span>
+            </AuthButton>
+            <UserProfile />
+          </div>
+        </div>
+        
+        {/* Shimmer Loading */}
+        <LoadingSpinner type="shimmer" count={6} />
       </div>
     );
   }

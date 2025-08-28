@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { postsAPI } from '../services/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -58,11 +59,7 @@ const PostPage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading post...</div>
-      </div>
-    );
+    return <LoadingSpinner type="post" />;
   }
 
   if (!post) {
