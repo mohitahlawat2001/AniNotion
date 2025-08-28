@@ -9,20 +9,26 @@ const LayoutToggle = ({ className = "" }) => {
     <button
       onClick={toggleLayout}
       className={`
-        flex items-center justify-center w-10 h-10 rounded-lg
+        flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg
         border border-gray-300 hover:border-gray-400
         bg-white hover:bg-gray-50
         text-gray-600 hover:text-gray-800
         transition-all duration-200
+        touch-target
         ${className}
       `}
       title={`Switch to ${layout === 'grid' ? 'list' : 'grid'} view`}
       aria-label={`Switch to ${layout === 'grid' ? 'list' : 'grid'} view`}
     >
       {layout === 'grid' ? (
-        <List size={20} />
+        <List size={18} className="sm:hidden" />
       ) : (
-        <Grid3X3 size={20} />
+        <Grid3X3 size={18} className="sm:hidden" />
+      )}
+      {layout === 'grid' ? (
+        <List size={20} className="hidden sm:block" />
+      ) : (
+        <Grid3X3 size={20} className="hidden sm:block" />
       )}
     </button>
   );

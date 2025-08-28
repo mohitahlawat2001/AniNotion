@@ -17,6 +17,30 @@
   overflow: hidden;
 }
 
+/* Touch targets for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent zoom on iOS when focusing inputs */
+@media screen and (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Improve mobile scrolling */
+.overflow-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Corner sheen animation */
 @keyframes corner-sheen {
   0%   { background-position: 120% 120%; }
@@ -31,4 +55,47 @@
   );
   background-size: 300% 300%;
   animation: corner-sheen 3s ease-in-out infinite;
+}
+
+/* Mobile-friendly focus styles */
+@media (max-width: 767px) {
+  button:focus,
+  a:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  /* Better mobile touch targets */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  /* Reduce shadow intensity on mobile for better performance */
+  .shadow-md {
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.08), 0 2px 2px -1px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* Better mobile scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }

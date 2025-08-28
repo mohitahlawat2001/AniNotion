@@ -48,7 +48,8 @@ const UserProfile = () => {
       {/* Profile Icon Button */}
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+        aria-label="User menu"
       >
         <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center">
           <User size={16} />
@@ -62,25 +63,30 @@ const UserProfile = () => {
             className={`text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
           />
         </div>
+        <ChevronDown 
+          size={16} 
+          className={`text-gray-500 transition-transform md:hidden ${isDropdownOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {/* Dropdown Menu */}
       {isDropdownOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mx-2 sm:mx-0">
           {/* User Info Header */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-3 sm:p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center">
-                <User size={20} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary text-white rounded-full flex items-center justify-center">
+                <User size={18} className="sm:hidden" />
+                <User size={20} className="hidden sm:block" />
               </div>
               <div className="flex-1">
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-gray-900 text-sm sm:text-base">
                   {user.name || 'User'}
                 </div>
-                <div className="text-sm text-gray-500">{user.email}</div>
+                <div className="text-xs sm:text-sm text-gray-500">{user.email}</div>
                 <div className="flex items-center space-x-2 mt-1">
                   {getRoleIcon(user.role)}
-                  <span className="text-sm font-medium capitalize text-gray-700">
+                  <span className="text-xs sm:text-sm font-medium capitalize text-gray-700">
                     {user.role}
                   </span>
                 </div>
@@ -92,28 +98,32 @@ const UserProfile = () => {
           </div>
 
           {/* Role Capabilities */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-3 sm:p-4 border-b border-gray-200">
             <div className="text-sm font-medium text-gray-700 mb-2">Your Capabilities:</div>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-xs sm:text-sm">
               <div className="flex items-center space-x-2">
-                <Eye size={14} className="text-green-500" />
+                <Eye size={12} className="text-green-500 sm:hidden" />
+                <Eye size={14} className="text-green-500 hidden sm:block" />
                 <span className="text-gray-600">View posts and categories</span>
               </div>
               {canWrite() && (
                 <div className="flex items-center space-x-2">
-                  <Edit size={14} className="text-green-500" />
+                  <Edit size={12} className="text-green-500 sm:hidden" />
+                  <Edit size={14} className="text-green-500 hidden sm:block" />
                   <span className="text-gray-600">Create and edit posts</span>
                 </div>
               )}
               {canWrite() && (
                 <div className="flex items-center space-x-2">
-                  <Settings size={14} className="text-green-500" />
+                  <Settings size={12} className="text-green-500 sm:hidden" />
+                  <Settings size={14} className="text-green-500 hidden sm:block" />
                   <span className="text-gray-600">Manage categories</span>
                 </div>
               )}
               {isAdmin() && (
                 <div className="flex items-center space-x-2">
-                  <Users size={14} className="text-green-500" />
+                  <Users size={12} className="text-green-500 sm:hidden" />
+                  <Users size={14} className="text-green-500 hidden sm:block" />
                   <span className="text-gray-600">Manage users and permissions</span>
                 </div>
               )}
@@ -128,17 +138,19 @@ const UserProfile = () => {
                   setShowUserManagement(true);
                   setIsDropdownOpen(false);
                 }}
-                className="w-full flex items-center space-x-3 p-2 rounded hover:bg-gray-100 text-left"
+                className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-gray-100 text-left touch-target"
               >
-                <Users size={16} className="text-gray-500" />
+                <Users size={14} className="text-gray-500 sm:hidden" />
+                <Users size={16} className="text-gray-500 hidden sm:block" />
                 <span className="text-sm text-gray-700">Manage Users</span>
               </button>
             )}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-3 p-2 rounded hover:bg-red-50 text-left"
+              className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-red-50 text-left touch-target"
             >
-              <LogOut size={16} className="text-red-500" />
+              <LogOut size={14} className="text-red-500 sm:hidden" />
+              <LogOut size={16} className="text-red-500 hidden sm:block" />
               <span className="text-sm text-red-600">Logout</span>
             </button>
           </div>

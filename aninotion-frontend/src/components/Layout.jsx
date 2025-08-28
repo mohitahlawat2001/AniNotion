@@ -1,14 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 
 const Layout = ({ children, activeCategory, onCategoryChange }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar 
-        activeCategory={activeCategory}
-        onCategoryChange={onCategoryChange}
-      />
-      <main className="flex-1 p-6 overflow-auto">
+      {/* Mobile menu button */}
+      <button
+        onClick={toggleMobileMenu}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-opacity-10 backdrop-blur-sm z-30"
+          onClick={closeMobileMenu}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 
+        fixed lg:static 
+        z-40 lg:z-auto
+        transition-transform duration-300 ease-in-out
+      `}>
+        <Sidebar 
+          activeCategory={activeCategory}
+          onCategoryChange={onCategoryChange}
+          onMobileItemClick={closeMobileMenu}
+          isMobile={true}
+        />
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1 p-4 lg:p-6 overflow-auto ml-0 lg:ml-0 pt-6 lg:pt-6">
         {children}
       </main>
     </div>

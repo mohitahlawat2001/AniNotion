@@ -48,29 +48,31 @@ const ImageGallery = ({
         <>
           <button
             onClick={prevImage}
-            className={`absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-              layout === "list" ? "p-1.5 rounded-full" : ""
+            className={`absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 sm:p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity touch-target ${
+              layout === "list" ? "rounded-full" : ""
             }`}
           >
-            <ChevronLeft size={layout === "list" ? 16 : 16} />
+            <ChevronLeft size={layout === "list" ? 14 : 14} className="sm:hidden" />
+            <ChevronLeft size={layout === "list" ? 16 : 16} className="hidden sm:block" />
           </button>
           <button
             onClick={nextImage}
-            className={`absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-              layout === "list" ? "p-1.5 rounded-full" : ""
+            className={`absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 sm:p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity touch-target ${
+              layout === "list" ? "rounded-full" : ""
             }`}
           >
-            <ChevronRight size={layout === "list" ? 16 : 16} />
+            <ChevronRight size={layout === "list" ? 14 : 14} className="sm:hidden" />
+            <ChevronRight size={layout === "list" ? 16 : 16} className="hidden sm:block" />
           </button>
 
           {/* Image indicators */}
           {layout === "grid" && (
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
               {images.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors touch-target ${
                     index === currentImageIndex
                       ? 'bg-white'
                       : 'bg-white bg-opacity-50 hover:bg-opacity-75'
@@ -82,8 +84,8 @@ const ImageGallery = ({
 
           {/* Image counter */}
           {showCounter && (
-            <div className={`absolute bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded ${
-              layout === "list" ? "top-3 right-3 rounded-full" : "top-2 right-2"
+            <div className={`absolute bg-black bg-opacity-50 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded ${
+              layout === "list" ? "top-2 sm:top-3 right-2 sm:right-3 rounded-full text-xs" : "top-1 sm:top-2 right-1 sm:right-2 text-xs"
             }`}>
               {currentImageIndex + 1} / {images.length}
             </div>
