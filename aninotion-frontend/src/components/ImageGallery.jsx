@@ -48,21 +48,21 @@ const ImageGallery = ({
         <>
           <button
             onClick={prevImage}
-            className={`absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 sm:p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity touch-target ${
+            className={`absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-1.5 sm:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
               layout === "list" ? "rounded-full" : ""
             }`}
           >
-            <ChevronLeft size={layout === "list" ? 14 : 14} className="sm:hidden" />
-            <ChevronLeft size={layout === "list" ? 16 : 16} className="hidden sm:block" />
+            <ChevronLeft size={16} className="sm:hidden" />
+            <ChevronLeft size={18} className="hidden sm:block" />
           </button>
           <button
             onClick={nextImage}
-            className={`absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 sm:p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity touch-target ${
+            className={`absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-1.5 sm:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
               layout === "list" ? "rounded-full" : ""
             }`}
           >
-            <ChevronRight size={layout === "list" ? 14 : 14} className="sm:hidden" />
-            <ChevronRight size={layout === "list" ? 16 : 16} className="hidden sm:block" />
+            <ChevronRight size={16} className="sm:hidden" />
+            <ChevronRight size={18} className="hidden sm:block" />
           </button>
 
           {/* Image indicators */}
@@ -72,7 +72,7 @@ const ImageGallery = ({
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors touch-target ${
+                  className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-colors ${
                     index === currentImageIndex
                       ? 'bg-white'
                       : 'bg-white bg-opacity-50 hover:bg-opacity-75'

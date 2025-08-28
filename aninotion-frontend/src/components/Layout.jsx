@@ -27,7 +27,8 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-opacity-10 backdrop-blur-sm z-30"
+          //className="lg:hidden fixed inset-0 bg-opacity-10 backdrop-blur-sm z-30"
+           className="lg:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30" //miminal
           onClick={closeMobileMenu}
         />
       )}
