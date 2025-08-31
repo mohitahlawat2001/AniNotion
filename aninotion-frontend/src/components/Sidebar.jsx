@@ -3,6 +3,7 @@ import { Home, Film, BookOpen, Plus, X, Database } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile }) => {
   const [categories, setCategories] = useState([]);
@@ -10,6 +11,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
   const [newCategoryName, setNewCategoryName] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchCategories();
@@ -102,44 +104,45 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
         ))}
 
         {/* Add Category */}
-        {showAddCategory ? (
-          <div className="p-3 border border-gray-300 rounded-lg">
-            <input
-              type="text"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Category name"
-              className="w-full p-2 text-sm border border-gray-300 rounded mb-2"
-              onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
-              autoFocus
-            />
-            <div className="flex space-x-2">
-              <button
-                onClick={handleAddCategory}
-                className="flex-1 bg-primary text-white text-sm py-1 px-3 rounded hover:bg-primary/90"
-              >
-                Add
-              </button>
-              <button
-                onClick={() => {
-                  setShowAddCategory(false);
-                  setNewCategoryName('');
-                }}
-                className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
+        {isAuthenticated && (
+          showAddCategory ? (
+            <div className="p-3 border border-gray-300 rounded-lg">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Category name"
+                className="w-full p-2 text-sm border border-gray-300 rounded mb-2"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                autoFocus
+              />
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleAddCategory}
+                  className="flex-1 bg-primary text-white text-sm py-1 px-3 rounded hover:bg-primary/90"
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddCategory(false);
+                    setNewCategoryName('');
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <AuthButton
-            onClick={() => setShowAddCategory(true)}
-            className="w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 text-gray-600"
-            requireAuth={true}
-          >
-            <Plus size={20} />
-            <span>Add Category</span>
-          </AuthButton>
+          ) : (
+            <button
+              onClick={() => setShowAddCategory(true)}
+              className="w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 text-gray-600"
+            >
+              <Plus size={20} />
+              <span>Add Category</span>
+            </button>
+          )
         )}
       </nav>
     </div>
