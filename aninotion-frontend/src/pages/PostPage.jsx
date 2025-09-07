@@ -15,7 +15,8 @@ const PostPage = () => {
     const fetchPost = async () => {
       try {
         setIsLoading(true);
-        const data = await postsAPI.getById(id);
+  // Backend supports identifier (either ObjectId or slug) on the same route
+  const data = await postsAPI.getByIdentifier(id, true);
         setPost(data);
       } catch (error) {
         console.error('Error fetching post:', error);

@@ -42,3 +42,5 @@ out/
 
 # TypeScript
 *.tsbuildinfo
+
+*.notes/

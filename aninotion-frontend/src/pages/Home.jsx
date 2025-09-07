@@ -24,7 +24,7 @@ const Home = () => {
   const fetchInitialPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await postsAPI.getAll(1, 20); // Use same limit as API default
+  const response = await postsAPI.getAll({ page: 1, limit: 20 }); // Use same limit as API default
       
       // Handle new API response format
       if (response && typeof response === 'object' && Array.isArray(response.posts)) {
@@ -57,7 +57,7 @@ const Home = () => {
       setIsLoadingMore(true);
       console.log('Fetching more posts, current page:', currentPage, 'next page:', currentPage + 1);
       const nextPage = currentPage + 1;
-      const response = await postsAPI.getAll(nextPage, 20); // Use same limit as API default
+  const response = await postsAPI.getAll({ page: nextPage, limit: 20 }); // Use same limit as API default
       
       console.log('Received response for page', nextPage, ':', response);
       
@@ -82,14 +82,9 @@ const Home = () => {
     }
   }, [currentPage, hasMorePosts, isLoadingMore]);
 
-  const handleCreatePost = async (postData) => {
-    try {
-      const newPost = await postsAPI.create(postData);
-      setPosts([newPost, ...posts]);
-    } catch (error) {
-      console.error('Error creating post:', error);
-      throw error;
-    }
+  const handleCreatePost = async (newPost) => {
+    // PostForm now handles the API call, so we just need to update the local state
+    setPosts([newPost, ...posts]);
   };
 
   if (isLoading) {
