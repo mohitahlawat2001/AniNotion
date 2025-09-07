@@ -20,7 +20,7 @@ const CategoryPage = ({ category }) => {
   const fetchInitialCategoryPosts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await postsAPI.getByCategory(category._id, 1, 20); // Use same limit as API default
+  const response = await postsAPI.getByCategory(category._id, { page: 1, limit: 20 }); // Use same limit as API default
       
       // Handle new API response format
       if (response && typeof response === 'object' && Array.isArray(response.posts)) {
@@ -53,7 +53,7 @@ const CategoryPage = ({ category }) => {
       setIsLoadingMore(true);
       console.log('Fetching more category posts, current page:', currentPage, 'next page:', currentPage + 1);
       const nextPage = currentPage + 1;
-      const response = await postsAPI.getByCategory(category._id, nextPage, 20); // Use same limit as API default
+  const response = await postsAPI.getByCategory(category._id, { page: nextPage, limit: 20 }); // Use same limit as API default
       
       console.log('Received category response for page', nextPage, ':', response);
       
@@ -88,14 +88,9 @@ const CategoryPage = ({ category }) => {
     }
   }, [category, fetchInitialCategoryPosts]);
 
-  const handleCreatePost = async (postData) => {
-    try {
-      const newPost = await postsAPI.create(postData);
-      setPosts([newPost, ...posts]);
-    } catch (error) {
-      console.error('Error creating post:', error);
-      throw error;
-    }
+  const handleCreatePost = async (newPost) => {
+    // PostForm now handles the API call, so we just need to update the local state
+    setPosts([newPost, ...posts]);
   };
 
   if (isLoading) {

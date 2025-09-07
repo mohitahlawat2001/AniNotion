@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { X, Upload, Image, Plus, Link, Check } from 'lucide-react';
+import { categoriesAPI, postsAPI } from '../services/api';
 
 
 const PostForm = ({ isOpen, onClose, onSubmit }) => {
@@ -11,6 +12,7 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
+  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -46,11 +48,12 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(import.meta.env.VITE_BACKEND_URL+'/categories');
-      const data = await response.json();
+      setError('');
+      const data = await categoriesAPI.getAll();
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      setError('Failed to load categories. Please try again.');
     }
   };
 
@@ -117,14 +120,25 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
 
   const onSubmitForm = async (data) => {
     setIsLoading(true);
+    setError('');
     try {
       const postData = {
-        ...data,
+        title: data.title,
+        animeName: data.animeName,
+        category: data.category,
+        content: data.content,
         images: imagePreviews, // Array of base64 images and URLs
-        imageTypes: imageLinks // Array indicating which are URLs vs base64
+        imageTypes: imageLinks, // Array indicating which are URLs vs base64
+        status: 'published' // Default to published
       };
       
-      await onSubmit(postData);
+      // Use the centralized API method
+      const newPost = await postsAPI.create(postData);
+      
+      // Call the parent's onSubmit with the created post
+      await onSubmit(newPost);
+      
+      // Reset form state
       reset();
       setImagePreviews([]);
       setImageLinks([]);
@@ -133,6 +147,7 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
       onClose();
     } catch (error) {
       console.error('Error creating post:', error);
+      setError(error.message || 'Failed to create post. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -156,6 +171,13 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmitForm)} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
           {/* Category Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

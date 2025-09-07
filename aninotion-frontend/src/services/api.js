@@ -84,12 +84,25 @@ export const authAPI = {
     return authenticatedFetch(`${API_BASE_URL}/auth/me`);
   },
 
+  // Update current user profile
+  updateProfile: async (userData) => {
+    return authenticatedFetch(`${API_BASE_URL}/auth/me`, {
+      method: 'PUT',
+      body: JSON.stringify(userData)
+    });
+  },
+
   // Create new user (admin only)
   createUser: async (userData) => {
     return authenticatedFetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       body: JSON.stringify(userData)
     });
+  },
+
+  // Get all users from auth endpoint (admin only)
+  getAllUsersFromAuth: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/auth/users`);
   },
 
   // Get all users (admin only)
@@ -110,6 +123,19 @@ export const authAPI = {
     return authenticatedFetch(`${API_BASE_URL}/users/${userId}`, {
       method: 'DELETE'
     });
+  },
+
+  // Update user status (admin only)
+  updateUserStatus: async (userId, status) => {
+    return authenticatedFetch(`${API_BASE_URL}/auth/users/${userId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+  },
+
+  // Get user statistics (admin only)
+  getUserStats: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/users/stats`);
   }
 };
 
@@ -137,10 +163,26 @@ export const categoriesAPI = {
 
 // Posts API
 export const postsAPI = {
-  getAll: async (page = 1, limit = 20) => {
+  getAll: async (options = {}) => {
+    const { 
+      page = 1, 
+      limit = 20, 
+      status, 
+      category, 
+      tags, 
+      sortBy = 'publishedAt', 
+      sortOrder = 'desc' 
+    } = options;
+    
     const params = new URLSearchParams();
     params.append('page', page.toString());
     params.append('limit', limit.toString());
+    params.append('sortBy', sortBy);
+    params.append('sortOrder', sortOrder);
+    
+    if (status) params.append('status', status);
+    if (category) params.append('category', category);
+    if (tags) params.append('tags', Array.isArray(tags) ? tags.join(',') : tags);
     
     let response;
     // Use authenticated fetch to get drafts if user is logged in
@@ -161,10 +203,24 @@ export const postsAPI = {
     return { posts: response || [], pagination: null };
   },
 
-  getByCategory: async (categoryId, page = 1, limit = 20) => {
+  getByCategory: async (categoryId, options = {}) => {
+    const { 
+      page = 1, 
+      limit = 20, 
+      status, 
+      tags, 
+      sortBy = 'publishedAt', 
+      sortOrder = 'desc' 
+    } = options;
+    
     const params = new URLSearchParams();
     params.append('page', page.toString());
     params.append('limit', limit.toString());
+    params.append('sortBy', sortBy);
+    params.append('sortOrder', sortOrder);
+    
+    if (status) params.append('status', status);
+    if (tags) params.append('tags', Array.isArray(tags) ? tags.join(',') : tags);
     
     const res = await fetch(`${API_BASE_URL}/posts/category/${categoryId}?${params}`);
     if (!res.ok) throw new Error('Failed to fetch posts by category');
@@ -179,14 +235,33 @@ export const postsAPI = {
     return { posts: response || [], pagination: null };
   },
 
-  getById: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/posts/${id}`);
+  getById: async (id, incrementViews = true) => {
+    const params = new URLSearchParams();
+    if (!incrementViews) params.append('incrementViews', 'false');
+    
+    const url = `${API_BASE_URL}/posts/${id}${params.toString() ? `?${params}` : ''}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch post');
     return response.json();
   },
 
-  getBySlug: async (slug) => {
-    const response = await fetch(`${API_BASE_URL}/posts/slug/${slug}`);
+  getBySlug: async (slug, incrementViews = true) => {
+    const params = new URLSearchParams();
+    if (!incrementViews) params.append('incrementViews', 'false');
+    
+    const url = `${API_BASE_URL}/posts/${slug}${params.toString() ? `?${params}` : ''}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch post');
+    return response.json();
+  },
+
+  // Get post by either ID or slug (backend handles both)
+  getByIdentifier: async (identifier, incrementViews = true) => {
+    const params = new URLSearchParams();
+    if (!incrementViews) params.append('incrementViews', 'false');
+    
+    const url = `${API_BASE_URL}/posts/${identifier}${params.toString() ? `?${params}` : ''}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch post');
     return response.json();
   },
@@ -214,25 +289,21 @@ export const postsAPI = {
   // New endpoints from the enhanced backend
   publish: async (id) => {
     return authenticatedFetch(`${API_BASE_URL}/posts/${id}/publish`, {
-      method: 'PUT'
+      method: 'PUT',
+      body: JSON.stringify({ action: 'publish' })
     });
   },
 
   unpublish: async (id) => {
-    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/unpublish`, {
-      method: 'PUT'
+    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/publish`, {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'unpublish' })
     });
   },
 
   like: async (id) => {
     return authenticatedFetch(`${API_BASE_URL}/posts/${id}/like`, {
       method: 'POST'
-    });
-  },
-
-  unlike: async (id) => {
-    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/like`, {
-      method: 'DELETE'
     });
   }
 };
