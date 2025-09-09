@@ -307,3 +307,217 @@ export const postsAPI = {
     });
   }
 };
+
+// Anime API
+export const animeAPI = {
+  // Check if anime API is working
+  checkHealth: async () => {
+    const response = await fetch(`${API_BASE_URL}/anime/health`);
+    if (!response.ok) throw new Error('Failed to check anime API health');
+    return response.json();
+  },
+
+  // Search anime by title or keywords
+  search: async (query, options = {}) => {
+    const { limit = 20, offset = 0, fields } = options;
+    
+    if (!query || typeof query !== 'string' || query.trim() === '') {
+      throw new Error('Search query is required');
+    }
+    
+    const params = new URLSearchParams();
+    params.append('q', query.trim());
+    params.append('limit', Math.min(limit, 100).toString()); // Max 100 per MAL API
+    params.append('offset', offset.toString());
+    
+    if (fields) {
+      params.append('fields', Array.isArray(fields) ? fields.join(',') : fields);
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/anime/search?${params}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to search anime');
+    }
+    return response.json();
+  },
+
+  // Get detailed anime information by ID
+  getDetails: async (animeId, fields = null) => {
+    if (!animeId || isNaN(animeId)) {
+      throw new Error('Valid anime ID is required');
+    }
+    
+    const params = new URLSearchParams();
+    if (fields) {
+      params.append('fields', Array.isArray(fields) ? fields.join(',') : fields);
+    }
+    
+    const url = `${API_BASE_URL}/anime/details/${animeId}${params.toString() ? `?${params}` : ''}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 404) {
+        throw new Error('Anime not found');
+      }
+      throw new Error(errorData.message || 'Failed to fetch anime details');
+    }
+    return response.json();
+  },
+
+  // Get anime rankings
+  getRanking: async (options = {}) => {
+    const { 
+      rankingType = 'all', 
+      limit = 50, 
+      offset = 0, 
+      fields 
+    } = options;
+    
+    const validRankingTypes = [
+      'all', 'airing', 'upcoming', 'tv', 'ova', 'movie', 
+      'special', 'bypopularity', 'favorite'
+    ];
+    
+    if (!validRankingTypes.includes(rankingType)) {
+      throw new Error(`Invalid ranking type. Valid types: ${validRankingTypes.join(', ')}`);
+    }
+    
+    const params = new URLSearchParams();
+    params.append('ranking_type', rankingType);
+    params.append('limit', Math.min(limit, 500).toString()); // Max 500 per MAL API
+    params.append('offset', offset.toString());
+    
+    if (fields) {
+      params.append('fields', Array.isArray(fields) ? fields.join(',') : fields);
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/anime/ranking?${params}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch anime ranking');
+    }
+    return response.json();
+  },
+
+  // Get seasonal anime
+  getSeasonal: async (year, season, options = {}) => {
+    const { 
+      sort, 
+      limit = 50, 
+      offset = 0, 
+      fields 
+    } = options;
+    
+    const validSeasons = ['winter', 'spring', 'summer', 'fall'];
+    const validSorts = ['anime_score', 'anime_num_list_users'];
+    
+    if (!year || isNaN(year) || year < 1900 || year > new Date().getFullYear() + 2) {
+      throw new Error('Valid year is required');
+    }
+    
+    if (!season || !validSeasons.includes(season.toLowerCase())) {
+      throw new Error(`Invalid season. Valid seasons: ${validSeasons.join(', ')}`);
+    }
+    
+    if (sort && !validSorts.includes(sort)) {
+      throw new Error(`Invalid sort option. Valid sorts: ${validSorts.join(', ')}`);
+    }
+    
+    const params = new URLSearchParams();
+    params.append('limit', Math.min(limit, 500).toString()); // Max 500 per MAL API
+    params.append('offset', offset.toString());
+    
+    if (sort) {
+      params.append('sort', sort);
+    }
+    
+    if (fields) {
+      params.append('fields', Array.isArray(fields) ? fields.join(',') : fields);
+    }
+    
+    const url = `${API_BASE_URL}/anime/season/${year}/${season.toLowerCase()}${params.toString() ? `?${params}` : ''}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch seasonal anime');
+    }
+    return response.json();
+  },
+
+  // Get current season anime (convenience method)
+  getCurrentSeason: async (options = {}) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth() returns 0-11
+    
+    let season;
+    if (month >= 1 && month <= 3) {
+      season = 'winter';
+    } else if (month >= 4 && month <= 6) {
+      season = 'spring';
+    } else if (month >= 7 && month <= 9) {
+      season = 'summer';
+    } else {
+      season = 'fall';
+    }
+    
+    return animeAPI.getSeasonal(year, season, options);
+  },
+
+  // Get next season anime (convenience method)
+  getNextSeason: async (options = {}) => {
+    const now = new Date();
+    let year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    
+    let season;
+    if (month >= 1 && month <= 3) {
+      season = 'spring';
+    } else if (month >= 4 && month <= 6) {
+      season = 'summer';
+    } else if (month >= 7 && month <= 9) {
+      season = 'fall';
+    } else {
+      // If current month is Oct-Dec, next season is winter of next year
+      season = 'winter';
+      year += 1;
+    }
+    
+    return animeAPI.getSeasonal(year, season, options);
+  },
+
+  // Get popular anime (convenience method)
+  getPopular: async (options = {}) => {
+    return animeAPI.getRanking({ 
+      rankingType: 'bypopularity', 
+      ...options 
+    });
+  },
+
+  // Get top rated anime (convenience method)
+  getTopRated: async (options = {}) => {
+    return animeAPI.getRanking({ 
+      rankingType: 'all', 
+      ...options 
+    });
+  },
+
+  // Get currently airing anime (convenience method)
+  getCurrentlyAiring: async (options = {}) => {
+    return animeAPI.getRanking({ 
+      rankingType: 'airing', 
+      ...options 
+    });
+  },
+
+  // Get upcoming anime (convenience method)
+  getUpcoming: async (options = {}) => {
+    return animeAPI.getRanking({ 
+      rankingType: 'upcoming', 
+      ...options 
+    });
+  }
+};

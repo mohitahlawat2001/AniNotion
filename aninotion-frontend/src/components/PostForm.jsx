@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { X, Upload, Image, Plus, Link, Check } from 'lucide-react';
-import { categoriesAPI, postsAPI } from '../services/api';
+import { X, Upload, Image, Plus, Link, Check, Search, ChevronDown } from 'lucide-react';
+import { categoriesAPI, postsAPI, animeAPI } from '../services/api';
 
 
 const PostForm = ({ isOpen, onClose, onSubmit }) => {
@@ -13,9 +13,19 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
   const [imageUrl, setImageUrl] = useState('');
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
   const [error, setError] = useState('');
-  const fileInputRef = useRef(null);
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  // Anime suggestion states
+  const [animeQuery, setAnimeQuery] = useState('');
+  const [animeSuggestions, setAnimeSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingAnime, setIsSearchingAnime] = useState(false);
+  const [selectedAnimeIndex, setSelectedAnimeIndex] = useState(-1);
+  
+  const fileInputRef = useRef(null);
+  const animeInputRef = useRef(null);
+  const suggestionsRef = useRef(null);
+  
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -46,6 +56,51 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
     return () => document.removeEventListener('paste', handlePaste);
   }, [isOpen]);
 
+  // Debounced anime search effect
+  useEffect(() => {
+    if (!animeQuery.trim() || animeQuery.length < 2) {
+      setAnimeSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        setIsSearchingAnime(true);
+        const response = await animeAPI.search(animeQuery, { limit: 8 });
+        setAnimeSuggestions(response.data || []);
+        setShowSuggestions(true);
+        setSelectedAnimeIndex(-1);
+      } catch (error) {
+        console.error('Error searching anime:', error);
+        setAnimeSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setIsSearchingAnime(false);
+      }
+    }, 500); // 0.5 second delay
+
+    return () => clearTimeout(timeoutId);
+  }, [animeQuery]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target) &&
+        animeInputRef.current &&
+        !animeInputRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+        setSelectedAnimeIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const fetchCategories = async () => {
     try {
       setError('');
@@ -54,6 +109,55 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
     } catch (error) {
       console.error('Error fetching categories:', error);
       setError('Failed to load categories. Please try again.');
+    }
+  };
+
+  // Handle anime input change
+  const handleAnimeInputChange = (e) => {
+    const value = e.target.value;
+    setAnimeQuery(value);
+    setValue('animeName', value);
+  };
+
+  // Handle anime selection from suggestions
+  const handleAnimeSelect = (anime) => {
+    const animeData = anime.node || anime;
+    const title = animeData.title;
+    setAnimeQuery(title);
+    setValue('animeName', title);
+    setShowSuggestions(false);
+    setSelectedAnimeIndex(-1);
+    animeInputRef.current?.focus();
+  };
+
+  // Handle keyboard navigation in suggestions
+  const handleAnimeKeyDown = (e) => {
+    if (!showSuggestions || animeSuggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedAnimeIndex(prev => 
+          prev < animeSuggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedAnimeIndex(prev => 
+          prev > 0 ? prev - 1 : animeSuggestions.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedAnimeIndex >= 0 && selectedAnimeIndex < animeSuggestions.length) {
+          handleAnimeSelect(animeSuggestions[selectedAnimeIndex]);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSelectedAnimeIndex(-1);
+        break;
     }
   };
 
@@ -144,6 +248,10 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
       setImageLinks([]);
       setImageUrl('');
       setShowLinkInput(false);
+      setAnimeQuery('');
+      setAnimeSuggestions([]);
+      setShowSuggestions(false);
+      setSelectedAnimeIndex(-1);
       onClose();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -216,19 +324,138 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
           </div>
 
           {/* Anime Name */}
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Anime/Manga Name *
             </label>
+            <div className="relative">
+              <input
+                ref={animeInputRef}
+                type="text"
+                value={animeQuery}
+                onChange={handleAnimeInputChange}
+                onKeyDown={handleAnimeKeyDown}
+                onFocus={() => {
+                  if (animeSuggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                placeholder="Start typing anime or manga name..."
+                className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+                autoComplete="off"
+              />
+              
+              {/* Search/Loading Icon */}
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                {isSearchingAnime ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                ) : (
+                  <Search size={20} className="text-gray-400" />
+                )}
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                >
+                  {animeSuggestions.length > 0 ? (
+                    <div className="py-1">
+                      {animeSuggestions.map((anime, index) => {
+                        const animeData = anime.node || anime;
+                        return (
+                          <button
+                            key={animeData.id}
+                            type="button"
+                            onClick={() => handleAnimeSelect(anime)}
+                            className={`w-full text-left px-4 py-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
+                              index === selectedAnimeIndex ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                            }`}
+                          >
+                            {/* Anime Poster */}
+                            {animeData.main_picture?.medium && (
+                              <img
+                                src={animeData.main_picture.medium}
+                                alt={animeData.title}
+                                className="w-12 h-16 object-cover rounded flex-shrink-0"
+                                referrerPolicy="no-referrer"
+                              />
+                            )}
+                            
+                            {/* Anime Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 truncate">
+                                {animeData.title}
+                              </div>
+                              {animeData.alternative_titles?.en && animeData.alternative_titles.en !== animeData.title && (
+                                <div className="text-sm text-gray-600 truncate">
+                                  {animeData.alternative_titles.en}
+                                </div>
+                              )}
+                              {animeData.start_date && (
+                                <div className="text-xs text-gray-500">
+                                  {new Date(animeData.start_date).getFullYear()}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Score */}
+                            {animeData.mean && (
+                              <div className="flex items-center text-yellow-600 flex-shrink-0">
+                                <span className="text-sm font-medium">★ {animeData.mean.toFixed(1)}</span>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                      
+                      {/* Footer */}
+                      <div className="px-4 py-2 text-xs text-gray-500 border-t bg-gray-50">
+                        <div className="flex items-center justify-between">
+                          <span>Use ↑↓ to navigate, Enter to select, Esc to close</span>
+                          <span className="flex items-center">
+                            Powered by 
+                            <span className="ml-1 font-medium text-blue-600">MyAnimeList</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-6 text-center text-gray-500">
+                      {isSearchingAnime ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                          <span>Searching anime...</span>
+                        </div>
+                      ) : animeQuery.trim().length > 0 ? (
+                        <div>
+                          <div className="text-sm">No anime found for "{animeQuery}"</div>
+                          <div className="text-xs text-gray-400 mt-1">Try a different search term</div>
+                        </div>
+                      ) : (
+                        <div className="text-sm">Start typing to search for anime</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Hidden input for form validation */}
             <input
-              type="text"
+              type="hidden"
               {...register('animeName', { required: 'Anime/Manga name is required' })}
-              placeholder="Enter anime or manga name"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
             />
+            
             {errors.animeName && (
               <p className="text-red-500 text-sm mt-1">{errors.animeName.message}</p>
             )}
+            
+            {/* Helper text */}
+            <p className="text-xs text-gray-500 mt-1">
+              Start typing to see suggestions from MyAnimeList database
+            </p>
           </div>
 
           {/* Multiple Image Upload */}
