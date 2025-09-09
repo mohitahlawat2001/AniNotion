@@ -11,6 +11,7 @@ const categoryRoutes = require('./routes/categories');
 const postRoutes = require('./routes/posts');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const animeRoutes = require('./routes/anime');
 const logger = require('./config/logger');
 const BackupScheduler = require('./utils/backupScheduler');
 
@@ -41,6 +42,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/anime', animeRoutes);
 
 // Root route
 app.get('/', (req, res) => {
