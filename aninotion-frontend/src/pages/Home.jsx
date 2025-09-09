@@ -146,18 +146,18 @@ const Home = () => {
           <button
             onClick={fetchMorePosts}
             disabled={isLoadingMore}
-            className="group relative bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 border border-gray-200 hover:border-gray-300 disabled:border-gray-200 text-gray-700 disabled:text-gray-400 px-6 sm:px-4 py-3 sm:py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 min-w-[140px] justify-center touch-target w-full sm:w-auto max-w-xs sm:max-w-none"
+            className="group flex items-center space-x-2 bg-black/20 backdrop-blur-sm text-white hover:text-white hover:bg-black/30 disabled:bg-black/10 disabled:text-white/50 px-6 py-3 rounded-full transition-all duration-300 border border-white/30 disabled:border-white/20 min-w-[140px] justify-center touch-target"
           >
             {isLoadingMore ? (
               <>
                 <LoadingSpinner size="sm" />
-                <span>Loading...</span>
+                <span className="text-sm sm:text-base font-medium">Loading...</span>
               </>
             ) : (
               <>
-                <span>Show more</span>
+                <span className="text-sm sm:text-base font-medium">Show more</span>
                 <svg 
-                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5" 
+                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-hover:scale-110 duration-200" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
