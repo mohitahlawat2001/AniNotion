@@ -58,8 +58,8 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
   };
 
   return (
-    <div className="w-64 lg:w-64 bg-white shadow-lg h-screen p-4 overflow-y-auto">
-      <h1 className="text-xl lg:text-2xl font-bold text-primary mb-6 lg:mb-8 mt-8 lg:mt-0">AniNotion</h1>
+    <div className="w-54 lg:w-54 bg-white shadow-lg h-screen p-4 overflow-y-auto">
+      <h1 className="text-xl lg:text-2xl font-bold text-primary mb-6 lg:mb-8 mt-8 lg:mt-0">AniRed</h1>
       
       <nav className="space-y-2">
         {/* Home */}
