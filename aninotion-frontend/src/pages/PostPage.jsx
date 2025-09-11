@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star, Users, Play, Clock } from 'lucide-react';
+import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star, Users, Play, Clock, Edit, Trash2 } from 'lucide-react';
 import { postsAPI } from '../services/api';
 import { useAnimeSearch, useAnimeDetails } from '../hooks/useAnime';
+import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
+import PostForm from '../components/PostForm';
 
 const PostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, canWrite, isAdmin } = useAuth();
   const [post, setPost] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimeId, setSelectedAnimeId] = useState(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   // Anime search hook for finding anime based on post's animeName
   const { 
@@ -66,6 +70,78 @@ const PostPage = () => {
       }
     }
   }, [searchResults, selectedAnimeId, post?.animeName, setSelectedAnimeId]);
+
+  // Check if current user can edit this post
+  const canEditPost = () => {
+    if (!user || !post) return false;
+    
+    // Debug logging
+    console.log('Edit Permission Check:', {
+      user: user,
+      userRole: user.role,
+      userId: user._id,
+      postCreatedBy: post.createdBy,
+      postCreatedById: post.createdBy?._id,
+      isAdmin: isAdmin(),
+      canWrite: canWrite(),
+      comparison: post.createdBy?._id === user._id,
+      stringComparison: String(post.createdBy?._id) === String(user._id)
+    });
+    
+    // Admin can edit any post
+    if (isAdmin()) return true;
+    
+    // Editors can write/edit posts
+    if (canWrite()) {
+      // For now, let editors edit any post (can be refined later)
+      // Later you can add: && String(post.createdBy?._id) === String(user._id)
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Check if current user can delete this post
+  const canDeletePost = () => {
+    if (!user || !post) return false;
+    
+    // Admin can delete any post
+    if (isAdmin()) return true;
+    
+    // Editors can delete their own posts
+    if (canWrite() && post.createdBy?._id) {
+      return String(post.createdBy._id) === String(user._id);
+    }
+    
+    return false;
+  };
+
+  // Handle post update
+  const handlePostUpdate = async (updatedPostData) => {
+    try {
+      const updatedPost = await postsAPI.update(post._id, updatedPostData);
+      setPost(updatedPost);
+      setShowEditForm(false);
+    } catch (error) {
+      console.error('Error updating post:', error);
+      // You can add a toast notification here
+    }
+  };
+
+  // Handle post delete
+  const handlePostDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this post?')) {
+      return;
+    }
+
+    try {
+      await postsAPI.delete(post._id);
+      navigate('/'); // Redirect to home after deletion
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post: ' + error.message);
+    }
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -188,13 +264,39 @@ const PostPage = () => {
 
             {/* Content */}
             <div className="p-4 sm:p-6 lg:p-8">
-              {/* Category Badge */}
-              <div className="flex items-center mb-3 sm:mb-4">
+              {/* Category Badge and Action Buttons */}
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-primary/10 text-primary">
                   <Tag size={12} className="mr-1 sm:hidden" />
                   <Tag size={14} className="mr-1 hidden sm:block" />
                   {post.category?.name}
                 </span>
+                
+                {/* Edit and Delete Buttons - Only show to authorized users */}
+                {(canEditPost() || canDeletePost()) && (
+                  <div className="flex items-center space-x-2">
+                    {canEditPost() && (
+                      <button
+                        onClick={() => setShowEditForm(true)}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit post"
+                      >
+                        <Edit size={14} />
+                        <span className="hidden sm:inline">Edit</span>
+                      </button>
+                    )}
+                    {canDeletePost() && (
+                      <button
+                        onClick={handlePostDelete}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete post"
+                      >
+                        <Trash2 size={14} />
+                        <span className="hidden sm:inline">Delete</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Title */}
@@ -534,6 +636,15 @@ const PostPage = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Post Modal */}
+      <PostForm
+        isOpen={showEditForm}
+        onClose={() => setShowEditForm(false)}
+        onSubmit={handlePostUpdate}
+        initialData={post}
+        isEdit={true}
+      />
     </div>
   );
 };
