@@ -4,7 +4,7 @@ import { X, Upload, Image, Plus, Link, Check, Search, ChevronDown } from 'lucide
 import { categoriesAPI, postsAPI, animeAPI } from '../services/api';
 
 
-const PostForm = ({ isOpen, onClose, onSubmit }) => {
+const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = false }) => {
   const [categories, setCategories] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageLinks, setImageLinks] = useState([]); // Track which images are from links
@@ -33,6 +33,50 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
       fetchCategories();
     }
   }, [isOpen]);
+
+  // Additional effect to set category after categories are loaded
+  useEffect(() => {
+    if (isEdit && initialData && categories.length > 0 && initialData.category?._id) {
+      console.log('Setting category after categories loaded:', initialData.category._id);
+      setValue('category', initialData.category._id);
+    }
+  }, [categories, isEdit, initialData, setValue]);
+
+  // Populate form data when editing
+  useEffect(() => {
+    if (isOpen && isEdit && initialData) {
+      console.log('Populating form with initial data:', initialData);
+      console.log('Available categories:', categories);
+      
+      // Set form values
+      setValue('title', initialData.title || '');
+      setValue('category', initialData.category?._id || '');
+      setValue('content', initialData.content || '');
+      setValue('status', initialData.status || 'published');
+      setValue('excerpt', initialData.excerpt || '');
+      setValue('tags', initialData.tags ? initialData.tags.join(', ') : '');
+      
+      // Set anime name and query
+      const animeName = initialData.animeName || '';
+      setValue('animeName', animeName);
+      setAnimeQuery(animeName);
+      
+      // Set existing images if any
+      if (initialData.images && initialData.images.length > 0) {
+        setImagePreviews(initialData.images);
+        setImageLinks(new Array(initialData.images.length).fill(true)); // Mark as links since they're URLs
+      }
+      
+      console.log('Form populated - category set to:', initialData.category?._id);
+    } else if (isOpen && !isEdit) {
+      // Reset form for new post
+      reset();
+      setImagePreviews([]);
+      setImageLinks([]);
+      setAnimeQuery('');
+      setError('');
+    }
+  }, [isOpen, isEdit, initialData, categories, setValue, reset]);
 
   // Add paste event listener
   useEffect(() => {
@@ -231,16 +275,28 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
         animeName: data.animeName,
         category: data.category,
         content: data.content,
-        images: imagePreviews, // Array of base64 images and URLs
-        imageTypes: imageLinks, // Array indicating which are URLs vs base64
-        status: 'published' // Default to published
+        status: data.status || 'published',
+        tags: data.tags,
+        excerpt: data.excerpt
       };
+
+      // Only include images for new posts or if images were changed
+      if (!isEdit || imagePreviews.length > 0) {
+        postData.images = imagePreviews;
+        postData.imageTypes = imageLinks;
+      }
       
-      // Use the centralized API method
-      const newPost = await postsAPI.create(postData);
+      let result;
+      if (isEdit && initialData) {
+        // Update existing post
+        result = await postsAPI.update(initialData._id, postData);
+      } else {
+        // Create new post
+        result = await postsAPI.create(postData);
+      }
       
-      // Call the parent's onSubmit with the created post
-      await onSubmit(newPost);
+      // Call the parent's onSubmit with the result
+      await onSubmit(result);
       
       // Reset form state
       reset();
@@ -254,8 +310,8 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
       setSelectedAnimeIndex(-1);
       onClose();
     } catch (error) {
-      console.error('Error creating post:', error);
-      setError(error.message || 'Failed to create post. Please try again.');
+      console.error(`Error ${isEdit ? 'updating' : 'creating'} post:`, error);
+      setError(error.message || `Failed to ${isEdit ? 'update' : 'create'} post. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -267,7 +323,9 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
         <div className="flex justify-between items-center p-4 sm:p-6 border-b">
-          <h2 className="text-xl sm:text-2xl font-bold">Create New Post</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">
+            {isEdit ? 'Edit Post' : 'Create New Post'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-1 touch-target"
@@ -304,6 +362,13 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
             </select>
             {errors.category && (
               <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
+            )}
+            {/* Debug info - remove after testing */}
+            {isEdit && (
+              <div className="mt-1 text-xs text-gray-500">
+                Categories loaded: {categories.length}, 
+                Current category: {initialData?.category?.name} ({initialData?.category?._id})
+              </div>
             )}
           </div>
 
@@ -611,6 +676,48 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
             )}
           </div>
 
+          {/* Excerpt (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Excerpt <span className="text-gray-500">(Optional)</span>
+            </label>
+            <textarea
+              {...register('excerpt')}
+              rows={2}
+              placeholder="Brief summary of the post (will be auto-generated if empty)..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical text-base"
+            />
+            <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate from content</p>
+          </div>
+
+          {/* Tags (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tags <span className="text-gray-500">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              {...register('tags')}
+              placeholder="action, adventure, comedy (separate with commas)..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+            />
+            <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
+            <select
+              {...register('status')}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+            >
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+
           {/* Submit Buttons */}
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-4 border-t mt-4 sm:mt-6">
             <button
@@ -625,7 +732,10 @@ const PostForm = ({ isOpen, onClose, onSubmit }) => {
               disabled={isLoading}
               className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-base font-medium order-1 sm:order-2 touch-target"
             >
-              {isLoading ? 'Creating...' : 'Create Post'}
+              {isLoading 
+                ? (isEdit ? 'Updating...' : 'Creating...') 
+                : (isEdit ? 'Update Post' : 'Create Post')
+              }
             </button>
           </div>
         </form>
