@@ -20,6 +20,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearchingAnime, setIsSearchingAnime] = useState(false);
   const [selectedAnimeIndex, setSelectedAnimeIndex] = useState(-1);
+  const [hasUserInteractedWithAnime, setHasUserInteractedWithAnime] = useState(false);
   
   const fileInputRef = useRef(null);
   const animeInputRef = useRef(null);
@@ -75,6 +76,14 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       setImageLinks([]);
       setAnimeQuery('');
       setError('');
+      setHasUserInteractedWithAnime(false);
+    }
+    
+    // Reset interaction state when form opens
+    if (isOpen) {
+      setHasUserInteractedWithAnime(false);
+      setShowSuggestions(false);
+      setAnimeSuggestions([]);
     }
   }, [isOpen, isEdit, initialData, categories, setValue, reset]);
 
@@ -108,6 +117,11 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       return;
     }
 
+    // Only search and show suggestions if user has interacted with the anime input
+    if (!hasUserInteractedWithAnime) {
+      return;
+    }
+
     const timeoutId = setTimeout(async () => {
       try {
         setIsSearchingAnime(true);
@@ -125,7 +139,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     }, 500); // 0.5 second delay
 
     return () => clearTimeout(timeoutId);
-  }, [animeQuery]);
+  }, [animeQuery, hasUserInteractedWithAnime]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -161,6 +175,24 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     const value = e.target.value;
     setAnimeQuery(value);
     setValue('animeName', value);
+    setHasUserInteractedWithAnime(true); // Mark as user-initiated change
+  };
+
+  // Handle anime input blur (hide suggestions with delay)
+  const handleAnimeInputBlur = () => {
+    // Add a small delay to allow clicking on suggestions before they disappear
+    setTimeout(() => {
+      setShowSuggestions(false);
+      setSelectedAnimeIndex(-1);
+    }, 200);
+  };
+
+  // Handle anime input focus (show suggestions if available)
+  const handleAnimeInputFocus = () => {
+    setHasUserInteractedWithAnime(true); // Mark as user-initiated interaction
+    if (animeSuggestions.length > 0 && animeQuery.trim().length >= 2) {
+      setShowSuggestions(true);
+    }
   };
 
   // Handle anime selection from suggestions
@@ -400,11 +432,8 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
                 value={animeQuery}
                 onChange={handleAnimeInputChange}
                 onKeyDown={handleAnimeKeyDown}
-                onFocus={() => {
-                  if (animeSuggestions.length > 0) {
-                    setShowSuggestions(true);
-                  }
-                }}
+                onFocus={handleAnimeInputFocus}
+                onBlur={handleAnimeInputBlur}
                 placeholder="Start typing anime or manga name..."
                 className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
                 autoComplete="off"
@@ -424,6 +453,8 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
                 <div
                   ref={suggestionsRef}
                   className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking suggestions
+                  onMouseUp={(e) => e.preventDefault()}   // Prevent blur when releasing click
                 >
                   {animeSuggestions.length > 0 ? (
                     <div className="py-1">
