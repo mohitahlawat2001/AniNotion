@@ -38,6 +38,19 @@ const UserProfile = () => {
     }
   };
 
+  const getProfileIcon = (role) => {
+    switch (role) {
+      case 'admin':
+        return 'A';
+      case 'editor':
+        return 'E';
+      case 'viewer':
+      case 'user':
+      default:
+        return 'U';
+    }
+  };
+
   const handleLogout = () => {
     logout();
     setIsDropdownOpen(false);
@@ -51,8 +64,8 @@ const UserProfile = () => {
         className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
         aria-label="User menu"
       >
-        <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center">
-          <User size={16} />
+        <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-400 text-white rounded-full flex items-center justify-center border-2 border-gray-300 shadow-sm">
+          <span className="text-sm font-semibold">{getProfileIcon(user.role)}</span>
         </div>
         <div className="hidden md:flex items-center space-x-1">
           <span className="text-sm font-medium text-gray-700">
@@ -75,9 +88,8 @@ const UserProfile = () => {
           {/* User Info Header */}
           <div className="p-3 sm:p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary text-white rounded-full flex items-center justify-center">
-                <User size={18} className="sm:hidden" />
-                <User size={20} className="hidden sm:block" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-400 text-white rounded-full flex items-center justify-center border-2 border-gray-300 shadow-sm">
+                <span className="text-sm sm:text-base font-semibold">{getProfileIcon(user.role)}</span>
               </div>
               <div className="flex-1">
                 <div className="font-medium text-gray-900 text-sm sm:text-base">
