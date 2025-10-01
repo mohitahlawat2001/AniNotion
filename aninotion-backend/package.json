@@ -11,6 +11,7 @@
     "migrate": "npm run cli migration",
     "migrate:v0.5": "npm run cli migration:v0.5",
     "seed:admin": "node scripts/seedAdmin.js",
+    "seed:categories": "node scripts/seedCategories.js",
     "health": "npm run cli health"
   },
   "keywords": [],
