@@ -46,11 +46,13 @@ router.get('/', optionalAuth, async (req, res) => {
     // Build query based on user permissions
     const query = buildPostQuery(req.user);
     
-    // Add optional filters
+    // Add optional filters - only admins and editors can filter by status
+    // If no status filter is provided, editors and admins see all posts
     if (status && (req.user?.role === 'admin' || req.user?.role === 'editor')) {
       query.status = status;
     }
-    
+    // For non-admin/editor users, buildPostQuery already restricts to published only
+    console.log(query);
     if (category) {
       query.category = category;
     }
@@ -123,13 +125,6 @@ router.get('/category/:categoryId', optionalAuth, async (req, res) => {
       status,
       ip: req.ip
     });
-    console.log("📂 Fetching posts by category", {
-      categoryId,
-      userId: req.user?._id,
-      userRole: req.user?.role,
-      status,
-      ip: req.ip
-    });
     
     // Build query based on user permissions
     const query = buildPostQuery(req.user, { category: categoryId });
@@ -157,8 +152,7 @@ router.get('/category/:categoryId', optionalAuth, async (req, res) => {
       .limit(limitNum)
       .skip(skip)
       .lean();
-    console.log("📂 Fetched posts:", { count: posts.length });
-    console.log("📂 Fetched posts:", { posts });
+    
     // Get total count for pagination
     const totalCount = await Post.countDocuments(query);
       
