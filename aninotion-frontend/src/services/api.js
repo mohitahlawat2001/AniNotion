@@ -92,6 +92,37 @@ export const authAPI = {
     });
   },
 
+  // Google OAuth - Get OAuth URL
+  getGoogleAuthUrl: async () => {
+    const response = await fetch(`${API_BASE_URL}/auth/google/url`);
+    if (!response.ok) {
+      throw new Error('Failed to get Google OAuth URL');
+    }
+    return response.json();
+  },
+
+  // Public signup
+  signup: async (email, name, password) => {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name, password })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Signup failed');
+    }
+    
+    const data = await response.json();
+    
+    // Store token and user data
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    
+    return data;
+  },
+
   // Create new user (admin only)
   createUser: async (userData) => {
     return authenticatedFetch(`${API_BASE_URL}/auth/register`, {

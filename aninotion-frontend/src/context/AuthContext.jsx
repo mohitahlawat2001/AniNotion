@@ -43,6 +43,12 @@ const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  // Update user state (used by OAuth callback)
+  const updateUser = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
+
   // Check if user has specific role or permission
   const hasRole = (role) => {
     if (!user) return false;
@@ -68,6 +74,9 @@ const AuthProvider = ({ children }) => {
     isLoading,
     login,
     logout,
+    updateUser,
+    setUser,
+    setIsAuthenticated,
     hasRole,
     canWrite,
     isAdmin
