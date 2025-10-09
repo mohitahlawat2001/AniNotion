@@ -1,10 +1,13 @@
+// Load environment variables FIRST, before any other imports
+require('dotenv').config();
+
 const express = require('express');
 const logTestRouter = require("./routes/log-test");
 const cronRouter = require("./routes/cron");
 const requestLogger = require("./middleware/logging");
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config();
+const passport = require('./config/passport');
 
 const connectDB = require('./config/database');
 const categoryRoutes = require('./routes/categories');
@@ -34,6 +37,9 @@ connectDB();
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({ limit: '50mb',extended: true }));
+
+// Initialize Passport
+app.use(passport.initialize());
 
 logger.info("✅ Middleware configured successfully");
 

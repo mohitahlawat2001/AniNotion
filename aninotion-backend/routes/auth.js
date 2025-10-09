@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const passport = require('../config/passport');
 const User = require('../models/User');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const logger = require('../config/logger');
@@ -15,6 +16,138 @@ const generateToken = (userId) => {
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
+
+// POST /api/auth/signup - Public user registration
+router.post('/signup', async (req, res) => {
+  try {
+    const { email, name, password } = req.body;
+    
+    logger.info("📝 User signup attempt", {
+      email,
+      name,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    // Validation
+    if (!email || !password) {
+      logger.warn("Signup failed: Missing required fields", {
+        email: !!email,
+        password: !!password,
+        ip: req.ip
+      });
+      return res.status(400).json({
+        error: 'Validation failed',
+        message: 'Email and password are required'
+      });
+    }
+    
+    if (password.length < 6) {
+      logger.warn("Signup failed: Password too short", {
+        email,
+        ip: req.ip
+      });
+      return res.status(400).json({
+        error: 'Validation failed',
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      logger.warn("Signup failed: Invalid email format", {
+        email,
+        ip: req.ip
+      });
+      return res.status(400).json({
+        error: 'Validation failed',
+        message: 'Please provide a valid email address'
+      });
+    }
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      logger.warn("Signup failed: User already exists", {
+        email,
+        ip: req.ip
+      });
+      return res.status(409).json({
+        error: 'User already exists',
+        message: 'An account with this email already exists'
+      });
+    }
+    
+    // Create user
+    const user = new User({
+      email: email.toLowerCase(),
+      name: name || email.split('@')[0], // Use email username if name not provided
+      role: 'viewer', // Default role for public signup
+      authProvider: 'local',
+      status: 'active'
+    });
+
+    // Hash password manually
+    try {
+      const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+      user.passwordHash = bcrypt.hashSync(password, rounds);
+    } catch (hashError) {
+      console.error('Error hashing password:', hashError);
+      throw new Error('Failed to hash password');
+    }
+    
+    await user.save();
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    // Update last login
+    await user.updateLastLogin();
+
+    logger.info("✅ User signed up successfully", {
+      userId: user._id,
+      email: user.email,
+      name: user.name,
+      ip: req.ip
+    });
+
+    res.status(201).json({
+      message: 'Account created successfully',
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        status: user.status,
+        createdAt: user.createdAt
+      }
+    });
+    
+  } catch (error) {
+    console.error("❌ Signup error:", error);
+    
+    logger.error("❌ Signup error:", {
+      error: error.message,
+      stack: error.stack,
+      ip: req.ip
+    });
+    
+    let errorMessage = 'Failed to create account';
+    if (error.message.includes('duplicate key')) {
+      errorMessage = 'An account with this email already exists';
+    } else if (error.name === 'ValidationError') {
+      errorMessage = `Validation failed: ${error.message}`;
+    }
+    
+    res.status(500).json({
+      error: 'Internal server error',
+      message: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
 
 // POST /api/auth/register - Create new user (admin only)
 router.post('/register', requireAuth, requireRole('admin'), async (req, res) => {
@@ -452,6 +585,72 @@ router.put('/users/:id/status', requireAuth, requireRole('admin'), async (req, r
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to update user status'
+    });
+  }
+});
+
+// ============================================
+// Google OAuth Routes
+// ============================================
+
+// GET /api/auth/google - Initiate Google OAuth flow
+router.get('/google', 
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    session: false
+  })
+);
+
+// GET /api/auth/google/callback - Google OAuth callback
+router.get('/google/callback', 
+  passport.authenticate('google', { 
+    session: false,
+    failureRedirect: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login?error=oauth_failed` : '/login?error=oauth_failed'
+  }),
+  async (req, res) => {
+    try {
+      // Generate JWT token for the authenticated user
+      const token = generateToken(req.user._id);
+      
+      logger.info('Google OAuth login successful', {
+        userId: req.user._id,
+        email: req.user.email,
+        authProvider: req.user.authProvider
+      });
+
+      // Redirect to frontend with token
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+      
+    } catch (error) {
+      logger.error('Google OAuth callback error', {
+        error: error.message,
+        stack: error.stack
+      });
+      
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/login?error=authentication_failed`);
+    }
+  }
+);
+
+// GET /api/auth/google/url - Get Google OAuth URL (for frontend to use)
+router.get('/google/url', (req, res) => {
+  try {
+    const googleAuthUrl = `${process.env.API_BASE_URL || 'http://localhost:5000'}/api/auth/google`;
+    
+    res.json({
+      url: googleAuthUrl,
+      message: 'Redirect user to this URL to initiate Google OAuth'
+    });
+  } catch (error) {
+    logger.error('Error generating Google OAuth URL', {
+      error: error.message
+    });
+    
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to generate OAuth URL'
     });
   }
 });

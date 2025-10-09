@@ -20,7 +20,24 @@ const userSchema = new mongoose.Schema({
   },
   passwordHash: {
     type: String,
-    required: true
+    required: function() {
+      // Password is required only if not using OAuth
+      return !this.googleId;
+    }
+  },
+  // OAuth fields
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  profilePicture: {
+    type: String
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
   },
   status: {
     type: String,
@@ -53,6 +70,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ status: 1 });
+userSchema.index({ googleId: 1 });
 
 // Virtual for password (write-only)
 userSchema.virtual('password').set(function(password) {

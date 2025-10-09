@@ -1,27 +1,66 @@
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import GoogleAuthButton from './GoogleAuthButton';
 
-const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
+const SignupModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validation
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      // Call signup API
+      const apiBaseUrl = import.meta.env.VITE_BACKEND_URL;
+      const response = await fetch(`${apiBaseUrl}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, name, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      // Store token and user data
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Clear form
       setEmail('');
+      setName('');
       setPassword('');
+      setConfirmPassword('');
+      
       onSuccess?.();
       onClose();
+      
+      // Reload to update auth state
+      window.location.reload();
+      
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(err.message || 'Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -29,7 +68,9 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
 
   const handleClose = () => {
     setEmail('');
+    setName('');
     setPassword('');
+    setConfirmPassword('');
     setError('');
     onClose();
   };
@@ -38,9 +79,9 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Login Required</h2>
+          <h2 className="text-xl font-bold text-gray-900">Create Account</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600"
@@ -52,7 +93,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
         </div>
 
         <p className="text-gray-600 mb-4">
-          You need to be logged in to perform this action.
+          Sign up to start sharing your anime journey!
         </p>
 
         {/* Google OAuth Button */}
@@ -70,7 +111,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+            <span className="px-2 bg-white text-gray-500">Or sign up with email</span>
           </div>
         </div>
 
@@ -82,12 +123,12 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+            <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email *
             </label>
             <input
               type="email"
-              id="email"
+              id="signup-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -98,17 +139,50 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+            <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 mb-1">
+              Name
+            </label>
+            <input
+              type="text"
+              id="signup-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your name (optional)"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password *
             </label>
             <input
               type="password"
-              id="password"
+              id="signup-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
+              placeholder="At least 6 characters"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password *
+            </label>
+            <input
+              type="password"
+              id="signup-confirm-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Confirm your password"
               disabled={isLoading}
             />
           </div>
@@ -119,7 +193,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
               disabled={isLoading}
               className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? 'Creating Account...' : 'Sign Up'}
             </button>
             <button
               type="button"
@@ -133,24 +207,27 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          Already have an account?{' '}
           <button
-            onClick={onSwitchToSignup}
+            onClick={onSwitchToLogin}
             className="text-blue-600 hover:text-blue-700 font-medium"
             disabled={isLoading}
           >
-            Sign up here
+            Log in here
           </button>
         </div>
 
-        <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
-          <p className="font-medium">Demo Accounts:</p>
-          <p>Admin: admin@aninotion.com / admin123</p>
-          <p>Editor: editor@aninotion.com / editor123</p>
+        <div className="mt-4 p-3 bg-blue-50 rounded text-xs text-gray-600">
+          <p className="font-medium mb-1">📝 Sign up to:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Create and share anime posts</li>
+            <li>Build your anime collection</li>
+            <li>Connect with other fans</li>
+          </ul>
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginModal;
+export default SignupModal;
