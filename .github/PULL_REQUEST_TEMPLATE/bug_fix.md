@@ -1,8 +1,8 @@
 ---
 name: Bug Fix
 about: Submit a fix for a bug
-title: "[Fix]: "
-labels: ["bug", "fix"]
+title: '[Fix]: '
+labels: ['bug', 'fix']
 assignees: ''
 ---
 
@@ -15,7 +15,8 @@ Please include a summary of the bug being fixed and the changes made to resolve 
 Fixes # (issue number)
 
 **Type of change**
-- [x] Bug fix (non-breaking change which fixes an issue)
+
+- [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 - [ ] Chore (e.g., dependency updates, build process changes)
@@ -23,11 +24,12 @@ Fixes # (issue number)
 **How Has This Been Tested?**
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
 
-- [x] Unit tests
+- [ ] Unit tests
 - [ ] Integration tests
-- [x] Manual testing (describe steps)
+- [ ] Manual testing (describe steps)
 
 **Test Configuration Details:**
+
 - OS: [e.g. Windows, macOS, Linux]
 - Browser: Chrome
 - Node.js Version: [e.g. 18.x, 20.x]
@@ -35,6 +37,7 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - Environment Variables: [e.g. .env files configured, specific variables set]
 
 **Checklist:**
+
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
