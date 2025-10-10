@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Ask a Question
-    url: https://github.com/yourusername/aninotion-app/discussions
+    url: https://github.com/mohitahlawat2001/AniNotion/discussions
     about: Ask questions and discuss ideas with the community
   - name: Security Issue
-    url: https://github.com/yourusername/aninotion-app/security/advisories/new
+    url: https://github.com/mohitahlawat2001/AniNotion/security/advisories/new
     about: Report a security vulnerability privately
