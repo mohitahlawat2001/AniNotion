@@ -4,7 +4,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd aninotion-backend && npm run dev",
     "client": "cd aninotion-frontend && npm run dev",
-    "seed": "cd backend && node scripts/seedCategories.js",
+    "seed": "cd aninotion-backend && node scripts/seedCategories.js",
     "prepare": "husky install",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
