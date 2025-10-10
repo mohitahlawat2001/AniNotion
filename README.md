@@ -72,8 +72,8 @@
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/aninotion-app.git
-   cd aninotion-app
+   git clone https://github.com/mohitahlawat2001/AniNotion.git
+   cd AniNotion
    ```
 
 2. **Install dependencies**
@@ -291,8 +291,8 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - 📧 **Email**: support@aninotion.com
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/aninotion-app/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/aninotion-app/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/mohitahlawat2001/AniNotion/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/mohitahlawat2001/AniNotion/discussions)
 
 ---
 
@@ -300,6 +300,6 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by the AniNotion Team**
 
-[⭐ Star this repo](https://github.com/yourusername/aninotion-app) • [🐛 Report Bug](https://github.com/yourusername/aninotion-app/issues) • [✨ Request Feature](https://github.com/yourusername/aninotion-app/issues)
+[⭐ Star this repo](https://github.com/mohitahlawat2001/AniNotion) • [🐛 Report Bug](https://github.com/mohitahlawat2001/AniNotion/issues) • [✨ Request Feature](https://github.com/mohitahlawat2001/AniNotion/issues)
 
 </div>
