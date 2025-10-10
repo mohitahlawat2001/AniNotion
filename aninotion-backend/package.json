@@ -6,6 +6,8 @@
     "start": "nodemon server.js",
     "dev": "concurrently \"nodemon server.js\" \"nodemon ./routes/*.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
     "cli": "node scripts/cli.js",
     "backup": "npm run cli backup",
     "migrate": "npm run cli migration",
@@ -44,6 +46,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "eslint": "^8.57.0",
     "nodemon": "^3.1.10",
     "pino-pretty": "^13.1.1"
   }
