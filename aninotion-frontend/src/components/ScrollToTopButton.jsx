@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronUp } from 'lucide-react';
 
 const ScrollToTopButton = ({ 
@@ -7,22 +7,35 @@ const ScrollToTopButton = ({
   className = '' 
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const throttleRef = useRef(null);
+
+  const toggleVisibility = useCallback(() => {
+    if (window.scrollY > showAfter) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [showAfter]);
+
+  const throttledToggleVisibility = useCallback(() => {
+    if (throttleRef.current) return;
+    
+    throttleRef.current = setTimeout(() => {
+      toggleVisibility();
+      throttleRef.current = null;
+    }, 16); // ~60fps throttling
+  }, [toggleVisibility]);
 
   useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.pageYOffset > showAfter) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
-    };
-
-    window.addEventListener('scroll', toggleVisibility);
+    window.addEventListener('scroll', throttledToggleVisibility, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', toggleVisibility);
+      window.removeEventListener('scroll', throttledToggleVisibility);
+      if (throttleRef.current) {
+        clearTimeout(throttleRef.current);
+      }
     };
-  }, [showAfter]);
+  }, [throttledToggleVisibility]);
 
   const scrollToTop = () => {
     window.scrollTo({
