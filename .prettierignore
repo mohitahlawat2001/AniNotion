@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+.git
+.husky
+*.log
+package-lock.json
+*.min.js
+*.min.css
