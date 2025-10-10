@@ -1,12 +1,12 @@
 ---
 name: Question / Support
 about: Ask a question or seek support regarding the project
-title: "[Question]: "
-labels: ["question"]
+title: '[Question]: '
+labels: ['question']
 assignees: ''
 ---
 
-**App Name:** (e.g., `web`, `backend`, `shared-types`, `ui`, `monorepo-root`)
+**App Name:** (e.g., `aninotion-frontend`, `aninotion-backend`, `root`)
 
 **Your Question**
 A clear and concise question you have.

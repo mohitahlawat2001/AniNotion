@@ -1,12 +1,12 @@
 ---
 name: Documentation
 about: Report issues or suggest improvements for documentation
-title: "[Docs]: "
-labels: ["documentation"]
+title: '[Docs]: '
+labels: ['documentation']
 assignees: ''
 ---
 
-**App Name:** (e.g., `web`, `backend`, `shared-types`, `ui`, `monorepo-root`)
+**App Name:** (e.g., `aninotion-frontend`, `aninotion-backend`, `root`)
 
 **Description of issue/suggestion**
 A clear and concise description of what's wrong with the documentation or what you'd like to see improved.
