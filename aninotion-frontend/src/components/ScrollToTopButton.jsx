@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronUp } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { ChevronUp } from "lucide-react";
 
-const ScrollToTopButton = ({ 
+const ScrollToTopButton = ({
   showAfter = 200, // Reduced from 300px to 200px for earlier appearance
-  scrollBehavior = 'smooth',
-  className = '' 
+  scrollBehavior = "smooth",
+  className = "",
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const throttleRef = useRef(null);
@@ -19,7 +19,7 @@ const ScrollToTopButton = ({
 
   const throttledToggleVisibility = useCallback(() => {
     if (throttleRef.current) return;
-    
+
     throttleRef.current = setTimeout(() => {
       toggleVisibility();
       throttleRef.current = null;
@@ -27,15 +27,20 @@ const ScrollToTopButton = ({
   }, [toggleVisibility]);
 
   useEffect(() => {
-    window.addEventListener('scroll', throttledToggleVisibility, { passive: true });
+    // Check initial scroll position
+    toggleVisibility();
+
+    window.addEventListener("scroll", throttledToggleVisibility, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener('scroll', throttledToggleVisibility);
+      window.removeEventListener("scroll", throttledToggleVisibility);
       if (throttleRef.current) {
         clearTimeout(throttleRef.current);
       }
     };
-  }, [throttledToggleVisibility]);
+  }, [throttledToggleVisibility, toggleVisibility]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -60,14 +65,18 @@ const ScrollToTopButton = ({
         touch-target
         flex items-center justify-center
         group
-        ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}
+        ${
+          isVisible
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-75 pointer-events-none"
+        }
         ${className}
       `}
       aria-label="Scroll to top"
     >
-      <ChevronUp 
-        size={20} 
-        className="transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5" 
+      <ChevronUp
+        size={20}
+        className="transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5"
       />
     </button>
   );
