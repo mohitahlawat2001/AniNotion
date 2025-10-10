@@ -17,16 +17,5 @@
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.1"
-  },
-  "lint-staged": {
-    "aninotion-frontend/**/*.{js,jsx,ts,tsx}": [
-      "cd aninotion-frontend && npm run lint -- --fix"
-    ],
-    "aninotion-backend/**/*.{js,jsx,ts,tsx}": [
-      "cd aninotion-backend && npm run lint -- --fix"
-    ],
-    "**/*.{js,jsx,ts,tsx,json,css,md}": [
-      "prettier --write"
-    ]
   }
 }
