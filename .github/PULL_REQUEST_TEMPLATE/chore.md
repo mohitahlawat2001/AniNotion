@@ -1,3 +1,8 @@
+---
+name: 🔧 Chore/Maintenance Pull Request
+about: Maintenance tasks, dependency updates, and technical improvements.
+---
+
 ## 🔧 Chore/Maintenance Pull Request
 
 ### Description
@@ -17,26 +22,20 @@ Brief description of the maintenance task or chore.
 - [ ] Security updates
 - [ ] Tooling improvements
 - [ ] Environment setup
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ### 📦 Dependencies
 
 **Updated packages:**
 
 -
--
-
-**New dependencies added:**
+- **New dependencies added:**
 
 -
--
-
-**Removed dependencies:**
+- **Removed dependencies:**
 
 -
--
-
-**Security vulnerabilities fixed:**
+- **Security vulnerabilities fixed:**
 
 -
 -
@@ -46,14 +45,10 @@ Brief description of the maintenance task or chore.
 **Build system changes:**
 
 -
--
-
-**New tools added:**
+- **New tools added:**
 
 -
--
-
-**Configuration updates:**
+- **Configuration updates:**
 
 -
 -
@@ -63,14 +58,10 @@ Brief description of the maintenance task or chore.
 **Pipeline improvements:**
 
 -
--
-
-**New workflows added:**
+- **New workflows added:**
 
 -
--
-
-**Performance optimizations:**
+- **Performance optimizations:**
 
 -
 -
@@ -111,14 +102,10 @@ Brief description of the maintenance task or chore.
 **Security improvements:**
 
 -
--
-
-**Vulnerabilities addressed:**
+- **Vulnerabilities addressed:**
 
 -
--
-
-**Security tools updated:**
+- **Security tools updated:**
 
 -
 -
@@ -188,14 +175,10 @@ Brief description of the maintenance task or chore.
 **Immediate benefits:**
 
 -
--
-
-**Long-term benefits:**
+- **Long-term benefits:**
 
 -
--
-
-**Developer experience improvements:**
+- **Developer experience improvements:**
 
 -
 -
@@ -227,13 +210,9 @@ Brief description of the maintenance task or chore.
 
 **Motivation for changes:**
 
--
+- **Alternative approaches considered:**
 
-**Alternative approaches considered:**
-
--
-
-**Future maintenance tasks identified:**
+- **Future maintenance tasks identified:**
 
 -
 -

@@ -1,3 +1,8 @@
+---
+name: 🐛 Bug Fix Pull Request
+about: Describe and validate fixes for defects discovered in the product.
+---
+
 ## 🐛 Bug Fix Pull Request
 
 ### Description
@@ -10,13 +15,9 @@ Brief description of the bug being fixed.
 
 **What was the problem?**
 
--
+- **Root cause:**
 
-**Root cause:**
-
--
-
-**Impact:**
+- **Impact:**
 
 - [ ] Critical - System unusable
 - [ ] High - Major functionality broken
@@ -29,14 +30,10 @@ Brief description of the bug being fixed.
 
 -
 -
--
-
-**Files changed:**
+- **Files changed:**
 
 -
--
-
-**Approach taken:**
+- **Approach taken:**
 
 - [ ] Quick hotfix
 - [ ] Comprehensive fix
@@ -85,13 +82,9 @@ Brief description of the bug being fixed.
 
 **Before (broken behavior):**
 
--
+- **After (expected behavior):**
 
-**After (expected behavior):**
-
--
-
-**Screenshots/Evidence:**
+- **Screenshots/Evidence:**
 
 <!-- Add screenshots, logs, or other evidence of the fix -->
 

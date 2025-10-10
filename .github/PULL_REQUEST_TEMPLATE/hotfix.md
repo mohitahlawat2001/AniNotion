@@ -1,3 +1,8 @@
+---
+name: 🚨 Hotfix Pull Request
+about: Emergency fixes for critical production issues.
+---
+
 ## 🚨 Hotfix Pull Request
 
 ### ⚡ Urgent Fix Required
@@ -14,13 +19,9 @@
 
 **What's broken in production?**
 
--
+- **Impact on users:**
 
-**Impact on users:**
-
--
-
-**When did this start?**
+- **When did this start?**
 
 -
 
@@ -29,13 +30,9 @@
 **Immediate solution:**
 
 -
--
+- **Files changed:**
 
-**Files changed:**
-
--
-
-**Why this approach?**
+- **Why this approach?**
 
 - [ ] Minimal risk
 - [ ] Fastest to implement
@@ -110,9 +107,7 @@
 **Known limitations of this hotfix:**
 
 -
--
-
-**Technical debt created:**
+- **Technical debt created:**
 
 -
 -

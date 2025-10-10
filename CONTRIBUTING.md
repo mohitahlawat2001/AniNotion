@@ -35,12 +35,12 @@ Before you begin, ensure you have the following installed:
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/aninotion-app.git
-   cd aninotion-app
+   git clone https://github.com/mohitahlawat2001/AniNotion.git
+   cd AniNotion
    ```
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/ORIGINAL_OWNER/aninotion-app.git
+   git remote add upstream https://github.com/mohitahlawat2001/AniNotion.git
    ```
 
 ## 🛠️ Development Setup

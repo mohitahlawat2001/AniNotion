@@ -1,3 +1,8 @@
+---
+name: ♻️ Refactoring Pull Request
+about: Improve code structure and maintainability without changing functionality.
+---
+
 ## ♻️ Refactoring Pull Request
 
 ### Description
@@ -12,9 +17,7 @@ Brief description of the refactoring being performed.
 
 -
 -
--
-
-**Why is this refactoring needed?**
+- **Why is this refactoring needed?**
 
 - [ ] Code maintainability
 - [ ] Performance improvement
@@ -29,9 +32,7 @@ Brief description of the refactoring being performed.
 
 -
 -
--
-
-**Files affected:**
+- **Files affected:**
 
 - **Modified:**
 - **Added:**
@@ -42,13 +43,9 @@ Brief description of the refactoring being performed.
 
 **Before (current state):**
 
--
+- **After (refactored state):**
 
-**After (refactored state):**
-
--
-
-**Metrics improved:**
+- **Metrics improved:**
 
 - [ ] Code complexity reduced
 - [ ] Performance improved
@@ -89,9 +86,7 @@ Brief description of the refactoring being performed.
 **Expected improvements:**
 
 -
--
-
-**Benchmarks:**
+- **Benchmarks:**
 
 - Before:
 - After:
@@ -120,9 +115,7 @@ Brief description of the refactoring being performed.
 **Potential risks:**
 
 -
--
-
-**Mitigation strategies:**
+- **Mitigation strategies:**
 
 -
 -
@@ -139,9 +132,7 @@ Brief description of the refactoring being performed.
 **For other developers:**
 
 -
--
-
-**Breaking changes:**
+- **Breaking changes:**
 
 - [ ] No breaking changes
 - [ ] Internal API changes only
@@ -152,9 +143,7 @@ Brief description of the refactoring being performed.
 **Future improvements identified:**
 
 -
--
-
-**Technical debt remaining:**
+- **Technical debt remaining:**
 
 -
 -
@@ -164,9 +153,7 @@ Brief description of the refactoring being performed.
 **Immediate benefits:**
 
 -
--
-
-**Long-term benefits:**
+- **Long-term benefits:**
 
 -
 -

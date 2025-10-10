@@ -1,3 +1,8 @@
+---
+name: 🚀 Feature Pull Request
+about: Add new functionality or enhance existing features.
+---
+
 ## 🚀 Feature Pull Request
 
 ### Description
@@ -12,9 +17,7 @@ Brief description of the new feature being added.
 
 -
 -
--
-
-**Why is this feature needed?**
+- **Why is this feature needed?**
 
 -
 
@@ -24,14 +27,10 @@ Brief description of the new feature being added.
 
 -
 -
--
-
-**New files added:**
+- **New files added:**
 
 -
--
-
-**Modified files:**
+- **Modified files:**
 
 -
 -

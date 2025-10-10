@@ -1,3 +1,8 @@
+---
+name: 📚 Documentation Pull Request
+about: Improve or add documentation for better user and developer experience.
+---
+
 ## 📚 Documentation Pull Request
 
 ### Description
@@ -17,7 +22,7 @@ Brief description of the documentation changes.
 - [ ] Code comments
 - [ ] Changelog
 - [ ] Contributing guidelines
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ### 🎯 Changes Made
 
@@ -25,9 +30,7 @@ Brief description of the documentation changes.
 
 -
 -
--
-
-**Files modified:**
+- **Files modified:**
 
 -
 -
@@ -37,14 +40,10 @@ Brief description of the documentation changes.
 **New sections added:**
 
 -
--
-
-**Updated sections:**
+- **Updated sections:**
 
 -
--
-
-**Removed/deprecated content:**
+- **Removed/deprecated content:**
 
 -
 -
@@ -73,14 +72,10 @@ Brief description of the documentation changes.
 **Related documentation:**
 
 -
--
-
-**External links added:**
+- **External links added:**
 
 -
--
-
-**Internal links updated:**
+- **Internal links updated:**
 
 -
 -
@@ -108,7 +103,7 @@ Brief description of the documentation changes.
 - [ ] HTML
 - [ ] JSDoc comments
 - [ ] OpenAPI/Swagger
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 **Structure improvements:**
 
@@ -137,9 +132,7 @@ Brief description of the documentation changes.
 
 **Before (what was missing/unclear):**
 
--
-
-**After (what's now documented):**
+- **After (what's now documented):**
 
 -
 
@@ -148,9 +141,7 @@ Brief description of the documentation changes.
 **How does this help users?**
 
 -
--
-
-**Common questions addressed:**
+- **Common questions addressed:**
 
 -
 -
@@ -160,9 +151,7 @@ Brief description of the documentation changes.
 **Future updates needed:**
 
 -
--
-
-**Automation opportunities:**
+- **Automation opportunities:**
 
 - [ ] Auto-generated from code
 - [ ] Version-specific docs
@@ -179,13 +168,9 @@ Brief description of the documentation changes.
 
 **Why these changes were needed:**
 
--
+- **Feedback incorporated:**
 
-**Feedback incorporated:**
-
--
-
-**Related issues/discussions:**
+- **Related issues/discussions:**
 
 -
 
