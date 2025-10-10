@@ -6,6 +6,7 @@ import LayoutToggle from '../components/LayoutToggle';
 import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 import { postsAPI } from '../services/api';
 
 const CategoryPage = ({ category }) => {
@@ -192,6 +193,9 @@ const CategoryPage = ({ category }) => {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleCreatePost}
       />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
     </div>
   );
 };

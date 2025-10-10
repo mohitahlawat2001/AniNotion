@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AnimeSearch from '../components/AnimeSearch';
 import AnimeGrid from '../components/AnimeGrid';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 import { 
   useTopRatedAnime, 
   useCurrentlyAiringAnime, 
@@ -207,6 +208,9 @@ const AnimePage = () => {
           </div>
         )}
       </div>
+
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
     </div>
   );
 };

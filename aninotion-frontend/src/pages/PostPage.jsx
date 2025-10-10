@@ -6,6 +6,7 @@ import { useAnimeSearch, useAnimeDetails } from '../hooks/useAnime';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PostForm from '../components/PostForm';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -645,6 +646,9 @@ const PostPage = () => {
         initialData={post}
         isEdit={true}
       />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
     </div>
   );
 };
