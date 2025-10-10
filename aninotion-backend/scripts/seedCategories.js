@@ -1,7 +1,8 @@
+require('dotenv').config({ path: __dirname + '/../.env' });
+
 const mongoose = require('mongoose');
 const Category = require('../models/Category');
 const logger = require('../config/logger');
-require('dotenv').config();
 
 const defaultCategories = [
   { name: 'Anime', slug: 'anime', isDefault: true },

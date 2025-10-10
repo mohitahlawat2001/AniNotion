@@ -360,7 +360,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1 touch-target"
+            className="text-gray-500 hover:text-gray-700 p-1 touch-target cursor-pointer"
             aria-label="Close"
           >
             <X size={20} className="sm:hidden" />
@@ -754,14 +754,14 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-white text-base font-medium order-2 sm:order-1 touch-target"
+              className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-white text-base font-medium order-2 sm:order-1 touch-target cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-base font-medium order-1 sm:order-2 touch-target"
+              className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-base font-medium order-1 sm:order-2 touch-target cursor-pointer"
             >
               {isLoading 
                 ? (isEdit ? 'Updating...' : 'Creating...') 

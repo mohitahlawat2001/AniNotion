@@ -191,14 +191,14 @@ const SignupModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-blue-600 cursor-pointer text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Creating Account...' : 'Sign Up'}
             </button>
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="flex-1 bg-gray-300 cursor-pointer text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               disabled={isLoading}
             >
               Cancel
@@ -210,7 +210,7 @@ const SignupModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }) => {
           Already have an account?{' '}
           <button
             onClick={onSwitchToLogin}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium"
             disabled={isLoading}
           >
             Log in here

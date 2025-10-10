@@ -117,14 +117,14 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-blue-600 cursor-pointer text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="flex-1 bg-gray-300 cursor-pointer text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               disabled={isLoading}
             >
               Cancel
@@ -136,7 +136,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
           Don't have an account?{' '}
           <button
             onClick={onSwitchToSignup}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer font-medium"
             disabled={isLoading}
           >
             Sign up here
@@ -145,7 +145,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
 
         <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
           <p className="font-medium">Demo Accounts:</p>
-          <p>Admin: admin@aninotion.com / admin123</p>
+          <p>Admin: admin@aninotion.com / admin123456</p>
           <p>Editor: editor@aninotion.com / editor123</p>
         </div>
       </div>

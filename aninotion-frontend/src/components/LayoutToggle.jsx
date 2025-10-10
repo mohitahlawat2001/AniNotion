@@ -13,7 +13,7 @@ const LayoutToggle = ({ className = "" }) => {
         border border-gray-300 hover:border-gray-400
         bg-white hover:bg-gray-50
         text-gray-600 hover:text-gray-800
-        transition-all duration-200
+        transition-all duration-200 cursor-pointer
         touch-target
         ${className}
       `}

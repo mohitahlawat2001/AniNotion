@@ -197,7 +197,7 @@ const RawPage = () => {
                   onClick={() => handleDecrypt(item._id, item.encryptedData)}
                   className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 flex items-center space-x-1"
                 >
-                  <Eye size={14} />
+                  <Eye size={18} />
                   <span>Decrypt</span>
                 </button>
               )}
@@ -211,7 +211,7 @@ const RawPage = () => {
                     onClick={() => setShowDecrypted(prev => ({ ...prev, [item._id]: null }))}
                     className="text-green-600 hover:text-green-800"
                   >
-                    <EyeOff size={14} />
+                    <EyeOff size={18} />
                   </button>
                 </div>
                 <pre className="bg-green-50 p-3 rounded text-sm overflow-x-auto border border-green-200">
@@ -320,7 +320,7 @@ const RawPage = () => {
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold flex items-center space-x-2">
+        <h1 className="text-3xl font-bold flex items-center space-x-2 cursor-pointer">
           <Database size={32} />
           <span>Raw MongoDB Data Viewer</span>
         </h1>
@@ -345,7 +345,7 @@ const RawPage = () => {
               <button
                 onClick={testConnection}
                 disabled={isLoading}
-                className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+                className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2 cursor-pointer"
               >
                 {isLoading ? (
                   <RefreshCw size={20} className="animate-spin" />
@@ -357,7 +357,7 @@ const RawPage = () => {
               <button
                 onClick={fetchRawData}
                 disabled={isLoading}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2 cursor-pointer"
               >
                 {isLoading ? (
                   <RefreshCw size={20} className="animate-spin" />

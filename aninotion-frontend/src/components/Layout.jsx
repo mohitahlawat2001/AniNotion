@@ -18,7 +18,7 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
       {/* Mobile menu button */}
       <button
         onClick={toggleMobileMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md cursor-pointer"
         aria-label="Toggle menu"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}

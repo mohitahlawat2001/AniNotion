@@ -49,28 +49,30 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
   const getCategoryIcon = (categoryName) => {
     switch (categoryName.toLowerCase()) {
       case 'anime':
-        return <Film size={20} />;
+        return <Film size={20} className="group-hover:animate-bounce" />;
       case 'manga':
-        return <BookOpen size={20} />;
+        return <BookOpen size={20} className="group-hover:animate-bounce" />;
       default:
-        return <Plus size={20} />;
+        return <Plus size={20} className="group-hover:animate-bounce" />;
     }
   };
 
   return (
     <div className="w-54 lg:w-54 bg-white shadow-lg h-screen p-4 overflow-y-auto">
-      <h1 className="text-xl lg:text-2xl font-bold text-primary mb-6 lg:mb-8 mt-8 lg:mt-0">AniAlpha</h1>
+      <h1 className="text-xl lg:text-2xl font-bold text-primary mb-6 lg:mb-8 mt-8 lg:mt-0">
+        <Link to="/">AniAlpha</Link>
+      </h1>
       
       <nav className="space-y-2">
         {/* Home */}
         <Link
           to="/"
           onClick={() => handleNavClick(() => onCategoryChange(null))}
-          className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+          className={`w-full flex items-center group space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors cursor-pointer ${
             location.pathname === '/' && activeCategory === null ? 'bg-primary/10 text-primary' : ''
           }`}
         >
-          <Home size={20} />
+          <Home size={20} className="group-hover:animate-bounce" />
           <span className="text-sm lg:text-base">Home</span>
         </Link>
 
@@ -78,11 +80,11 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
         <Link
           to="/raw"
           onClick={() => isMobile && onMobileItemClick && onMobileItemClick()}
-          className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+          className={`w-full flex items-center group space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors cursor-pointer ${
             location.pathname === '/raw' ? 'bg-primary/10 text-primary' : ''
           }`}
         >
-          <Database size={20} />
+          <Database size={20} className="group-hover:animate-bounce" />
           <span className="text-sm lg:text-base">Raw Data</span>
         </Link>
         
@@ -94,7 +96,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
               onCategoryChange(category);
               navigate('/');
             })}
-            className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+            className={`w-full flex items-center group space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors cursor-pointer ${
               activeCategory?._id === category._id && location.pathname === '/' ? 'bg-primary/10 text-primary' : ''
             }`}
           >
@@ -119,7 +121,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
               <div className="flex space-x-2">
                 <button
                   onClick={handleAddCategory}
-                  className="flex-1 bg-primary text-white text-sm py-1 px-3 rounded hover:bg-primary/90"
+                  className="flex-1 bg-primary text-white text-sm py-1 px-3 rounded hover:bg-primary/90 cursor-pointer"
                 >
                   Add
                 </button>
@@ -128,7 +130,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
                     setShowAddCategory(false);
                     setNewCategoryName('');
                   }}
-                  className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded hover:bg-gray-300"
+                  className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded hover:bg-gray-300 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -137,9 +139,9 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
           ) : (
             <button
               onClick={() => setShowAddCategory(true)}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 text-gray-600"
+              className="w-full flex items-center group space-x-3 p-3 rounded-lg text-left hover:bg-gray-100 text-gray-600 cursor-pointer"
             >
-              <Plus size={20} />
+              <Plus size={20} className="group-hover:animate-bounce" />
               <span>Add Category</span>
             </button>
           )

@@ -49,105 +49,107 @@ const PostCard = ({ post, layout = 'grid' }) => {
   // List layout rendering - Twitter/X style
   if (layout === 'list') {
     return (
-      <div className="hover:bg-gray-50 transition-colors px-3 sm:px-4 py-3 relative rounded-2xl">
-      <div className="flex space-x-3">
-        {/* Avatar/Category Icon */}
-        <div className="flex-shrink-0">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center">
-          <Tag size={18} className="text-primary sm:hidden" />
-          <Tag size={20} className="text-primary hidden sm:block" />
-        </div>
-        </div>
+      <div className="bg-white my-4 mx-5 shadow-md hover:shadow-lg hover:shadow-blue-500 duration-200 px-3 sm:px-4 py-3 relative rounded-2xl">
+        <div className=''>
+          <div className="flex space-x-3">
+            {/* Avatar/Category Icon */}
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <Tag size={18} className="text-primary sm:hidden" />
+                <Tag size={20} className="text-primary hidden sm:block" />
+              </div>
+            </div>
 
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-        {/* Header with name, username, and time */}
-        <div className="flex items-center space-x-2 mb-1">
-          <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">
-          {post.title || 'Untitled'}
-          </h3>
-          <span className="text-gray-500 text-sm hidden sm:inline">·</span>
-          <DateDisplay
-            date={post.createdAt}
-            showIcon={false}
-            className="text-gray-500 text-xs sm:text-sm whitespace-nowrap hidden sm:block"
-          />
-        </div>
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              {/* Header with name, username, and time */}
+              <div className="flex items-center space-x-2 mb-1">
+                <h3 className="font-bold text-gray-900 text-base md:text-xl truncate">
+                  {post.title || 'Untitled'}
+                </h3>
+                <span className="text-gray-700 text-sm hidden sm:inline font-bold">·</span>
+                <DateDisplay
+                  date={post.createdAt}
+                  showIcon={false}
+                  className="text-gray-500 text-sm md:text-base whitespace-nowrap hidden sm:block"
+                />
+              </div>
 
-        {/* Mobile date (shown below title on small screens) */}
-        <div className="sm:hidden mb-1">
-          <DateDisplay
-            date={post.createdAt}
-            showIcon={false}
-            className="text-gray-500 text-xs"
-          />
-        </div>
+              {/* Mobile date (shown below title on small screens) */}
+              <div className="sm:hidden mb-1">
+                <DateDisplay
+                  date={post.createdAt}
+                  showIcon={false}
+                  className="text-gray-500 text-xs"
+                />
+              </div>
 
-        {/* Anime name as subtitle */}
-        <div className="flex items-center space-x-2 mb-2">
-          {post.animeName && <span className="text-gray-600 text-xs sm:text-sm">📺 {post.animeName}</span>}
-          <CategoryBadge category={post.category} size="sm" />
-        </div>
+              {/* Anime name as subtitle */}
+              <div className="flex items-center space-x-2 mb-2">
+                {post.animeName && <span className="text-gray-600 text-xs sm:text-sm">📺 {post.animeName}</span>}
+                <CategoryBadge category={post.category} size="sm" />
+              </div>
 
-        {/* Post content */}
-        <div className="mb-3">
-          <p className="text-gray-900 text-sm leading-relaxed">
-          {getDisplayContent()}
-          {shouldShowExpandButton() && '...'}
-          </p>
-          {shouldShowExpandButton() && (
+              {/* Post content */}
+              <div className="mb-3">
+                <p className="text-gray-900 text-sm leading-relaxed">
+                  {getDisplayContent()}
+                  {shouldShowExpandButton() && '...'}
+                </p>
+                {shouldShowExpandButton() && (
+                  <button
+                    onClick={handlePostClick}
+                    className="text-blue-500 hover:text-blue-600 text-sm font-medium mt-1 py-1 px-2 -mx-2 rounded"
+                  >
+                    Show more
+                  </button>
+                )}
+              </div>
+
+              {/* Images - Using reusable component */}
+              {images.length > 0 && (
+                <div className="mb-3">
+                  <ImageGallery
+                    images={images}
+                    alt={post.title || 'Post image'}
+                    layout="list"
+                  />
+                </div>
+              )}
+
+            </div>
+          </div>
+
+          {/* Clickable Corner */}
           <button
             onClick={handlePostClick}
-            className="text-blue-500 hover:text-blue-600 text-sm font-medium mt-1 py-1 px-2 -mx-2 rounded"
+            className="group absolute bottom-2 right-2 block outline-none cursor-pointer touch-target"
+            title="View full post"
+            aria-label="View full post"
           >
-            Show more
+            <span className="relative block w-[var(--sz,2.8rem)] h-[var(--sz,2.8rem)] sm:w-[var(--sz,3.2rem)] sm:h-[var(--sz,3.2rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.2rem] sm:hover:[--sz:3.7rem] rounded-br-xl">
+              {/* Fold */}
+              <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500 rounded-br-xl"></span>
+              {/* Shading */}
+              <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay rounded-br-xl"></span>
+              {/* Diagonal READ text - adjusted for mobile */}
+              <span className="absolute bottom-[8px] right-[4px] sm:bottom-[10px] sm:right-[5px] rotate-[-32deg] text-[8px] sm:text-[10px] font-semibold tracking-widest text-emerald-50">
+                READ
+              </span>
+              {/* Ring border */}
+              <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10 rounded-br-xl"></span>
+            </span>
+            {/* Focus ring for keyboard users */}
+            <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-br-xl pointer-events-none"></span>
           </button>
-          )}
         </div>
-
-        {/* Images - Using reusable component */}
-        {images.length > 0 && (
-          <div className="mb-3">
-            <ImageGallery
-              images={images}
-              alt={post.title || 'Post image'}
-              layout="list"
-            />
-          </div>
-        )}
-
-        </div>
-      </div>
-
-      {/* Clickable Corner */}
-      <button
-        onClick={handlePostClick}
-        className="group absolute bottom-2 right-2 block outline-none cursor-pointer touch-target"
-        title="View full post"
-        aria-label="View full post"
-      >
-        <span className="relative block w-[var(--sz,2.8rem)] h-[var(--sz,2.8rem)] sm:w-[var(--sz,3.2rem)] sm:h-[var(--sz,3.2rem)] transition-[width,height] duration-300 ease-out hover:[--sz:3.2rem] sm:hover:[--sz:3.7rem] rounded-br-xl">
-          {/* Fold */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-emerald-500 rounded-br-xl"></span>
-          {/* Shading */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] bg-gradient-to-tr from-black/10 to-transparent mix-blend-overlay rounded-br-xl"></span>
-          {/* Diagonal READ text - adjusted for mobile */}
-          <span className="absolute bottom-[8px] right-[4px] sm:bottom-[10px] sm:right-[5px] rotate-[-32deg] text-[8px] sm:text-[10px] font-semibold tracking-widest text-emerald-50">
-            READ
-          </span>
-          {/* Ring border */}
-          <span className="absolute inset-0 [clip-path:polygon(100%_0,100%_100%,0_100%)] ring-1 ring-black/10 dark:ring-white/10 rounded-br-xl"></span>
-        </span>
-        {/* Focus ring for keyboard users */}
-        <span className="absolute inset-0 ring-2 ring-transparent focus-visible:ring-emerald-400/60 rounded-br-xl pointer-events-none"></span>
-      </button>
       </div>
     );
   }
 
   // Grid layout rendering (default)
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative">
+    <div className="bg-white rounded-lg shadow-lg hover:shadow-blue-500 duration-200 overflow-hidden hover:shadow-lg transition-shadow relative">
       {/* Image Section */}
       {images.length > 0 && (
         <div className="aspect-[4/3] sm:aspect-[3/2] overflow-hidden">
@@ -159,7 +161,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
           />
         </div>
       )}
-      
+
       {/* Content */}
       <div className="p-3 sm:p-4 lg:p-6">
         {/* Category Badge */}

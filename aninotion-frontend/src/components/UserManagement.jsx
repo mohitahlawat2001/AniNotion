@@ -121,7 +121,7 @@ const UserManagement = ({ isOpen, onClose }) => {
           <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -129,7 +129,7 @@ const UserManagement = ({ isOpen, onClose }) => {
 
         {/* Controls */}
         <div className="p-6 border-b bg-gray-50">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-2">
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -144,7 +144,7 @@ const UserManagement = ({ isOpen, onClose }) => {
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="btn-primary flex items-center space-x-2"
+              className="btn-primary flex items-center space-x-2 cursor-pointer hover:bg-purple-200 px-3 py-1.5 rounded-lg"
             >
               <Plus size={20} />
               <span>Create User</span>
@@ -190,9 +190,9 @@ const UserManagement = ({ isOpen, onClose }) => {
                         </select>
                         <button
                           onClick={() => handleDeleteUser(user._id)}
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </button>
                       </>
                     )}

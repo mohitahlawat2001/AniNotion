@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const logger = require('../config/logger');
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/../.env' });
 
 /**
  * Seed script to create an admin user

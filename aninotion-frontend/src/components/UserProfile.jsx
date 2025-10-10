@@ -61,7 +61,7 @@ const UserProfile = () => {
       {/* Profile Icon Button */}
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target cursor-pointer"
         aria-label="User menu"
       >
         <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-400 text-white rounded-full flex items-center justify-center border-2 border-gray-300 shadow-sm">
@@ -104,7 +104,7 @@ const UserProfile = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+            <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded hover:bg-gray-100">
               {getRoleDescription(user.role)}
             </div>
           </div>
@@ -115,27 +115,27 @@ const UserProfile = () => {
             <div className="space-y-1 text-xs sm:text-sm">
               <div className="flex items-center space-x-2">
                 <Eye size={12} className="text-green-500 sm:hidden" />
-                <Eye size={14} className="text-green-500 hidden sm:block" />
+                <Eye size={16} className="text-green-500 hidden sm:block" />
                 <span className="text-gray-600">View posts and categories</span>
               </div>
               {canWrite() && (
                 <div className="flex items-center space-x-2">
                   <Edit size={12} className="text-green-500 sm:hidden" />
-                  <Edit size={14} className="text-green-500 hidden sm:block" />
+                  <Edit size={16} className="text-green-500 hidden sm:block" />
                   <span className="text-gray-600">Create and edit posts</span>
                 </div>
               )}
               {canWrite() && (
                 <div className="flex items-center space-x-2">
                   <Settings size={12} className="text-green-500 sm:hidden" />
-                  <Settings size={14} className="text-green-500 hidden sm:block" />
+                  <Settings size={16} className="text-green-500 hidden sm:block" />
                   <span className="text-gray-600">Manage categories</span>
                 </div>
               )}
               {isAdmin() && (
                 <div className="flex items-center space-x-2">
                   <Users size={12} className="text-green-500 sm:hidden" />
-                  <Users size={14} className="text-green-500 hidden sm:block" />
+                  <Users size={16} className="text-green-500 hidden sm:block" />
                   <span className="text-gray-600">Manage users and permissions</span>
                 </div>
               )}
@@ -150,19 +150,19 @@ const UserProfile = () => {
                   setShowUserManagement(true);
                   setIsDropdownOpen(false);
                 }}
-                className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-gray-100 text-left touch-target"
+                className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-gray-100 text-left text-base md:text-lg touch-target cursor-pointer"
               >
                 <Users size={14} className="text-gray-500 sm:hidden" />
-                <Users size={16} className="text-gray-500 hidden sm:block" />
+                <Users size={18} className="text-gray-500 hidden sm:block" />
                 <span className="text-sm text-gray-700">Manage Users</span>
               </button>
             )}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-red-50 text-left touch-target"
+              className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-red-50 text-left text-base md:text-lg touch-target cursor-pointer"
             >
               <LogOut size={14} className="text-red-500 sm:hidden" />
-              <LogOut size={16} className="text-red-500 hidden sm:block" />
+              <LogOut size={18} className="text-red-500 hidden sm:block" />
               <span className="text-sm text-red-600">Logout</span>
             </button>
           </div>

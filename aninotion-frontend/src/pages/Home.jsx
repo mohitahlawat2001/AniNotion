@@ -92,12 +92,12 @@ const Home = () => {
       <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
-          <h1 className="text-2xl sm:text-3xl font-bold">Recent Posts</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Recent Posts</h1>
           <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
             <LayoutToggle />
             <AuthButton
               onClick={() => setIsFormOpen(true)}
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary flex items-center gap-2 cursor-pointer"
               requireAuth={true}
             >
               <Plus size={16} />
@@ -117,11 +117,11 @@ const Home = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold">Recent Posts</h1>
-        <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex items-center sm:space-x-3 gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <LayoutToggle />
           <AuthButton
             onClick={() => setIsFormOpen(true)}
-            className="btn-primary flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 text-sm sm:text-base"
+            className="btn-primary flex items-center space-x-1 sm:space-x-2 px-3 sm:px-3 py-2 text-sm sm:text-base font-semibold cursor-pointer hover:bg-purple-200 rounded-lg"
             requireAuth={true}
           >
             <Plus size={18} className="sm:hidden" />
@@ -173,7 +173,7 @@ const Home = () => {
       {/* End of Posts Message */}
       {!hasMorePosts && posts.length > 0 && pagination && (
         <div className="text-center py-8 text-gray-500">
-          <p>You've reached the end! Showing all {pagination.total} posts.</p>
+          <p>You've reached the end! Showing all {pagination.total} post{pagination.total === 1 ? '' : 's'}.</p>
         </div>
       )}
 

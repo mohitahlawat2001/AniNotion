@@ -12,7 +12,7 @@ const PostsContainer = ({ posts, emptyMessage, onCreatePost }) => {
         <div className="text-gray-500 mb-4">{emptyMessage}</div>
         <AuthButton
           onClick={onCreatePost}
-          className="btn-primary"
+          className="btn-primary cursor-pointer hover:bg-gray-200 px-4 py-2 rounded-lg"
           requireAuth={true}
         >
           Create your first post
@@ -25,7 +25,7 @@ const PostsContainer = ({ posts, emptyMessage, onCreatePost }) => {
     <div className={
       layout === 'grid' 
         ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
-        : "bg-white border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200"
+        : "rounded-lg overflow-hidden divide-y divide-gray-200"
     }>
       {posts.map((post) => (
         <PostCard 
