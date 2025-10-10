@@ -4,7 +4,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd aninotion-backend && npm run dev",
     "client": "cd aninotion-frontend && npm run dev",
-    "seed": "cd backend && node scripts/seedCategories.js",
+    "seed": "cd aninotion-backend && node scripts/seedCategories.js",
     "lint": "npm run lint:frontend && npm run lint:backend",
     "lint:frontend": "cd aninotion-frontend && npm run lint",
     "lint:backend": "cd aninotion-backend && npm run lint",

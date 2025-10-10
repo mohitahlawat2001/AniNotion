@@ -4,14 +4,14 @@ Thank you for your interest in contributing to AniNotion! This guide will help y
 
 ## 📋 Table of Contents
 
-- [Development Setup](#-development-setup)
-- [Environment Configuration](#-environment-configuration)
-- [Project Structure](#-project-structure)
-- [Development Workflow](#-development-workflow)
-- [Code Standards](#-code-standards)
-- [Testing](#-testing)
-- [Submitting Changes](#-submitting-changes)
-- [Getting Help](#-getting-help)
+- [Development Setup](#development-setup)
+- [Environment Configuration](#environment-configuration)
+- [Project Structure](#project-structure)
+- [Development Workflow](#development-workflow)
+- [Code Standards](#code-standards)
+- [Testing](#testing)
+- [Submitting Changes](#submitting-changes)
+- [Getting Help](#getting-help)
 
 ## 🛠️ Development Setup
 
