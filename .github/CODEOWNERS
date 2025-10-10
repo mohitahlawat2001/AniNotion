@@ -1,0 +1,40 @@
+# Global Ownership
+# This file defines who owns what in the repository
+# For more information, see: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository
+* @mohitahlawat2001
+
+# Root configuration files
+/.github/ @mohitahlawat2001
+/.husky/ @mohitahlawat2001
+/.eslintrc.js @mohitahlawat2001
+/.prettierrc @mohitahlawat2001
+/package.json @mohitahlawat2001
+/README.md @mohitahlawat2001
+/CONTRIBUTING.md @mohitahlawat2001
+
+# Frontend application
+/aninotion-frontend/ @mohitahlawat2001
+
+# Backend application  
+/aninotion-backend/ @mohitahlawat2001
+
+# Documentation
+/aninotion-backend/docs/ @mohitahlawat2001
+/aninotion-frontend/docs/ @mohitahlawat2001
+
+# Configuration and deployment files
+*.json @mohitahlawat2001
+*.yml @mohitahlawat2001
+*.yaml @mohitahlawat2001
+*.config.js @mohitahlawat2001
+*.config.ts @mohitahlawat2001
+Dockerfile* @mohitahlawat2001
+docker-compose* @mohitahlawat2001
+vercel.json @mohitahlawat2001
+
+# Security and sensitive files
+/.env* @mohitahlawat2001
+/aninotion-backend/.env* @mohitahlawat2001
+/aninotion-frontend/.env* @mohitahlawat2001
