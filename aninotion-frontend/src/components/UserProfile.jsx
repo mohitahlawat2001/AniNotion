@@ -34,7 +34,7 @@ const UserProfile = () => {
       case 'editor':
         return 'Can create and edit posts and categories';
       case 'viewer':
-        return 'Read-only access to content';
+        return 'Can create one post per day and view content';
       default:
         return 'Unknown role';
     }
@@ -124,7 +124,9 @@ const UserProfile = () => {
                 <div className="flex items-center space-x-2">
                   <Edit size={12} className="text-green-500 sm:hidden" />
                   <Edit size={14} className="text-green-500 hidden sm:block" />
-                  <span className="text-gray-600">Create and edit posts</span>
+                  <span className="text-gray-600">
+                    {user.role === 'viewer' ? 'Create one post per day' : 'Create and edit posts'}
+                  </span>
                 </div>
               )}
               {canWrite() && (

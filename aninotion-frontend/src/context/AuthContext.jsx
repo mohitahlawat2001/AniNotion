@@ -71,7 +71,7 @@ const AuthProvider = ({ children }) => {
 
   // Check if user can perform write operations
   const canWrite = () => {
-    return hasRole('editor'); // admin or editor can write
+    return hasRole('editor') || user?.role === 'viewer'; // admin, editor, or viewer can write
   };
 
   // Check if user is admin
