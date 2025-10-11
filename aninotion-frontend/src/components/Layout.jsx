@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
+import Footer from './Footer';
 
 const Layout = ({ children, activeCategory, onCategoryChange }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -28,20 +29,22 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
       {isMobileMenuOpen && (
         <div
           //className="lg:hidden fixed inset-0 bg-opacity-10 backdrop-blur-sm z-30"
-           className="lg:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30" //miminal
+          className="lg:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30" //miminal
           onClick={closeMobileMenu}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        className={`
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 
         fixed lg:static 
         z-40 lg:z-auto
         transition-transform duration-300 ease-in-out
-      `}>
-        <Sidebar 
+      `}
+      >
+        <Sidebar
           activeCategory={activeCategory}
           onCategoryChange={onCategoryChange}
           onMobileItemClick={closeMobileMenu}
@@ -49,10 +52,13 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
         />
       </div>
 
-      {/* Main content */}
-      <main className="flex-1 p-4 lg:p-6 overflow-auto ml-0 lg:ml-0 pt-6 lg:pt-6">
-        {children}
-      </main>
+      {/* Main content with footer */}
+      <div className="flex-1 flex flex-col ml-0 lg:ml-0">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto pt-6 lg:pt-6">
+          {children}
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 };
