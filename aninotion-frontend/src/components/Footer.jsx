@@ -1,13 +1,12 @@
-import React from 'react';
 import {
   Github,
   Twitter,
   Mail,
   Heart,
   ExternalLink,
+  Users,
   BookOpen,
   Film,
-  Users,
 } from 'lucide-react';
 
 const Footer = () => {
@@ -23,7 +22,7 @@ const Footer = () => {
     {
       name: 'Twitter',
       icon: Twitter,
-      href: '#',
+      href: 'https://twitter.com/aninotion',
       color: 'hover:text-blue-400',
     },
     {
@@ -37,17 +36,17 @@ const Footer = () => {
   const quickLinks = [
     {
       name: 'About',
-      href: '/about',
+      href: '#',
       icon: Users,
     },
     {
       name: 'API Docs',
-      href: '/api-docs',
+      href: '#',
       icon: BookOpen,
     },
     {
       name: 'Features',
-      href: '/features',
+      href: '#',
       icon: Film,
     },
   ];
@@ -55,15 +54,15 @@ const Footer = () => {
   const legalLinks = [
     {
       name: 'Privacy Policy',
-      href: '/privacy',
+      href: '#',
     },
     {
       name: 'Terms of Service',
-      href: '/terms',
+      href: '#',
     },
     {
       name: 'Cookie Policy',
-      href: '/cookies',
+      href: '#',
     },
   ];
 

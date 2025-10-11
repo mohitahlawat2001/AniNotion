@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
@@ -29,7 +29,7 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
       {isMobileMenuOpen && (
         <div
           //className="lg:hidden fixed inset-0 bg-opacity-10 backdrop-blur-sm z-30"
-          className="lg:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30" //miminal
+          className="lg:hidden fixed inset-0 bg-black/10 backdrop-blur-sm z-30" //minimal
           onClick={closeMobileMenu}
         />
       )}
