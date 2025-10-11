@@ -1,0 +1,106 @@
+name: Maintenance/Chore
+description: Maintenance tasks, refactoring, or technical debt
+title: "[CHORE]: "
+labels: ["maintenance", "chore"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for maintenance tasks, refactoring, dependency updates, or technical debt.
+  
+  - type: dropdown
+    id: type
+    attributes:
+      label: Maintenance Type
+      description: What type of maintenance is this?
+      options:
+        - Dependency Update
+        - Code Refactoring
+        - Technical Debt
+        - Performance Optimization
+        - Security Update
+        - Documentation Update
+        - Build/CI Improvement
+        - Code Cleanup
+        - Other
+    validations:
+      required: true
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe what needs to be done and why
+      placeholder: Provide a clear description of the maintenance task
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the application does this affect?
+      options:
+        - Frontend (React)
+        - Backend (Node.js/Express)
+        - Database
+        - Build System
+        - CI/CD
+        - Documentation
+        - Dependencies
+        - Configuration
+        - Testing
+        - Other
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this maintenance task?
+      options:
+        - Low - Can be done when convenient
+        - Medium - Should be done soon
+        - High - Important for project health
+        - Critical - Security or stability issue
+    validations:
+      required: true
+  
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Current State
+      description: Describe the current situation that needs maintenance
+      placeholder: What is the current state that needs to be improved?
+  
+  - type: textarea
+    id: desired-state
+    attributes:
+      label: Desired State
+      description: Describe what the end result should look like
+      placeholder: What should the state be after this maintenance is complete?
+  
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      description: Break down the work into specific tasks
+      placeholder: |
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
+  
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks & Considerations
+      description: Any potential risks or things to consider during this maintenance
+      placeholder: Are there any breaking changes, migration steps, or risks to consider?
+  
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, links, or references

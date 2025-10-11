@@ -1,0 +1,77 @@
+name: Documentation
+description: Improvements or additions to documentation
+title: "[DOCS]: "
+labels: ["documentation"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve our documentation!
+  
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation needs attention?
+      options:
+        - README
+        - API Documentation
+        - Setup/Installation Guide
+        - User Guide
+        - Developer Guide
+        - Code Comments
+        - Architecture Documentation
+        - Deployment Guide
+        - Troubleshooting Guide
+        - Other
+    validations:
+      required: true
+  
+  - type: textarea
+    id: issue
+    attributes:
+      label: Documentation Issue
+      description: What's wrong with the current documentation or what's missing?
+      placeholder: Describe the documentation problem or gap
+    validations:
+      required: true
+  
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: How should the documentation be improved?
+      placeholder: Describe what should be added, changed, or clarified
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - End Users
+        - Developers
+        - Contributors
+        - System Administrators
+        - All Users
+    validations:
+      required: true
+  
+  - type: textarea
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where should this documentation be located?
+      placeholder: |
+        - File path (e.g., README.md, docs/api.md)
+        - New file needed
+        - Existing file to update
+  
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, examples, or references
