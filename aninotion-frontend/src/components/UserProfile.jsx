@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { User, Settings, Users, LogOut, ChevronDown, Shield, Edit, Eye } from 'lucide-react';
+import { User, Settings, Users, LogOut, ChevronDown, Shield, Edit, Eye, Lock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import UserManagement from './UserManagement';
+import ChangePasswordModal from './ChangePasswordModal';
 
 const UserProfile = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const { isAuthenticated, user, logout, isAdmin, canWrite } = useAuth();
 
   if (!isAuthenticated) {
@@ -144,6 +146,17 @@ const UserProfile = () => {
 
           {/* Menu Items */}
           <div className="p-2">
+            <button
+              onClick={() => {
+                setShowChangePassword(true);
+                setIsDropdownOpen(false);
+              }}
+              className="w-full flex items-center space-x-3 p-3 sm:p-2 rounded hover:bg-gray-100 text-left touch-target"
+            >
+              <Lock size={14} className="text-gray-500 sm:hidden" />
+              <Lock size={16} className="text-gray-500 hidden sm:block" />
+              <span className="text-sm text-gray-700">Change Password</span>
+            </button>
             {isAdmin() && (
               <button
                 onClick={() => {
@@ -182,6 +195,14 @@ const UserProfile = () => {
         <UserManagement
           isOpen={showUserManagement}
           onClose={() => setShowUserManagement(false)}
+        />
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <ChangePasswordModal
+          isOpen={showChangePassword}
+          onClose={() => setShowChangePassword(false)}
         />
       )}
     </div>

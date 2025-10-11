@@ -167,6 +167,14 @@ export const authAPI = {
   // Get user statistics (admin only)
   getUserStats: async () => {
     return authenticatedFetch(`${API_BASE_URL}/users/stats`);
+  },
+
+  // Change current user's password
+  changePassword: async (currentPassword, newPassword) => {
+    return authenticatedFetch(`${API_BASE_URL}/auth/change-password`, {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
   }
 };
 

@@ -127,6 +127,31 @@ Content-Type: application/json
 }
 ```
 
+### PUT /api/auth/change-password
+
+Change current user's password.
+
+**Headers:**
+```
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "currentPassword": "oldpassword123",
+  "newPassword": "newpassword123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
 ### GET /api/auth/users
 
 List all users (Admin only).

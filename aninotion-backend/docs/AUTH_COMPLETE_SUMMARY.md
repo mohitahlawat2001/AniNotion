@@ -35,7 +35,7 @@ Your AniNotion app now has a **complete, production-ready authentication system*
 | **Email Login** | ✅ | Existing feature |
 | **Google Signup** | ✅ | OAuth integration |
 | **Google Login** | ✅ | OAuth integration |
-| **Password Reset** | ⏳ | Future enhancement |
+| **Password Reset** | ✅ | Change password endpoint |
 | **Email Verification** | ⏳ | Future enhancement |
 | **2FA** | ⏳ | Future enhancement |
 

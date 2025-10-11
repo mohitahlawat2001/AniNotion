@@ -473,6 +473,83 @@ router.put('/me', requireAuth, async (req, res) => {
   }
 });
 
+// PUT /api/auth/change-password - Change current user's password
+router.put('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    logger.info("🔑 User attempting password change", {
+      userId: req.user._id,
+      email: req.user.email,
+      ip: req.ip
+    });
+    
+    // Validation
+    if (!currentPassword || !newPassword) {
+      logger.warn("Password change failed: Missing required fields", {
+        userId: req.user._id,
+        hasCurrent: !!currentPassword,
+        hasNew: !!newPassword
+      });
+      return res.status(400).json({
+        error: 'Validation failed',
+        message: 'Current password and new password are required'
+      });
+    }
+    
+    if (newPassword.length < 6) {
+      logger.warn("Password change failed: New password too short", {
+        userId: req.user._id
+      });
+      return res.status(400).json({
+        error: 'Validation failed',
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+    
+    // Verify current password
+    const isCurrentPasswordValid = req.user.comparePassword(currentPassword);
+    if (!isCurrentPasswordValid) {
+      logger.warn("Password change failed: Invalid current password", {
+        userId: req.user._id
+      });
+      return res.status(400).json({
+        error: 'Authentication failed',
+        message: 'Current password is incorrect'
+      });
+    }
+    
+    // Hash new password
+    const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+    const newPasswordHash = bcrypt.hashSync(newPassword, rounds);
+    
+    // Update password
+    req.user.passwordHash = newPasswordHash;
+    await req.user.save();
+    
+    logger.info("✅ Password changed successfully", {
+      userId: req.user._id,
+      email: req.user.email
+    });
+    
+    res.json({
+      message: 'Password changed successfully'
+    });
+    
+  } catch (error) {
+    logger.error("❌ Change password error:", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.user?._id
+    });
+    
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to change password'
+    });
+  }
+});
+
 // GET /api/auth/users - List all users (admin only)
 router.get('/users', requireAuth, requireRole('admin'), async (req, res) => {
   try {

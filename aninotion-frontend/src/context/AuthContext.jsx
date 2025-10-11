@@ -49,6 +49,17 @@ const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
   };
 
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      await authAPI.changePassword(currentPassword, newPassword);
+      // Password changed successfully
+      return { success: true };
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw error;
+    }
+  };
+
   // Check if user has specific role or permission
   const hasRole = (role) => {
     if (!user) return false;
@@ -75,6 +86,7 @@ const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUser,
+    changePassword,
     setUser,
     setIsAuthenticated,
     hasRole,
