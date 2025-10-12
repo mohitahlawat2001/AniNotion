@@ -52,12 +52,16 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
         />
       </div>
 
-      {/* Main content with footer */}
-      <div className="flex-1 flex flex-col ml-0 lg:ml-0 min-h-0">
+      {/* Main content with sticky footer */}
+      <div className="flex-1 flex flex-col ml-0 lg:ml-0">
         <main className="flex-1 p-4 lg:p-6 pt-6 lg:pt-6 overflow-auto">
-          {children}
+          <div className="min-h-full flex flex-col">
+            <div className="flex-1">{children}</div>
+            <div className="mt-auto">
+              <Footer />
+            </div>
+          </div>
         </main>
-        <Footer />
       </div>
     </div>
   );
