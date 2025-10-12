@@ -49,6 +49,17 @@ const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
   };
 
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      await authAPI.changePassword(currentPassword, newPassword);
+      // Password changed successfully
+      return { success: true };
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw error;
+    }
+  };
+
   // Check if user has specific role or permission
   const hasRole = (role) => {
     if (!user) return false;
@@ -60,7 +71,7 @@ const AuthProvider = ({ children }) => {
 
   // Check if user can perform write operations
   const canWrite = () => {
-    return hasRole('editor'); // admin or editor can write
+    return hasRole('editor') || user?.role === 'viewer'; // admin, editor, or viewer can write
   };
 
   // Check if user is admin
@@ -75,6 +86,7 @@ const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUser,
+    changePassword,
     setUser,
     setIsAuthenticated,
     hasRole,

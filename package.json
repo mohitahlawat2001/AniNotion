@@ -4,9 +4,27 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd aninotion-backend && npm run dev",
     "client": "cd aninotion-frontend && npm run dev",
-    "seed": "cd backend && node scripts/seedCategories.js"
+    "seed": "cd aninotion-backend && node scripts/seedCategories.js",
+    "prepare": "husky install",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "concurrently": "^7.6.0"
+    "concurrently": "^7.6.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "@eslint/js": "^8.57.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
   }
 }

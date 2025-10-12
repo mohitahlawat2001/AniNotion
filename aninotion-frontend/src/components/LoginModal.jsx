@@ -144,9 +144,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignup }) => {
         </div>
 
         <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
-          <p className="font-medium">Demo Accounts:</p>
-          <p>Admin: admin@aninotion.com / admin123</p>
-          <p>Editor: editor@aninotion.com / editor123</p>
+          <p className="text-center">Create your new account or use Google signin</p>
         </div>
       </div>
     </div>

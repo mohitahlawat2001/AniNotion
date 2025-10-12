@@ -258,7 +258,7 @@ router.get('/:identifier', optionalAuth, async (req, res) => {
 });
 
 // Create new post
-router.post('/', requireAuth, requireRole('admin', 'editor'), async (req, res) => {
+router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (req, res) => {
   try {
     const { 
       title, 
@@ -297,6 +297,31 @@ router.post('/', requireAuth, requireRole('admin', 'editor'), async (req, res) =
         error: 'Validation failed',
         message: 'Title, anime name, category, and content are required'
       });
+    }
+    
+    // Check post limit for viewers (users can only create one post per day)
+    if (req.user.role === 'viewer') {
+      // Get start of today (midnight)
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      
+      const todaysPostsCount = await Post.countDocuments({ 
+        createdBy: req.user._id,
+        createdAt: { $gte: startOfToday }
+      });
+      
+      if (todaysPostsCount >= 1) {
+        logger.warn("Post creation failed: User has reached daily post limit", {
+          userId: req.user._id,
+          userRole: req.user.role,
+          todaysPostsCount,
+          ip: req.ip
+        });
+        return res.status(403).json({
+          error: 'Daily post limit reached',
+          message: 'Users can only create one post per day. Please try again tomorrow.'
+        });
+      }
     }
     
     let imageUrls = [];
