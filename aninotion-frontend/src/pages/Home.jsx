@@ -6,6 +6,7 @@ import LayoutToggle from '../components/LayoutToggle';
 import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 import { postsAPI } from '../services/api';
 
 const Home = () => {
@@ -183,6 +184,9 @@ const Home = () => {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleCreatePost}
       />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
     </div>
   );
 };
