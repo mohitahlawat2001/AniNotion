@@ -58,10 +58,7 @@ module.exports = {
         res(res) {
           return {
             statusCode: res.statusCode,
-            headers: {
-              contentType: res.getHeader("content-type"),
-              contentLength: res.getHeader("content-length"),
-            }
+            headers: res.headers || {}
           };
         },
       },
