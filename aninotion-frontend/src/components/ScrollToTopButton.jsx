@@ -1,53 +1,79 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
 
 const ScrollToTopButton = ({
-  showAfter = 200, // Reduced from 300px to 200px for earlier appearance
+  showAfter = 200,
   scrollBehavior = "smooth",
   className = "",
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const throttleRef = useRef(null);
-
-  const toggleVisibility = useCallback(() => {
-    if (window.scrollY > showAfter) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  }, [showAfter]);
-
-  const throttledToggleVisibility = useCallback(() => {
-    if (throttleRef.current) return;
-
-    throttleRef.current = setTimeout(() => {
-      toggleVisibility();
-      throttleRef.current = null;
-    }, 16); // ~60fps throttling
-  }, [toggleVisibility]);
 
   useEffect(() => {
-    // Check initial scroll position
-    toggleVisibility();
+    const handleScroll = () => {
+      // Get scroll position from main element (which has overflow-auto)
+      const mainElement = document.querySelector("main");
+      const mainScrollY = mainElement ? mainElement.scrollTop : 0;
 
-    window.addEventListener("scroll", throttledToggleVisibility, {
-      passive: true,
-    });
+      // Also check window scroll as fallback
+      const windowScrollY =
+        window.scrollY ||
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop ||
+        0;
+
+      // Use the maximum of both
+      const scrollY = Math.max(mainScrollY, windowScrollY);
+
+      setIsVisible(scrollY > showAfter);
+    };
+
+    // Check initial position
+    handleScroll();
+
+    // Listen to main element scroll (this is where the actual scrolling happens)
+    const mainElement = document.querySelector("main");
+    if (mainElement) {
+      mainElement.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    // Also listen to window scroll as fallback
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", throttledToggleVisibility);
-      if (throttleRef.current) {
-        clearTimeout(throttleRef.current);
+      if (mainElement) {
+        mainElement.removeEventListener("scroll", handleScroll);
       }
+      window.removeEventListener("scroll", handleScroll);
     };
-  }, [throttledToggleVisibility, toggleVisibility]);
+  }, [showAfter]);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: scrollBehavior,
-    });
+  const scrollToTop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Scroll the main element to top (where the actual scrolling happens)
+    const mainElement = document.querySelector("main");
+    if (mainElement) {
+      mainElement.scrollTo({
+        top: 0,
+        behavior: scrollBehavior,
+      });
+    }
+
+    // Also scroll window as fallback
+    if (window.scrollTo) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: scrollBehavior,
+      });
+    }
   };
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <button
@@ -55,28 +81,24 @@ const ScrollToTopButton = ({
       className={`
         fixed bottom-6 right-6 z-50
         w-12 h-12 
-        bg-black/20 backdrop-blur-sm 
-        hover:bg-black/30 
-        text-white 
+        bg-white hover:bg-gray-50
+        text-gray-700 hover:text-gray-900
         rounded-full 
         shadow-lg hover:shadow-xl
-        border border-white/30 hover:border-white/40
+        border border-gray-200 hover:border-gray-300
         transition-all duration-300 ease-in-out
         touch-target
         flex items-center justify-center
         group
-        ${
-          isVisible
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-75 pointer-events-none"
-        }
+        transform hover:scale-110
         ${className}
       `}
       aria-label="Scroll to top"
+      type="button"
     >
       <ChevronUp
         size={20}
-        className="transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5"
+        className="transition-transform duration-200 group-hover:-translate-y-0.5"
       />
     </button>
   );
