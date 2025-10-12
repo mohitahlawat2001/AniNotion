@@ -1,5 +1,7 @@
 // Performance monitoring middleware
 const responseTime = require('response-time');
+const pinoHttp = require('pino-http');
+const logger = require('../config/logger');
 
 module.exports = {
   requestLogger: function requestLogger() {

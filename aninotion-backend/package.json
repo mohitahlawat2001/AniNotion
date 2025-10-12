@@ -40,7 +40,8 @@
     "pino": "^9.9.0",
     "pino-abstract-transport": "^2.0.0",
     "pino-http": "^10.5.0",
-    "resend": "^6.0.1"
+    "resend": "^6.0.1",
+    "response-time": "^2.3.4"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
