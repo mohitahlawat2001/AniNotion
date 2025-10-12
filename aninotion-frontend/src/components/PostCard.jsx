@@ -158,12 +158,10 @@ const PostCard = ({ post, layout = 'grid' }) => {
         {/* Engagement Stats */}
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center space-x-3">
-            {engagement.views > 0 && (
-              <span className="flex items-center">
-                <Eye className="w-3 h-3 mr-1" />
-                {engagement.views.toLocaleString()}
-              </span>
-            )}
+            <span className="flex items-center">
+              <Eye className="w-3 h-3 mr-1" />
+              {(engagement.views || 0).toLocaleString()}
+            </span>
             
             {/* Like Button and Count */}
             <div className="flex items-center space-x-1">
@@ -278,12 +276,10 @@ const PostCard = ({ post, layout = 'grid' }) => {
         {/* Engagement Stats */}
         <div className="flex items-center justify-between mt-2 text-xs sm:text-sm text-gray-500">
           <div className="flex items-center space-x-3">
-            {engagement.views > 0 && (
-              <span className="flex items-center">
-                <Eye className="w-3 h-3 mr-1" />
-                {engagement.views.toLocaleString()}
-              </span>
-            )}
+            <span className="flex items-center">
+              <Eye className="w-3 h-3 mr-1" />
+              {(engagement.views || 0).toLocaleString()}
+            </span>
             
             {/* Like Button and Count */}
             <div className="flex items-center space-x-1">

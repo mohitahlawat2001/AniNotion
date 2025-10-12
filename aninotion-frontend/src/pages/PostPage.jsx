@@ -69,6 +69,10 @@ const PostPage = () => {
   // Set up engaged view timer
   useEffect(() => {
     if (post && !hasIncrementedView.current) {
+      // Increment view immediately if user is the post creator (they're definitely engaged)
+      const isCreator = user && post.createdBy && user.id === post.createdBy._id;
+      const delay = isCreator ? 1000 : 10000; // 1 second for creator, 10 seconds for others
+      
       viewTimerRef.current = setTimeout(async () => {
         try {
           const result = await postsAPI.incrementView(id, sessionId);
@@ -79,7 +83,7 @@ const PostPage = () => {
         } catch (error) {
           console.error('Error incrementing view:', error);
         }
-      }, 10000); // 10 seconds for engaged view
+      }, delay);
     }
 
     return () => {
@@ -87,7 +91,7 @@ const PostPage = () => {
         clearTimeout(viewTimerRef.current);
       }
     };
-  }, [post, id, sessionId]);
+  }, [post, id, sessionId, user]);
 
   // Search for anime when post loads
   useEffect(() => {
@@ -377,12 +381,12 @@ const PostPage = () => {
               <div className="flex items-center text-gray-500 mb-4 sm:mb-6">
                 <div className="flex items-center mr-4">
                   <Eye size={16} className="mr-1" />
-                  <span className="text-sm sm:text-base font-medium">{engagement.views.toLocaleString()} Views</span>
+                  <span className="text-sm sm:text-base font-medium">{(engagement.views || 0).toLocaleString()} Views</span>
                 </div>
                 
                 <div className="flex items-center">
                   <Heart size={16} className="mr-1" />
-                  <span className="text-sm sm:text-base font-medium">{engagement.likesCount.toLocaleString()} Likes</span>
+                  <span className="text-sm sm:text-base font-medium">{(engagement.likesCount || 0).toLocaleString()} Likes</span>
                 </div>
               </div>
 
