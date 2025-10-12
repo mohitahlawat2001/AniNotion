@@ -340,10 +340,42 @@ export const postsAPI = {
     });
   },
 
-  like: async (id) => {
-    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/like`, {
-      method: 'POST'
+  like: async (id, sessionId) => {
+    const isAuthenticated = authAPI.isAuthenticated();
+    
+    if (isAuthenticated) {
+      return authenticatedFetch(`${API_BASE_URL}/posts/${id}/like`, {
+        method: 'POST'
+      });
+    } else {
+      // Anonymous like - send sessionId
+      const response = await fetch(`${API_BASE_URL}/posts/${id}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      if (!response.ok) throw new Error('Failed to like post');
+      return response.json();
+    }
+  },
+
+  // View tracking
+  incrementView: async (id, sessionId) => {
+    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/view`, {
+      method: 'POST',
+      body: JSON.stringify({ sessionId })
     });
+  },
+
+  // Get engagement data (views, likes, user's like status)
+  getEngagement: async (id, sessionId) => {
+    const params = new URLSearchParams();
+    if (sessionId) params.append('sessionId', sessionId);
+    
+    const url = `${API_BASE_URL}/posts/${id}/engagement${params.toString() ? `?${params}` : ''}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch engagement data');
+    return response.json();
   }
 };
 

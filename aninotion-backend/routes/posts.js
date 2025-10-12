@@ -13,6 +13,7 @@ const {
   buildPostQuery 
 } = require('../utils/postHelpers');
 const logger = require('../config/logger');
+const viewCounter = require('../utils/viewCounter');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -224,17 +225,8 @@ router.get('/:identifier', optionalAuth, async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
     
-    // Increment views for published posts (unless explicitly disabled)
-    if (post.status === 'published' && incrementViews === 'true') {
-      // Don't wait for this to complete
-      post.incrementViews().catch(error => {
-        logger.error("Failed to increment views:", {
-          postId: post._id,
-          error: error.message
-        });
-      });
-    }
-      
+    // Note: Views are now incremented via separate /:id/view endpoint for engaged viewing
+    
     logger.info("✅ Post fetched successfully", {
       postId: post._id,
       title: post.title,
@@ -691,36 +683,159 @@ router.put('/:id/publish', requireAuth, requireRole('admin', 'editor'), async (r
   }
 });
 
-// Like/unlike post endpoint
-router.post('/:id/like', async (req, res) => {
+// Increment view count for a post (engaged view)
+router.post('/:id/view', requireAuth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
-    
+    const { id } = req.params;
+    const { sessionId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ message: 'Session ID is required' });
+    }
+
+    logger.info("👁️ Incrementing post view", {
+      postId: id,
+      userId: req.user?._id,
+      sessionId,
+      ip: req.ip
+    });
+
+    const post = await Post.findById(id);
+
+    if (!post) {
+      logger.warn("⚠️ Post not found for view increment", {
+        postId: id
+      });
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Use Redis for view counting with session tracking
+    const viewCounted = await viewCounter.incrementView(id, sessionId);
+
+    if (viewCounted) {
+      logger.info("✅ Post view counted", {
+        postId: id,
+        sessionId
+      });
+    } else {
+      logger.info("ℹ️ Post view already counted for this session", {
+        postId: id,
+        sessionId
+      });
+    }
+
+    // Get current counts
+    const views = await viewCounter.getViewCount(id);
+    const likes = await viewCounter.getLikesCount(id);
+
+    res.json({
+      viewCounted,
+      views,
+      likes
+    });
+  } catch (error) {
+    logger.error("❌ Error incrementing view:", {
+      error: error.message,
+      stack: error.stack,
+      postId: req.params.id
+    });
+
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Toggle like for a post
+router.post('/:id/like', optionalAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { sessionId } = req.body;
+    const userId = req.user?._id;
+
+    // For anonymous users, require sessionId
+    if (!userId && !sessionId) {
+      return res.status(400).json({ message: 'Session ID is required for anonymous likes' });
+    }
+
+    // Use userId if authenticated, otherwise use sessionId for anonymous tracking
+    const likeIdentifier = userId || `anon_${sessionId}`;
+
+    logger.info("👍 Toggling post like", {
+      postId: id,
+      userId,
+      sessionId,
+      likeIdentifier,
+      ip: req.ip
+    });
+
+    const post = await Post.findById(id);
+
+    if (!post) {
+      logger.warn("⚠️ Post not found for like toggle", {
+        postId: id
+      });
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Use Redis for like tracking
+    const { liked, likesCount } = await viewCounter.toggleLike(id, likeIdentifier);
+
+    logger.info("✅ Post like toggled", {
+      postId: id,
+      userId,
+      sessionId,
+      likeIdentifier,
+      liked,
+      likesCount
+    });
+
+    res.json({
+      liked,
+      likesCount,
+      message: liked ? 'Post liked' : 'Post unliked'
+    });
+  } catch (error) {
+    logger.error("❌ Error toggling like:", {
+      error: error.message,
+      stack: error.stack,
+      postId: req.params.id
+    });
+
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get engagement data for a post (views, likes, user's like status)
+router.get('/:id/engagement', optionalAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { sessionId } = req.query;
+    const userId = req.user?._id;
+
+    // For anonymous users, require sessionId to check like status
+    const likeIdentifier = userId || (sessionId ? `anon_${sessionId}` : null);
+
+    const post = await Post.findById(id);
+
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
-    
-    // Simple increment for now - in future we can track individual user likes
-    post.likesCount = (post.likesCount || 0) + 1;
-    await post.save();
-    
-    logger.info("👍 Post liked", {
-      postId: req.params.id,
-      newLikesCount: post.likesCount,
-      ip: req.ip
-    });
-    
+
+    // Get data from Redis
+    const views = await viewCounter.getViewCount(id);
+    const likesCount = await viewCounter.getLikesCount(id);
+    const liked = likeIdentifier ? await viewCounter.hasLiked(id, likeIdentifier) : false;
+
     res.json({
-      message: 'Post liked successfully',
-      likesCount: post.likesCount
+      views: views || post.views || 0, // Fallback to DB if Redis not available
+      likesCount: likesCount || post.likesCount || 0,
+      liked
     });
-    
   } catch (error) {
-    logger.error("❌ Error liking post:", {
+    logger.error("❌ Error getting engagement data:", {
       error: error.message,
       postId: req.params.id
     });
-    
+
     res.status(500).json({ message: error.message });
   }
 });
@@ -797,49 +912,6 @@ router.put('/:id/publish', requireAuth, requireRole('admin', 'editor'), async (r
       stack: error.stack,
       postId: req.params.id,
       userId: req.user?._id
-    });
-    
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Like/unlike post (increment counter)
-router.post('/:id/like', async (req, res) => {
-  try {
-    const { postId } = req.params;
-    
-    logger.info("👍 Incrementing post likes", {
-      postId,
-      ip: req.ip
-    });
-
-    const post = await Post.findById(postId);
-    
-    if (!post) {
-      logger.warn("⚠️ Post not found for like", {
-        postId
-      });
-      return res.status(404).json({ message: 'Post not found' });
-    }
-    
-    // Simple increment - in a real app you'd track which users liked what
-    post.likesCount = (post.likesCount || 0) + 1;
-    await post.save();
-    
-    logger.info("✅ Post like incremented", {
-      postId,
-      newLikesCount: post.likesCount
-    });
-    
-    res.json({ 
-      likesCount: post.likesCount,
-      message: 'Post liked successfully'
-    });
-  } catch (error) {
-    logger.error("❌ Error liking post:", {
-      error: error.message,
-      stack: error.stack,
-      postId: req.params.id
     });
     
     res.status(500).json({ message: error.message });

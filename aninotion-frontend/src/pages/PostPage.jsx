@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star, Users, Play, Clock, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star, Users, Play, Clock, Edit, Trash2, Heart, Eye } from 'lucide-react';
 import { postsAPI } from '../services/api';
 import { useAnimeSearch, useAnimeDetails } from '../hooks/useAnime';
 import { useAuth } from '../hooks/useAuth';
@@ -16,6 +16,12 @@ const PostPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimeId, setSelectedAnimeId] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
+
+  // Engagement state
+  const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const viewTimerRef = useRef(null);
+  const hasIncrementedView = useRef(false);
 
   // Anime search hook for finding anime based on post's animeName
   const { 
@@ -34,9 +40,22 @@ const PostPage = () => {
     const fetchPost = async () => {
       try {
         setIsLoading(true);
-  // Backend supports identifier (either ObjectId or slug) on the same route
-  const data = await postsAPI.getByIdentifier(id, true);
+        const data = await postsAPI.getByIdentifier(id, false); // Don't auto-increment views
         setPost(data);
+        
+        // Fetch engagement data
+        try {
+          const engagementData = await postsAPI.getEngagement(id, sessionId);
+          setEngagement(engagementData);
+        } catch (engagementError) {
+          console.error('Error fetching engagement data:', engagementError);
+          // Fallback to post data
+          setEngagement({
+            views: data.views || 0,
+            likesCount: data.likesCount || 0,
+            liked: false
+          });
+        }
       } catch (error) {
         console.error('Error fetching post:', error);
       } finally {
@@ -45,7 +64,30 @@ const PostPage = () => {
     };
 
     fetchPost();
-  }, [id]);
+  }, [id, sessionId]);
+
+  // Set up engaged view timer
+  useEffect(() => {
+    if (post && !hasIncrementedView.current) {
+      viewTimerRef.current = setTimeout(async () => {
+        try {
+          const result = await postsAPI.incrementView(id, sessionId);
+          if (result.viewCounted) {
+            setEngagement(prev => ({ ...prev, views: result.views }));
+            hasIncrementedView.current = true;
+          }
+        } catch (error) {
+          console.error('Error incrementing view:', error);
+        }
+      }, 10000); // 10 seconds for engaged view
+    }
+
+    return () => {
+      if (viewTimerRef.current) {
+        clearTimeout(viewTimerRef.current);
+      }
+    };
+  }, [post, id, sessionId]);
 
   // Search for anime when post loads
   useEffect(() => {
@@ -140,6 +182,21 @@ const PostPage = () => {
     } catch (error) {
       console.error('Error deleting post:', error);
       alert('Failed to delete post: ' + error.message);
+    }
+  };
+
+  // Handle like toggle
+  const handleLikeToggle = async () => {
+    try {
+      const result = await postsAPI.like(id, sessionId);
+      setEngagement(prev => ({
+        ...prev,
+        liked: result.liked,
+        likesCount: result.likesCount
+      }));
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      alert('Failed to like post: ' + error.message);
     }
   };
 
@@ -314,6 +371,42 @@ const PostPage = () => {
                 <Calendar size={14} className="mr-2 sm:hidden" />
                 <Calendar size={16} className="mr-2 hidden sm:block" />
                 <span className="text-sm sm:text-base">{formatDate(post.createdAt)}</span>
+              </div>
+
+              {/* Engagement Stats - Views and Likes */}
+              <div className="flex items-center text-gray-500 mb-4 sm:mb-6">
+                <div className="flex items-center mr-4">
+                  <Eye size={16} className="mr-1" />
+                  <span className="text-sm sm:text-base font-medium">{engagement.views.toLocaleString()} Views</span>
+                </div>
+                
+                <div className="flex items-center">
+                  <Heart size={16} className="mr-1" />
+                  <span className="text-sm sm:text-base font-medium">{engagement.likesCount.toLocaleString()} Likes</span>
+                </div>
+              </div>
+
+              {/* Like Button */}
+              <div className="mb-4 sm:mb-6">
+                <button
+                  onClick={handleLikeToggle}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                    engagement.liked
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title={engagement.liked ? 'Unlike this post' : 'Like this post'}
+                >
+                  <Heart
+                    size={18}
+                    className={`transition-transform duration-200 ${
+                      engagement.liked ? 'fill-current scale-110' : ''
+                    }`}
+                  />
+                  <span className="font-medium">
+                    {engagement.liked ? 'Liked' : 'Like'}
+                  </span>
+                </button>
               </div>
 
               {/* Full Content */}

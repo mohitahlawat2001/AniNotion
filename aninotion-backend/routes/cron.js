@@ -1,5 +1,7 @@
 const express = require("express");
 const { sendDailyLogs } = require("../scripts/sendDailyLogs");
+const viewCounter = require("../utils/viewCounter");
+const Post = require("../models/Post");
 
 const router = express.Router();
 
@@ -76,6 +78,62 @@ router.get("/send-daily-logs", async (req, res) => {
 
     res.status(500).json({ 
       error: "Failed to send daily logs", 
+      details: String(err?.message || err),
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /cron/sync-engagement?secret=...
+ * Sync Redis engagement data (views, likes) to MongoDB
+ */
+router.get("/sync-engagement", async (req, res) => {
+  console.log("🔄 Sync engagement endpoint hit:", {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    headers: {
+      "user-agent": req.headers["user-agent"],
+      "x-cron-secret": req.headers["x-cron-secret"] ? "***PROVIDED***" : "***MISSING***"
+    }
+  });
+
+  try {
+    const secret = req.query.secret || req.headers["x-cron-secret"];
+
+    if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+      console.log("❌ Authentication failed");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    console.log("✅ Authentication successful");
+
+    console.log("📊 Starting engagement data sync from Redis to MongoDB...");
+
+    const { viewsSynced, likesSynced } = await viewCounter.syncToDatabase(Post);
+
+    console.log("✅ Engagement sync completed:", {
+      viewsSynced,
+      likesSynced,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      viewsSynced,
+      likesSynced,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("💥 Error in sync engagement endpoint:", {
+      error: err.message,
+      stack: err.stack,
+      timestamp: new Date().toISOString()
+    });
+
+    res.status(500).json({
+      error: "Failed to sync engagement data",
       details: String(err?.message || err),
       timestamp: new Date().toISOString()
     });

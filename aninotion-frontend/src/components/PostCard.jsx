@@ -1,13 +1,52 @@
-import React from 'react';
-import { Calendar, Tag, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Tag, ChevronLeft, ChevronRight, FileText, Eye, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ClickableCorner from './ClickableCorner';
 import CategoryBadge from './CategoryBadge';
 import ImageGallery from './ImageGallery';
 import DateDisplay from './DateDisplay';
+import { postsAPI } from '../services/api';
 
 const PostCard = ({ post, layout = 'grid' }) => {
   const navigate = useNavigate();
+  const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+
+  // Fetch engagement data on mount
+  useEffect(() => {
+    const fetchEngagement = async () => {
+      try {
+        const data = await postsAPI.getEngagement(post._id, sessionId);
+        setEngagement(data);
+      } catch (error) {
+        console.error('Error fetching engagement data:', error);
+        // Fallback to post data
+        setEngagement({
+          views: post.views || 0,
+          likesCount: post.likesCount || 0,
+          liked: false
+        });
+      }
+    };
+
+    fetchEngagement();
+  }, [post._id, sessionId, post.views, post.likesCount]);
+
+  // Handle like toggle
+  const handleLikeToggle = async (e) => {
+    e.stopPropagation(); // Prevent navigation to post page
+    
+    try {
+      const result = await postsAPI.like(post._id, sessionId);
+      setEngagement(prev => ({
+        ...prev,
+        liked: result.liked,
+        likesCount: result.likesCount
+      }));
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
 
   // Safety check for post data
   if (!post) {
@@ -116,6 +155,42 @@ const PostCard = ({ post, layout = 'grid' }) => {
           </div>
         )}
 
+        {/* Engagement Stats */}
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center space-x-3">
+            {engagement.views > 0 && (
+              <span className="flex items-center">
+                <Eye className="w-3 h-3 mr-1" />
+                {engagement.views.toLocaleString()}
+              </span>
+            )}
+            
+            {/* Like Button and Count */}
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={handleLikeToggle}
+                className={`p-1 rounded-full transition-all duration-200 ${
+                  engagement.liked
+                    ? 'text-red-500 hover:text-red-600 bg-red-50'
+                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                }`}
+                title={engagement.liked ? 'Unlike this post' : 'Like this post'}
+              >
+                <Heart
+                  size={14}
+                  className={`transition-transform duration-200 ${
+                    engagement.liked ? 'fill-current scale-110' : ''
+                  }`}
+                />
+              </button>
+              {engagement.likesCount >= 0 && (
+                <span className="font-medium">
+                  {engagement.likesCount.toLocaleString()}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -198,6 +273,43 @@ const PostCard = ({ post, layout = 'grid' }) => {
         {/* Date */}
         <div className="text-xs sm:text-sm">
           <DateDisplay date={post.createdAt} />
+        </div>
+
+        {/* Engagement Stats */}
+        <div className="flex items-center justify-between mt-2 text-xs sm:text-sm text-gray-500">
+          <div className="flex items-center space-x-3">
+            {engagement.views > 0 && (
+              <span className="flex items-center">
+                <Eye className="w-3 h-3 mr-1" />
+                {engagement.views.toLocaleString()}
+              </span>
+            )}
+            
+            {/* Like Button and Count */}
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={handleLikeToggle}
+                className={`p-1 rounded-full transition-all duration-200 ${
+                  engagement.liked
+                    ? 'text-red-500 hover:text-red-600 bg-red-50'
+                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                }`}
+                title={engagement.liked ? 'Unlike this post' : 'Like this post'}
+              >
+                <Heart
+                  size={14}
+                  className={`transition-transform duration-200 ${
+                    engagement.liked ? 'fill-current scale-110' : ''
+                  }`}
+                />
+              </button>
+              {engagement.likesCount >= 0 && (
+                <span className="font-medium">
+                  {engagement.likesCount.toLocaleString()}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
