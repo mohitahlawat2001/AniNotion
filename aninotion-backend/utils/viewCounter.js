@@ -29,6 +29,7 @@ class ViewCounter {
    */
   async incrementView(postId, sessionId) {
     if (!this.isEnabled()) {
+      console.warn('⚠️ Redis is not enabled for view counter');
       return false;
     }
 
@@ -38,11 +39,14 @@ class ViewCounter {
       const viewKey = `post:views:${postId}`;
       const sessionKey = `post:viewed:${postId}:${sessionId}`;
 
+      console.log(`🔍 Checking view for postId: ${postId}, sessionId: ${sessionId}`);
+
       // Check if this session has already viewed this post
       const alreadyViewed = await this.redis.exists(sessionKey);
 
       if (alreadyViewed) {
-        console.log(`⚡ Redis operation (incrementView check) took ${Date.now() - startTime}ms`);
+        const duration = Date.now() - startTime;
+        console.log(`⚡ Redis operation (already viewed) took ${duration}ms`);
         return false; // Already viewed, don't count again
       }
 
@@ -50,15 +54,16 @@ class ViewCounter {
       await this.redis.setex(sessionKey, 24 * 60 * 60, '1');
 
       // Increment the view counter
-      await this.redis.incr(viewKey);
+      const newCount = await this.redis.incr(viewKey);
       
       const duration = Date.now() - startTime;
-      console.log(`⚡ Redis operations (incrementView) took ${duration}ms`);
+      console.log(`⚡ Redis operations (incrementView) took ${duration}ms, new count: ${newCount}`);
       
       return true;
     } catch (error) {
       const duration = Date.now() - startTime;
       console.error(`❌ Redis incrementView error after ${duration}ms:`, error.message);
+      console.error('Error stack:', error.stack);
       throw error;
     }
   }

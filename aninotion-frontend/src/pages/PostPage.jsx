@@ -20,9 +20,19 @@ const PostPage = () => {
 
   // Engagement state
   const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
-  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [sessionId] = useState(() => {
+    const sid = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log('🆔 Session created:', sid);
+    return sid;
+  });
   const viewTimerRef = useRef(null);
   const hasIncrementedView = useRef(false);
+  const userRef = useRef(user); // Store user ref to avoid useEffect re-runs
+  
+  // Update user ref when user changes
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Anime search hook for finding anime based on post's animeName
   const { 
@@ -72,45 +82,61 @@ const PostPage = () => {
 
   // Set up engaged view timer
   useEffect(() => {
+    // Only run once when post is loaded and view hasn't been incremented yet
     if (post && !hasIncrementedView.current) {
-      // Increment view immediately if user is the post creator (they're definitely engaged)
-      const isCreator = user && post.createdBy && user.id === post.createdBy._id;
+      // Check if user is the post creator using ref to avoid dependency
+      const currentUser = userRef.current;
+      const isCreator = currentUser && post.createdBy && currentUser.id === post.createdBy._id;
       const delay = isCreator ? 1000 : 10000; // 1 second for creator, 10 seconds for others
       
       console.log('🔍 View increment setup:', { 
         postId: id, 
         isCreator, 
         delay, 
-        userId: user?.id, 
+        userId: currentUser?.id, 
         creatorId: post.createdBy?._id,
-        sessionId 
+        sessionId,
+        timestamp: new Date().toISOString()
       });
       
       viewTimerRef.current = setTimeout(async () => {
         try {
-          console.log('⏱️ Incrementing view after', delay, 'ms');
+          console.log('⏱️ Incrementing view after', delay, 'ms', new Date().toISOString());
           const result = await postsAPI.incrementView(id, sessionId);
           console.log('✅ View increment result:', result);
           
           if (result.viewCounted) {
-            setEngagement(prev => ({ ...prev, views: result.views }));
+            setEngagement(prev => ({ 
+              ...prev, 
+              views: result.views 
+            }));
             hasIncrementedView.current = true;
             console.log('🎉 View count updated to:', result.views);
           } else {
             console.log('ℹ️ View already counted for this session');
+            // Still mark as incremented to prevent retry
+            hasIncrementedView.current = true;
           }
         } catch (error) {
           console.error('❌ Error incrementing view:', error);
+          console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            postId: id,
+            sessionId
+          });
         }
       }, delay);
     }
 
     return () => {
-      if (viewTimerRef.current) {
+      // Only clear timer if view hasn't been incremented yet
+      if (viewTimerRef.current && !hasIncrementedView.current) {
+        console.log('⚠️ Cleaning up view timer before increment completed');
         clearTimeout(viewTimerRef.current);
       }
     };
-  }, [post, id, sessionId, user]);
+  }, [post, id, sessionId]); // Removed 'user' from dependencies to prevent re-runs
 
   // Search for anime when post loads
   useEffect(() => {
