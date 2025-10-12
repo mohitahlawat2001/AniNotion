@@ -389,6 +389,37 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /api/auth/logout - User logout
+router.post('/logout', requireAuth, async (req, res) => {
+  try {
+    logger.info("🚪 User logout", {
+      userId: req.user._id,
+      email: req.user.email,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    // In a stateless JWT system, logout is mainly for logging purposes
+    // The client should discard the token
+    
+    res.json({
+      message: 'Logout successful'
+    });
+    
+  } catch (error) {
+    logger.error("❌ Logout error:", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.user?._id
+    });
+    
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Logout failed'
+    });
+  }
+});
+
 // GET /api/auth/me - Get current user info
 router.get('/me', requireAuth, async (req, res) => {
   try {
@@ -689,10 +720,14 @@ router.get('/google/callback',
       // Generate JWT token for the authenticated user
       const token = generateToken(req.user._id);
       
-      logger.info('Google OAuth login successful', {
+      logger.info('🔐 Google OAuth login successful', {
         userId: req.user._id,
         email: req.user.email,
-        authProvider: req.user.authProvider
+        name: req.user.name,
+        authProvider: req.user.authProvider,
+        isNewUser: req.user.isNewUser || false,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       });
 
       // Redirect to frontend with token
@@ -700,9 +735,11 @@ router.get('/google/callback',
       res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
       
     } catch (error) {
-      logger.error('Google OAuth callback error', {
+      logger.error('❌ Google OAuth callback error', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       });
       
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';

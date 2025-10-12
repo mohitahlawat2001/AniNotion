@@ -30,6 +30,8 @@ logger.info("🖼️ Cloudinary configured", {
 
 // Get all posts (for home page)
 router.get('/', optionalAuth, async (req, res) => {
+  const startTime = Date.now();
+  
   try {
     const { status, category, tags, limit, page, sortBy = 'publishedAt', sortOrder = 'desc' } = req.query;
     
@@ -41,7 +43,10 @@ router.get('/', optionalAuth, async (req, res) => {
       tags,
       limit,
       page,
-      ip: req.ip
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      sessionId: req.query.sessionId,
+      requestId: req.id
     });
     
     // Build query based on user permissions
@@ -90,7 +95,9 @@ router.get('/', optionalAuth, async (req, res) => {
       totalCount,
       page: pageNum,
       limit: limitNum,
-      userId: req.user?._id
+      userId: req.user?._id,
+      duration: Date.now() - startTime,
+      requestId: req.id
     });
     
     res.json({
@@ -251,6 +258,8 @@ router.get('/:identifier', optionalAuth, async (req, res) => {
 
 // Create new post
 router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (req, res) => {
+  const startTime = Date.now();
+  
   try {
     const { 
       title, 
@@ -271,9 +280,12 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
       category,
       status,
       imageCount: images ? images.length : 0,
+      contentLength: content ? content.length : 0,
       userId: req.user._id,
       userRole: req.user.role,
-      ip: req.ip
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      requestId: req.id
     });
     
     // Validation
@@ -389,8 +401,12 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
       status,
       animeName,
       imageCount: imageUrls.length,
+      contentLength: content.length,
+      readingTime: readingTimeMinutes,
       userId: req.user._id,
-      userEmail: req.user.email
+      userEmail: req.user.email,
+      duration: Date.now() - startTime,
+      requestId: req.id
     });
     
     res.status(201).json(populatedPost);
@@ -685,6 +701,8 @@ router.put('/:id/publish', requireAuth, requireRole('admin', 'editor'), async (r
 
 // Increment view count for a post (engaged view)
 router.post('/:id/view', requireAuth, async (req, res) => {
+  const startTime = Date.now();
+  
   try {
     const { id } = req.params;
     const { sessionId } = req.body;
@@ -697,14 +715,19 @@ router.post('/:id/view', requireAuth, async (req, res) => {
       postId: id,
       userId: req.user?._id,
       sessionId,
-      ip: req.ip
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      requestId: req.id
     });
 
     const post = await Post.findById(id);
 
     if (!post) {
       logger.warn("⚠️ Post not found for view increment", {
-        postId: id
+        postId: id,
+        userId: req.user?._id,
+        sessionId,
+        duration: Date.now() - startTime
       });
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -715,12 +738,16 @@ router.post('/:id/view', requireAuth, async (req, res) => {
     if (viewCounted) {
       logger.info("✅ Post view counted", {
         postId: id,
-        sessionId
+        sessionId,
+        wasNewView: true,
+        duration: Date.now() - startTime
       });
     } else {
       logger.info("ℹ️ Post view already counted for this session", {
         postId: id,
-        sessionId
+        sessionId,
+        wasNewView: false,
+        duration: Date.now() - startTime
       });
     }
 
@@ -737,7 +764,9 @@ router.post('/:id/view', requireAuth, async (req, res) => {
     logger.error("❌ Error incrementing view:", {
       error: error.message,
       stack: error.stack,
-      postId: req.params.id
+      postId: req.params.id,
+      userId: req.user?._id,
+      duration: Date.now() - startTime
     });
 
     res.status(500).json({ message: error.message });
@@ -746,6 +775,8 @@ router.post('/:id/view', requireAuth, async (req, res) => {
 
 // Toggle like for a post
 router.post('/:id/like', optionalAuth, async (req, res) => {
+  const startTime = Date.now();
+  
   try {
     const { id } = req.params;
     const { sessionId } = req.body;
@@ -764,14 +795,20 @@ router.post('/:id/like', optionalAuth, async (req, res) => {
       userId,
       sessionId,
       likeIdentifier,
-      ip: req.ip
+      isAuthenticated: !!userId,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      requestId: req.id
     });
 
     const post = await Post.findById(id);
 
     if (!post) {
       logger.warn("⚠️ Post not found for like toggle", {
-        postId: id
+        postId: id,
+        userId,
+        sessionId,
+        duration: Date.now() - startTime
       });
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -785,7 +822,9 @@ router.post('/:id/like', optionalAuth, async (req, res) => {
       sessionId,
       likeIdentifier,
       liked,
-      likesCount
+      likesCount,
+      action: liked ? 'liked' : 'unliked',
+      duration: Date.now() - startTime
     });
 
     res.json({
@@ -797,7 +836,106 @@ router.post('/:id/like', optionalAuth, async (req, res) => {
     logger.error("❌ Error toggling like:", {
       error: error.message,
       stack: error.stack,
-      postId: req.params.id
+      postId: req.params.id,
+      userId: req.user?._id,
+      duration: Date.now() - startTime
+    });
+
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Track detailed engagement metrics for a post
+router.post('/:id/engagement/track', optionalAuth, async (req, res) => {
+  const startTime = Date.now();
+  
+  try {
+    const { id } = req.params;
+    const { 
+      sessionId, 
+      action, 
+      duration, 
+      scrollDepth, 
+      timeSpent,
+      interactions 
+    } = req.body;
+    
+    const userId = req.user?._id;
+
+    logger.info("📊 Tracking engagement metrics", {
+      postId: id,
+      userId,
+      sessionId,
+      action,
+      duration,
+      scrollDepth,
+      timeSpent,
+      interactions: interactions ? interactions.length : 0,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      requestId: req.id
+    });
+
+    const post = await Post.findById(id);
+
+    if (!post) {
+      logger.warn("⚠️ Post not found for engagement tracking", {
+        postId: id,
+        userId,
+        sessionId,
+        duration: Date.now() - startTime
+      });
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Store engagement metrics in Redis for analytics
+    const engagementKey = `post:engagement:${id}:${userId || sessionId}`;
+    const engagementData = {
+      userId: userId || null,
+      sessionId,
+      action,
+      duration: duration || timeSpent || 0,
+      scrollDepth: scrollDepth || 0,
+      interactions: interactions || [],
+      timestamp: new Date().toISOString(),
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    };
+
+    // Store as JSON string in Redis with TTL (24 hours)
+    await viewCounter.redis.setex(engagementKey, 86400, JSON.stringify(engagementData));
+
+    // Also add to a time-series list for the post
+    const timeSeriesKey = `post:engagement:timeseries:${id}`;
+    await viewCounter.redis.lpush(timeSeriesKey, JSON.stringify({
+      ...engagementData,
+      recordedAt: new Date().toISOString()
+    }));
+    
+    // Keep only last 1000 entries per post
+    await viewCounter.redis.ltrim(timeSeriesKey, 0, 999);
+
+    logger.info("✅ Engagement metrics tracked", {
+      postId: id,
+      userId,
+      sessionId,
+      action,
+      duration: engagementData.duration,
+      scrollDepth: engagementData.scrollDepth,
+      duration: Date.now() - startTime
+    });
+
+    res.json({
+      message: 'Engagement metrics recorded',
+      tracked: true
+    });
+  } catch (error) {
+    logger.error("❌ Error tracking engagement:", {
+      error: error.message,
+      stack: error.stack,
+      postId: req.params.id,
+      userId: req.user?._id,
+      duration: Date.now() - startTime
     });
 
     res.status(500).json({ message: error.message });

@@ -32,6 +32,8 @@ class ViewCounter {
       return false;
     }
 
+    const startTime = Date.now();
+    
     try {
       const viewKey = `post:views:${postId}`;
       const sessionKey = `post:viewed:${postId}:${sessionId}`;
@@ -40,6 +42,7 @@ class ViewCounter {
       const alreadyViewed = await this.redis.exists(sessionKey);
 
       if (alreadyViewed) {
+        console.log(`⚡ Redis operation (incrementView check) took ${Date.now() - startTime}ms`);
         return false; // Already viewed, don't count again
       }
 
@@ -48,11 +51,15 @@ class ViewCounter {
 
       // Increment the view counter
       await this.redis.incr(viewKey);
-
+      
+      const duration = Date.now() - startTime;
+      console.log(`⚡ Redis operations (incrementView) took ${duration}ms`);
+      
       return true;
     } catch (error) {
-      console.error('Error incrementing view count:', error);
-      return false;
+      const duration = Date.now() - startTime;
+      console.error(`❌ Redis incrementView error after ${duration}ms:`, error.message);
+      throw error;
     }
   }
 

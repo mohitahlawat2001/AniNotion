@@ -19,7 +19,10 @@ const logger = require('./config/logger');
 const BackupScheduler = require('./utils/backupScheduler');
 
 const app = express();
-app.use(requestLogger());
+
+// Apply performance monitoring first, then logging
+app.use(requestLogger.performanceMonitor());
+app.use(requestLogger.requestLogger());
 const PORT = process.env.PORT || 5000;
 
 // Log server startup
