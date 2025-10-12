@@ -48,7 +48,7 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
           activeCategory={activeCategory}
           onCategoryChange={onCategoryChange}
           onMobileItemClick={closeMobileMenu}
-          isMobile={true}
+          isMobile={isMobileMenuOpen}
         />
       </div>
 
