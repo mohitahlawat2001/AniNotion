@@ -47,15 +47,18 @@ const PostPage = () => {
         // Fetch engagement data
         try {
           const engagementData = await postsAPI.getEngagement(id, sessionId);
+          console.log('📊 Initial engagement data:', engagementData);
           setEngagement(engagementData);
         } catch (engagementError) {
-          console.error('Error fetching engagement data:', engagementError);
+          console.error('❌ Error fetching engagement data:', engagementError);
           // Fallback to post data
-          setEngagement({
+          const fallbackEngagement = {
             views: data.views || 0,
             likesCount: data.likesCount || 0,
             liked: false
-          });
+          };
+          console.log('📊 Using fallback engagement:', fallbackEngagement);
+          setEngagement(fallbackEngagement);
         }
       } catch (error) {
         console.error('Error fetching post:', error);
@@ -74,15 +77,30 @@ const PostPage = () => {
       const isCreator = user && post.createdBy && user.id === post.createdBy._id;
       const delay = isCreator ? 1000 : 10000; // 1 second for creator, 10 seconds for others
       
+      console.log('🔍 View increment setup:', { 
+        postId: id, 
+        isCreator, 
+        delay, 
+        userId: user?.id, 
+        creatorId: post.createdBy?._id,
+        sessionId 
+      });
+      
       viewTimerRef.current = setTimeout(async () => {
         try {
+          console.log('⏱️ Incrementing view after', delay, 'ms');
           const result = await postsAPI.incrementView(id, sessionId);
+          console.log('✅ View increment result:', result);
+          
           if (result.viewCounted) {
             setEngagement(prev => ({ ...prev, views: result.views }));
             hasIncrementedView.current = true;
+            console.log('🎉 View count updated to:', result.views);
+          } else {
+            console.log('ℹ️ View already counted for this session');
           }
         } catch (error) {
-          console.error('Error incrementing view:', error);
+          console.error('❌ Error incrementing view:', error);
         }
       }, delay);
     }

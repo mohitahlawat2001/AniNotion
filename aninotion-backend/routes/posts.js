@@ -700,7 +700,7 @@ router.put('/:id/publish', requireAuth, requireRole('admin', 'editor'), async (r
 });
 
 // Increment view count for a post (engaged view)
-router.post('/:id/view', requireAuth, async (req, res) => {
+router.post('/:id/view', optionalAuth, async (req, res) => {
   const startTime = Date.now();
   
   try {

@@ -361,10 +361,24 @@ export const postsAPI = {
 
   // View tracking
   incrementView: async (id, sessionId) => {
-    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/view`, {
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+    
+    const response = await fetch(`${API_BASE_URL}/posts/${id}/view`, {
       method: 'POST',
+      headers,
       body: JSON.stringify({ sessionId })
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    }
+    
+    return response.json();
   },
 
   // Get engagement data (views, likes, user's like status)
