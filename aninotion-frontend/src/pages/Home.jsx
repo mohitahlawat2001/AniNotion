@@ -6,8 +6,9 @@ import LayoutToggle from '../components/LayoutToggle';
 import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
-import Footer from '../components/Footer';
 import { postsAPI } from '../services/api';
+
+const POSTS_PER_PAGE = 20;
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -25,7 +26,10 @@ const Home = () => {
   const fetchInitialPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await postsAPI.getAll({ page: 1, limit: 20 }); // Use same limit as API default
+      const response = await postsAPI.getAll({
+        page: 1,
+        limit: POSTS_PER_PAGE,
+      });
 
       // Handle new API response format
       if (
@@ -55,24 +59,17 @@ const Home = () => {
   };
 
   const fetchMorePosts = useCallback(async () => {
-    console.log('fetchMorePosts called, hasMorePosts:', hasMorePosts);
     if (!hasMorePosts || isLoadingMore) {
-      console.log('No more posts to fetch or already loading, returning early');
       return;
     }
 
     try {
       setIsLoadingMore(true);
-      console.log(
-        'Fetching more posts, current page:',
-        currentPage,
-        'next page:',
-        currentPage + 1
-      );
       const nextPage = currentPage + 1;
-      const response = await postsAPI.getAll({ page: nextPage, limit: 20 }); // Use same limit as API default
-
-      console.log('Received response for page', nextPage, ':', response);
+      const response = await postsAPI.getAll({
+        page: nextPage,
+        limit: POSTS_PER_PAGE,
+      });
 
       if (
         response &&
@@ -85,13 +82,6 @@ const Home = () => {
           const newPosts = response.posts.filter(
             (post) => !existingIds.has(post._id)
           );
-          console.log(
-            'Adding',
-            newPosts.length,
-            'new posts to existing',
-            prevPosts.length,
-            'posts'
-          );
           return [...prevPosts, ...newPosts];
         });
         setPagination(response.pagination);
@@ -99,7 +89,6 @@ const Home = () => {
         const newHasMore =
           response.pagination &&
           response.pagination.page < response.pagination.pages;
-        console.log('Updated hasMorePosts to:', newHasMore);
         setHasMorePosts(newHasMore);
       }
     } catch (error) {
@@ -219,9 +208,6 @@ const Home = () => {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleCreatePost}
       />
-
-      {/* Footer - appears after all content */}
-      <Footer />
     </div>
   );
 };
