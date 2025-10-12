@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
-import Footer from './Footer';
 
 const Layout = ({ children, activeCategory, onCategoryChange }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -52,12 +51,9 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
         />
       </div>
 
-      {/* Main content with footer */}
-      <div className="flex-1 flex flex-col ml-0 lg:ml-0">
-        <main className="flex-1 p-4 lg:p-6 overflow-auto pt-6 lg:pt-6">
-          {children}
-        </main>
-        <Footer />
+      {/* Main content */}
+      <div className="flex-1 ml-0 lg:ml-0">
+        <main className="p-4 lg:p-6 pt-6 lg:pt-6">{children}</main>
       </div>
     </div>
   );

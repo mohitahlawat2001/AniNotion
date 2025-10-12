@@ -6,6 +6,7 @@ import LayoutToggle from '../components/LayoutToggle';
 import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Footer from '../components/Footer';
 import { postsAPI } from '../services/api';
 
 const Home = () => {
@@ -24,14 +25,21 @@ const Home = () => {
   const fetchInitialPosts = async () => {
     try {
       setIsLoading(true);
-  const response = await postsAPI.getAll({ page: 1, limit: 20 }); // Use same limit as API default
-      
+      const response = await postsAPI.getAll({ page: 1, limit: 20 }); // Use same limit as API default
+
       // Handle new API response format
-      if (response && typeof response === 'object' && Array.isArray(response.posts)) {
+      if (
+        response &&
+        typeof response === 'object' &&
+        Array.isArray(response.posts)
+      ) {
         setPosts(response.posts);
         setPagination(response.pagination);
         setCurrentPage(1);
-        setHasMorePosts(response.pagination && response.pagination.page < response.pagination.pages);
+        setHasMorePosts(
+          response.pagination &&
+            response.pagination.page < response.pagination.pages
+        );
       } else {
         // Fallback for old format
         setPosts(Array.isArray(response) ? response : []);
@@ -55,23 +63,42 @@ const Home = () => {
 
     try {
       setIsLoadingMore(true);
-      console.log('Fetching more posts, current page:', currentPage, 'next page:', currentPage + 1);
+      console.log(
+        'Fetching more posts, current page:',
+        currentPage,
+        'next page:',
+        currentPage + 1
+      );
       const nextPage = currentPage + 1;
-  const response = await postsAPI.getAll({ page: nextPage, limit: 20 }); // Use same limit as API default
-      
+      const response = await postsAPI.getAll({ page: nextPage, limit: 20 }); // Use same limit as API default
+
       console.log('Received response for page', nextPage, ':', response);
-      
-      if (response && typeof response === 'object' && Array.isArray(response.posts)) {
+
+      if (
+        response &&
+        typeof response === 'object' &&
+        Array.isArray(response.posts)
+      ) {
         // Check if we already have these posts to prevent duplicates
-        setPosts(prevPosts => {
-          const existingIds = new Set(prevPosts.map(post => post._id));
-          const newPosts = response.posts.filter(post => !existingIds.has(post._id));
-          console.log('Adding', newPosts.length, 'new posts to existing', prevPosts.length, 'posts');
+        setPosts((prevPosts) => {
+          const existingIds = new Set(prevPosts.map((post) => post._id));
+          const newPosts = response.posts.filter(
+            (post) => !existingIds.has(post._id)
+          );
+          console.log(
+            'Adding',
+            newPosts.length,
+            'new posts to existing',
+            prevPosts.length,
+            'posts'
+          );
           return [...prevPosts, ...newPosts];
         });
         setPagination(response.pagination);
         setCurrentPage(nextPage);
-        const newHasMore = response.pagination && response.pagination.page < response.pagination.pages;
+        const newHasMore =
+          response.pagination &&
+          response.pagination.page < response.pagination.pages;
         console.log('Updated hasMorePosts to:', newHasMore);
         setHasMorePosts(newHasMore);
       }
@@ -105,7 +132,7 @@ const Home = () => {
             </AuthButton>
           </div>
         </div>
-        
+
         {/* Shimmer Loading */}
         <LoadingSpinner type="shimmer" count={6} />
       </div>
@@ -134,7 +161,7 @@ const Home = () => {
       </div>
 
       {/* Posts Container */}
-      <PostsContainer 
+      <PostsContainer
         posts={posts}
         emptyMessage="No posts yet!"
         onCreatePost={() => setIsFormOpen(true)}
@@ -151,18 +178,27 @@ const Home = () => {
             {isLoadingMore ? (
               <>
                 <LoadingSpinner size="sm" />
-                <span className="text-sm sm:text-base font-medium">Loading...</span>
+                <span className="text-sm sm:text-base font-medium">
+                  Loading...
+                </span>
               </>
             ) : (
               <>
-                <span className="text-sm sm:text-base font-medium">Show more</span>
-                <svg 
-                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-hover:scale-110 duration-200" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <span className="text-sm sm:text-base font-medium">
+                  Show more
+                </span>
+                <svg
+                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-hover:scale-110 duration-200"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </>
             )}
@@ -183,6 +219,9 @@ const Home = () => {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleCreatePost}
       />
+
+      {/* Footer - appears after all content */}
+      <Footer />
     </div>
   );
 };
