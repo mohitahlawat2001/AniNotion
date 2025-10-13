@@ -264,6 +264,7 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
     const { 
       title, 
       animeName, 
+      episodeNumber,
       category, 
       content, 
       images, 
@@ -371,6 +372,7 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
       title,
       slug,
       animeName,
+      episodeNumber,
       category,
       content,
       status,
@@ -428,6 +430,7 @@ router.put('/:id', requireAuth, requireRole('admin', 'editor'), async (req, res)
     const { 
       title, 
       animeName, 
+      episodeNumber,
       category, 
       content, 
       status,
@@ -500,6 +503,7 @@ router.put('/:id', requireAuth, requireRole('admin', 'editor'), async (req, res)
     }
     
     if (animeName !== undefined) updateData.animeName = animeName;
+    if (episodeNumber !== undefined) updateData.episodeNumber = episodeNumber;
     if (category !== undefined) updateData.category = category;
     if (content !== undefined) {
       updateData.content = content;

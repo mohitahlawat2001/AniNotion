@@ -124,7 +124,12 @@ const PostCard = ({ post, layout = 'grid' }) => {
 
         {/* Anime name as subtitle */}
         <div className="flex items-center space-x-2 mb-2">
-          {post.animeName && <span className="text-gray-600 text-xs sm:text-sm">📺 {post.animeName}</span>}
+          {post.animeName && (
+            <span className="text-gray-600 text-xs sm:text-sm">
+              📺 {post.animeName}
+              {post.episodeNumber ? ` - Episode ${post.episodeNumber}` : ' - Whole Series'}
+            </span>
+          )}
           <CategoryBadge category={post.category} size="sm" />
         </div>
 
@@ -249,6 +254,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
         {post.animeName && (
           <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 font-medium">
             📺 {post.animeName}
+            {post.episodeNumber ? ` - Episode ${post.episodeNumber}` : ' - Whole Series'}
           </p>
         )}
 

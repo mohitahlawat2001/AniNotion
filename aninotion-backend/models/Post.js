@@ -14,6 +14,10 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  episodeNumber: {
+    type: Number,
+    required: false
+  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',

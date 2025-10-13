@@ -62,6 +62,9 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       setValue('animeName', animeName);
       setAnimeQuery(animeName);
       
+      // Set episode number
+      setValue('episodeNumber', initialData.episodeNumber || '');
+      
       // Set existing images if any
       if (initialData.images && initialData.images.length > 0) {
         setImagePreviews(initialData.images);
@@ -305,6 +308,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       const postData = {
         title: data.title,
         animeName: data.animeName,
+        episodeNumber: data.episodeNumber ? parseInt(data.episodeNumber) : undefined,
         category: data.category,
         content: data.content,
         status: data.status || 'published',
@@ -551,6 +555,30 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
             {/* Helper text */}
             <p className="text-xs text-gray-500 mt-1">
               Start typing to see suggestions from MyAnimeList database
+            </p>
+          </div>
+
+          {/* Episode Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Episode Number
+              <span className="text-gray-500 text-xs ml-2">
+                (Optional - Leave empty for whole series)
+              </span>
+            </label>
+            <input
+              type="number"
+              {...register('episodeNumber', {
+                min: { value: 1, message: 'Episode number must be positive' }
+              })}
+              placeholder="e.g. 1, 12, 25..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+            />
+            {errors.episodeNumber && (
+              <p className="text-red-500 text-sm mt-1">{errors.episodeNumber.message}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Enter episode number if this post is about a specific episode, leave empty for the whole series
             </p>
           </div>
 
