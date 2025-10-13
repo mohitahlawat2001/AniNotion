@@ -103,12 +103,17 @@ async function sendDailyLogs({ date, label, upstashUrl, upstashToken, emailTo, e
 
   for (const line of lines) {
     try {
-      if (typeof line !== 'string') {
-        console.warn("⚠️ Non-string line found:", typeof line, line);
+      let obj;
+      if (typeof line === 'string') {
+        obj = JSON.parse(line);
+      } else if (typeof line === 'object' && line !== null) {
+        // Already parsed object (Upstash client auto-parses)
+        obj = line;
+      } else {
+        console.warn("⚠️ Invalid line type:", typeof line, line);
         levelCounts.other += 1;
         continue;
       }
-      const obj = JSON.parse(line);
       const lvl = typeof obj.level === "number" ? obj.level : obj.level;
       
       // Improved level classification with more granular mapping
@@ -198,16 +203,22 @@ async function sendDailyLogs({ date, label, upstashUrl, upstashToken, emailTo, e
   // Process lines to create validLines array first
   const validLines = [];
   for (const line of lines) {
-    if (typeof line === 'string' && line.trim()) {
-      try {
-        // Validate it's parseable JSON
-        JSON.parse(line);
-        validLines.push(line);
-      } catch (e) {
-        console.warn("⚠️ Invalid JSON line skipped:", line.substring(0, 100));
+    try {
+      let jsonString;
+      if (typeof line === 'string') {
+        // Already a JSON string
+        JSON.parse(line); // Validate it's parseable
+        jsonString = line;
+      } else if (typeof line === 'object' && line !== null) {
+        // Object that needs to be stringified
+        jsonString = JSON.stringify(line);
+      } else {
+        console.warn("⚠️ Invalid line type for NDJSON:", typeof line);
+        continue;
       }
-    } else {
-      console.warn("⚠️ Non-string or empty line skipped:", typeof line, line);
+      validLines.push(jsonString);
+    } catch (e) {
+      console.warn("⚠️ Invalid JSON line skipped:", e.message);
     }
   }
 
@@ -346,19 +357,14 @@ Stack: ${e.stack ? e.stack.substring(0, 500) + "..." : ""}
     ndjsonLength: ndjson.length,
     sampleLine: validLines[0]?.substring(0, 100) + "..." || "No valid lines"
   });
-  
-  const attachment = {
-    filename: `logs-${appLabel}-${targetDate}.ndjson`,
-    content: Buffer.from(ndjson).toString("base64"),
-    contentType: "application/x-ndjson",
-  };
 
-  console.log("📧 Sending email via Resend:", {
+  console.log("📧 Preparing to send email via Resend:", {
     to: emailTo,
     from: emailFrom,
     subject: subject.substring(0, 50) + "...",
-    hasAttachment: true,
-    attachmentFilename: attachment.filename
+    willHaveAttachment: validLines.length > 0,
+    attachmentFilename: `logs-${appLabel}-${targetDate}.ndjson`,
+    validLinesCount: validLines.length
   });
 
   try {
@@ -370,7 +376,7 @@ Stack: ${e.stack ? e.stack.substring(0, 500) + "..." : ""}
       html,
     };
 
-    // Only add attachment if there are logs to attach
+    // Add attachment only if there are valid lines
     if (validLines.length > 0) {
       const ndjson = validLines.join("\n");
       const attachment = {
@@ -386,7 +392,7 @@ Stack: ${e.stack ? e.stack.substring(0, 500) + "..." : ""}
         base64Length: attachment.content.length
       });
     } else {
-      console.log("📎 No valid logs to attach");
+      console.log("📎 No valid logs to attach (empty attachment would cause API error)");
     }
 
     console.log("📧 Final email payload:", {
@@ -394,7 +400,8 @@ Stack: ${e.stack ? e.stack.substring(0, 500) + "..." : ""}
       from: emailPayload.from,
       subject: emailPayload.subject.substring(0, 50) + "...",
       hasAttachment: !!emailPayload.attachments,
-      attachmentCount: emailPayload.attachments?.length || 0
+      attachmentCount: emailPayload.attachments?.length || 0,
+      validLinesCount: validLines.length
     });
 
     const emailResult = await resend.emails.send(emailPayload);
