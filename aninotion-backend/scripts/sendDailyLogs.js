@@ -195,6 +195,22 @@ async function sendDailyLogs({ date, label, upstashUrl, upstashToken, emailTo, e
     topErrorPatterns: Object.entries(errorPatterns).sort(([,a], [,b]) => b - a).slice(0, 5)
   });
 
+  // Process lines to create validLines array first
+  const validLines = [];
+  for (const line of lines) {
+    if (typeof line === 'string' && line.trim()) {
+      try {
+        // Validate it's parseable JSON
+        JSON.parse(line);
+        validLines.push(line);
+      } catch (e) {
+        console.warn("⚠️ Invalid JSON line skipped:", line.substring(0, 100));
+      }
+    } else {
+      console.warn("⚠️ Non-string or empty line skipped:", typeof line, line);
+    }
+  }
+
   const subject = `[${appLabel}] Daily logs & analytics ${targetDate} — logs: ${validLines.length}, errors: ${levelCounts.error || 0}`;
   
   console.log("📝 Preparing email:", {
@@ -322,22 +338,6 @@ Stack: ${e.stack ? e.stack.substring(0, 500) + "..." : ""}
 
   // NDJSON attachment (keep volume reasonable with LOGS_MAX_PER_DAY and LOG_TO_REDIS_LEVEL)
   console.log("📄 Creating NDJSON attachment...");
-  
-  // Ensure all lines are valid JSON strings
-  const validLines = [];
-  for (const line of lines) {
-    if (typeof line === 'string' && line.trim()) {
-      try {
-        // Validate it's parseable JSON
-        JSON.parse(line);
-        validLines.push(line);
-      } catch (e) {
-        console.warn("⚠️ Invalid JSON line skipped:", line.substring(0, 100));
-      }
-    } else {
-      console.warn("⚠️ Non-string or empty line skipped:", typeof line, line);
-    }
-  }
   
   const ndjson = validLines.join("\n");
   console.log("✅ NDJSON created:", {
