@@ -1,0 +1,78 @@
+services:
+  # MongoDB Database
+  mongo:
+    image: mongo:7
+    container_name: aninotion-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    environment:
+      MONGO_INITDB_DATABASE: aninotion
+    networks:
+      - aninotion-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/aninotion --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./aninotion-backend
+      dockerfile: Dockerfile
+    container_name: aninotion-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/aninotion
+    env_file:
+      - ./aninotion-backend/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - aninotion-network
+    volumes:
+      - ./aninotion-backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./aninotion-frontend
+      dockerfile: Dockerfile
+    container_name: aninotion-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+    env_file:
+      - ./aninotion-frontend/.env
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - aninotion-network
+
+networks:
+  aninotion-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
+  mongo-config:
+    driver: local
