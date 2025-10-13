@@ -65,6 +65,9 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       // Set episode number
       setValue('episodeNumber', initialData.episodeNumber || '');
       
+      // Set season number
+      setValue('seasonNumber', initialData.seasonNumber || '');
+      
       // Set existing images if any
       if (initialData.images && initialData.images.length > 0) {
         setImagePreviews(initialData.images);
@@ -309,6 +312,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
         title: data.title,
         animeName: data.animeName,
         episodeNumber: data.episodeNumber ? parseInt(data.episodeNumber) : undefined,
+        seasonNumber: data.seasonNumber ? parseInt(data.seasonNumber) : undefined,
         category: data.category,
         content: data.content,
         status: data.status || 'published',
@@ -558,28 +562,65 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
             </p>
           </div>
 
-          {/* Episode Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Episode Number
-              <span className="text-gray-500 text-xs ml-2">
-                (Optional - Leave empty for whole series)
-              </span>
-            </label>
-            <input
-              type="number"
-              {...register('episodeNumber', {
-                min: { value: 1, message: 'Episode number must be positive' }
-              })}
-              placeholder="e.g. 1, 12, 25..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
-            />
-            {errors.episodeNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.episodeNumber.message}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              Enter episode number if this post is about a specific episode, leave empty for the whole series
-            </p>
+          {/* Season and Episode Numbers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Season Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Season Number
+                <span className="text-gray-500 text-xs ml-2 block sm:inline mt-1 sm:mt-0">
+                  (Optional)
+                </span>
+              </label>
+              <input
+                type="number"
+                {...register('seasonNumber', {
+                  min: { value: 1, message: 'Season number must be positive' }
+                })}
+                placeholder="e.g. 1, 2, 3..."
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+              />
+              {errors.seasonNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.seasonNumber.message}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Specify which season this post is about
+              </p>
+            </div>
+
+            {/* Episode Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Episode Number
+                <span className="text-gray-500 text-xs ml-2 block sm:inline mt-1 sm:mt-0">
+                  (Optional)
+                </span>
+              </label>
+              <input
+                type="number"
+                {...register('episodeNumber', {
+                  min: { value: 1, message: 'Episode number must be positive' }
+                })}
+                placeholder="e.g. 1, 12, 25..."
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+              />
+              {errors.episodeNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.episodeNumber.message}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Specify which episode this post is about
+              </p>
+            </div>
+          </div>
+
+          {/* Helper text for season/episode */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
+            <p className="font-medium mb-1">💡 Season & Episode Guide:</p>
+            <ul className="text-xs space-y-1 ml-4 list-disc">
+              <li>Leave both empty for posts about the whole anime series</li>
+              <li>Fill only Season for posts about a specific season</li>
+              <li>Fill both for posts about a specific episode in a season</li>
+            </ul>
           </div>
 
           {/* Multiple Image Upload */}

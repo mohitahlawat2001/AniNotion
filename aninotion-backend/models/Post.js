@@ -18,6 +18,10 @@ const postSchema = new mongoose.Schema({
     type: Number,
     required: false
   },
+  seasonNumber: {
+    type: Number,
+    required: false
+  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',

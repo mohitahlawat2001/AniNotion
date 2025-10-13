@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import CategoryPage from './pages/CategoryPage';
 import RawPage from './pages/RawPage';
 import PostPage from './pages/PostPage';
+import AnimeInfoPage from './pages/AnimeInfoPage';
 import AuthCallback from './pages/AuthCallback';
 import { LayoutProvider } from './context/LayoutContext';
 import { AuthProvider } from './context/AuthContext';
@@ -30,6 +31,7 @@ function App() {
                 } 
               />
               <Route path="/post/:id" element={<PostPage />} />
+              <Route path="/anime/:animeName" element={<AnimeInfoPage />} />
               <Route path="/raw" element={<RawPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>

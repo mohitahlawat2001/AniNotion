@@ -11,6 +11,7 @@ const PostCard = ({ post, layout = 'grid' }) => {
   const navigate = useNavigate();
   const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [showCustomTooltip, setShowCustomTooltip] = useState(false);
 
   // Fetch engagement data on mount
   useEffect(() => {
@@ -125,10 +126,34 @@ const PostCard = ({ post, layout = 'grid' }) => {
         {/* Anime name as subtitle */}
         <div className="flex items-center space-x-2 mb-2">
           {post.animeName && (
-            <span className="text-gray-600 text-xs sm:text-sm">
-              📺 {post.animeName}
-              {post.episodeNumber ? ` - Episode ${post.episodeNumber}` : ' - Whole Series'}
-            </span>
+            <div className="relative inline-block">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/anime/${encodeURIComponent(post.animeName)}`);
+                }}
+                onMouseEnter={() => setShowCustomTooltip(true)}
+                onMouseLeave={() => setShowCustomTooltip(false)}
+                className="text-gray-600 hover:text-primary hover:bg-primary/5 hover:animate-pulse text-xs sm:text-sm transition-all duration-200 px-1 py-0.5 rounded cursor-pointer"
+              >
+                📺 {post.animeName}
+                {post.seasonNumber && post.episodeNumber 
+                  ? ` - S${post.seasonNumber}E${post.episodeNumber}`
+                  : post.seasonNumber
+                  ? ` - Season ${post.seasonNumber}`
+                  : post.episodeNumber
+                  ? ` - Episode ${post.episodeNumber}`
+                  : ' - Whole Series'}
+              </button>
+              
+              {/* Custom Tooltip */}
+              {showCustomTooltip && (
+                <div className="absolute z-50 px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                  View all posts about this anime
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                </div>
+              )}
+            </div>
           )}
           <CategoryBadge category={post.category} size="sm" />
         </div>
@@ -252,13 +277,35 @@ const PostCard = ({ post, layout = 'grid' }) => {
 
         {/* Anime Name */}
         {post.animeName && (
-          <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 font-medium">
-            📺 {post.animeName}
-            {post.episodeNumber ? ` - Episode ${post.episodeNumber}` : ' - Whole Series'}
-          </p>
-        )}
-
-        {/* Content Preview */}
+          <div className="relative inline-block">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/anime/${encodeURIComponent(post.animeName)}`);
+              }}
+              onMouseEnter={() => setShowCustomTooltip(true)}
+              onMouseLeave={() => setShowCustomTooltip(false)}
+              className="text-xs sm:text-sm text-gray-600 hover:text-primary hover:bg-primary/5 hover:animate-pulse mb-2 sm:mb-3 font-medium transition-all duration-200 px-1 py-0.5 rounded cursor-pointer text-left"
+            >
+              📺 {post.animeName}
+              {post.seasonNumber && post.episodeNumber 
+                ? ` - S${post.seasonNumber}E${post.episodeNumber}`
+                : post.seasonNumber
+                ? ` - Season ${post.seasonNumber}`
+                : post.episodeNumber
+                ? ` - Episode ${post.episodeNumber}`
+                : ' - Whole Series'}
+            </button>
+            
+            {/* Custom Tooltip */}
+            {showCustomTooltip && (
+              <div className="absolute z-50 px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                View all posts about this anime
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+              </div>
+            )}
+          </div>
+        )}        {/* Content Preview */}
         <div className="mb-3 sm:mb-4">
           <p className="text-gray-700 line-clamp-2 sm:line-clamp-3 text-sm leading-relaxed">
             {getDisplayContent()}
