@@ -1,0 +1,5 @@
+{
+  "uri": "mongodb://127.0.0.1:17546/jest",
+  "port": 17546,
+  "dbName": "jest"
+}
