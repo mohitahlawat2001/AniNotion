@@ -21,14 +21,11 @@ class EnvironmentConfig {
   validateRequired() {
     const required = [
       'MONGODB_URI',
-      'JWT_SECRET',
-      'CLOUDINARY_CLOUD_NAME',
-      'CLOUDINARY_API_KEY',
-      'CLOUDINARY_API_SECRET'
+      'JWT_SECRET'
     ];
 
     const missing = required.filter(key => !process.env[key]);
-    
+
     if (missing.length > 0) {
       throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
     }
@@ -36,6 +33,11 @@ class EnvironmentConfig {
     // Validate JWT_SECRET strength in production
     if (this.isProduction() && process.env.JWT_SECRET.length < 10) {
       throw new Error('JWT_SECRET must be at least 10 characters in production');
+    }
+
+    // Warn about optional but recommended services
+    if (!process.env.CLOUDINARY_CLOUD_NAME) {
+      console.warn('⚠️  Cloudinary is not configured. Image uploads will be disabled.');
     }
   }
 
