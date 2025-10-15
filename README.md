@@ -12,6 +12,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-8.15.1-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4.1.8-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-6.3.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
@@ -67,7 +68,88 @@
 - **MongoDB** 4.4+
 - **npm** or **yarn**
 
+**OR**
+
+- **Docker** & **Docker Compose** (recommended for easy setup)
+
 ### Installation
+
+#### Option 1: Docker Setup (Recommended)
+
+The easiest way to get started is using Docker:
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/mohitahlawat2001/AniNotion.git
+   cd AniNotion
+   ```
+
+2. **Set up environment variables**
+
+   ```bash
+   # Backend environment
+   cp aninotion-backend/.env.example aninotion-backend/.env
+
+   # Frontend environment
+   cp aninotion-frontend/.env.example aninotion-frontend/.env
+   ```
+
+3. **Configure your environment**
+
+   Edit `aninotion-backend/.env` with your actual credentials:
+   - JWT_SECRET
+   - Google OAuth credentials (optional for basic functionality)
+   - Cloudinary credentials (optional for image uploads)
+   - Other API keys as needed
+
+   **Note:** The application will work with placeholder values from `.env.example`, but some features may be limited.
+
+4. **Start the application with Docker**
+
+   ```bash
+   docker compose up -d
+   ```
+
+   This will:
+   - Start MongoDB container
+   - Build and start the backend API (http://localhost:5000)
+   - Build and start the frontend (http://localhost:5173)
+
+5. **Initialize the database** (first time only)
+
+   ```bash
+   docker compose exec backend npm run seed
+   docker compose exec backend npm run migrate:v0.5
+   ```
+
+6. **Access the application**
+
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000/api
+   - MongoDB: localhost:27017
+
+**Docker Commands:**
+
+```bash
+# Stop all containers
+docker compose down
+
+# Stop and remove all volumes (database will be reset)
+docker compose down -v
+
+# View logs
+docker compose logs -f
+
+# Rebuild containers after code changes
+docker compose up -d --build
+
+# Execute commands in containers
+docker compose exec backend npm run health
+docker compose exec backend npm run backup
+```
+
+#### Option 2: Manual Installation
 
 1. **Clone the repository**
 
@@ -239,6 +321,8 @@ AniNotion supports multiple authentication methods:
 
 ### DevOps & Tools
 
+- **Docker** - Containerization for easy deployment
+- **Docker Compose** - Multi-container orchestration
 - **Husky** - Git hooks for code quality
 - **lint-staged** - Run linters on staged files
 - **ESLint** - JavaScript linting

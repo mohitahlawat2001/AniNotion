@@ -4,11 +4,16 @@ const environment = require('../config/environment');
 class ViewCounter {
   constructor() {
     const redisConfig = environment.getRedis();
-    if (redisConfig.enabled) {
-      this.redis = new Redis({
-        url: redisConfig.url,
-        token: redisConfig.token
-      });
+    if (redisConfig.enabled && redisConfig.url && redisConfig.token) {
+      try {
+        this.redis = new Redis({
+          url: redisConfig.url,
+          token: redisConfig.token
+        });
+      } catch (error) {
+        console.warn('Failed to initialize Redis, running without caching:', error.message);
+        this.redis = null;
+      }
     } else {
       this.redis = null;
     }

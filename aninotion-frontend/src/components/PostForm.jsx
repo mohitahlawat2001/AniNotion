@@ -63,7 +63,14 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
 
       const animeName = initialData.animeName || '';
       setAnimeQuery(animeName);
-
+      
+      // Set episode number
+      setValue('episodeNumber', initialData.episodeNumber || '');
+      
+      // Set season number
+      setValue('seasonNumber', initialData.seasonNumber || '');
+      
+      // Set existing images if any
       if (initialData.images && initialData.images.length > 0) {
         setImagePreviews(initialData.images);
         setImageLinks(new Array(initialData.images.length).fill(true));
@@ -316,13 +323,15 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     
     try {
       const postData = {
-        title: formData.title,
-        animeName: formData.animeName,
-        category: formData.category,
-        content: formData.content,
-        status: formData.status,
-        tags: formData.tags,
-        excerpt: formData.excerpt
+        title: data.title,
+        animeName: data.animeName,
+        episodeNumber: data.episodeNumber ? parseInt(data.episodeNumber) : undefined,
+        seasonNumber: data.seasonNumber ? parseInt(data.seasonNumber) : undefined,
+        category: data.category,
+        content: data.content,
+        status: data.status || 'published',
+        tags: data.tags,
+        excerpt: data.excerpt
       };
 
       if (!isEdit || imagePreviews.length > 0) {
@@ -398,9 +407,199 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
                 Featured Image
               </label>
               
-              {imagePreviews.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="relative group rounded-xl overflow-hidden">
+              {/* Search/Loading Icon */}
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                {isSearchingAnime ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                ) : (
+                  <Search size={20} className="text-gray-400" />
+                )}
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking suggestions
+                  onMouseUp={(e) => e.preventDefault()}   // Prevent blur when releasing click
+                >
+                  {animeSuggestions.length > 0 ? (
+                    <div className="py-1">
+                      {animeSuggestions.map((anime, index) => {
+                        const animeData = anime.node || anime;
+                        return (
+                          <button
+                            key={animeData.id}
+                            type="button"
+                            onClick={() => handleAnimeSelect(anime)}
+                            className={`w-full text-left px-4 py-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
+                              index === selectedAnimeIndex ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                            }`}
+                          >
+                            {/* Anime Poster */}
+                            {animeData.main_picture?.medium && (
+                              <img
+                                src={animeData.main_picture.medium}
+                                alt={animeData.title}
+                                className="w-12 h-16 object-cover rounded flex-shrink-0"
+                                referrerPolicy="no-referrer"
+                              />
+                            )}
+                            
+                            {/* Anime Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 truncate">
+                                {animeData.title}
+                              </div>
+                              {animeData.alternative_titles?.en && animeData.alternative_titles.en !== animeData.title && (
+                                <div className="text-sm text-gray-600 truncate">
+                                  {animeData.alternative_titles.en}
+                                </div>
+                              )}
+                              {animeData.start_date && (
+                                <div className="text-xs text-gray-500">
+                                  {new Date(animeData.start_date).getFullYear()}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Score */}
+                            {animeData.mean && (
+                              <div className="flex items-center text-yellow-600 flex-shrink-0">
+                                <span className="text-sm font-medium">★ {animeData.mean.toFixed(1)}</span>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                      
+                      {/* Footer */}
+                      <div className="px-4 py-2 text-xs text-gray-500 border-t bg-gray-50">
+                        <div className="flex items-center justify-between">
+                          <span>Use ↑↓ to navigate, Enter to select, Esc to close</span>
+                          <span className="flex items-center">
+                            Powered by 
+                            <span className="ml-1 font-medium text-blue-600">MyAnimeList</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-6 text-center text-gray-500">
+                      {isSearchingAnime ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                          <span>Searching anime...</span>
+                        </div>
+                      ) : animeQuery.trim().length > 0 ? (
+                        <div>
+                          <div className="text-sm">No anime found for "{animeQuery}"</div>
+                          <div className="text-xs text-gray-400 mt-1">Try a different search term</div>
+                        </div>
+                      ) : (
+                        <div className="text-sm">Start typing to search for anime</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Hidden input for form validation */}
+            <input
+              type="hidden"
+              {...register('animeName', { required: 'Anime/Manga name is required' })}
+            />
+            
+            {errors.animeName && (
+              <p className="text-red-500 text-sm mt-1">{errors.animeName.message}</p>
+            )}
+            
+            {/* Helper text */}
+            <p className="text-xs text-gray-500 mt-1">
+              Start typing to see suggestions from MyAnimeList database
+            </p>
+          </div>
+
+          {/* Season and Episode Numbers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Season Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Season Number
+                <span className="text-gray-500 text-xs ml-2 block sm:inline mt-1 sm:mt-0">
+                  (Optional)
+                </span>
+              </label>
+              <input
+                type="number"
+                {...register('seasonNumber', {
+                  min: { value: 1, message: 'Season number must be positive' }
+                })}
+                placeholder="e.g. 1, 2, 3..."
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+              />
+              {errors.seasonNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.seasonNumber.message}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Specify which season this post is about
+              </p>
+            </div>
+
+            {/* Episode Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Episode Number
+                <span className="text-gray-500 text-xs ml-2 block sm:inline mt-1 sm:mt-0">
+                  (Optional)
+                </span>
+              </label>
+              <input
+                type="number"
+                {...register('episodeNumber', {
+                  min: { value: 1, message: 'Episode number must be positive' }
+                })}
+                placeholder="e.g. 1, 12, 25..."
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+              />
+              {errors.episodeNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.episodeNumber.message}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Specify which episode this post is about
+              </p>
+            </div>
+          </div>
+
+          {/* Helper text for season/episode */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
+            <p className="font-medium mb-1">💡 Season & Episode Guide:</p>
+            <ul className="text-xs space-y-1 ml-4 list-disc">
+              <li>Leave both empty for posts about the whole anime series</li>
+              <li>Fill only Season for posts about a specific season</li>
+              <li>Fill both for posts about a specific episode in a season</li>
+            </ul>
+          </div>
+
+          {/* Multiple Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Add Photos
+              <span className="text-gray-500 text-xs ml-2 hidden sm:inline">
+                (Upload files, paste images with Ctrl+V, or add image URLs)
+              </span>
+              <span className="text-gray-500 text-xs ml-2 sm:hidden block mt-1">
+                Upload files, paste images, or add URLs
+              </span>
+            </label>
+            
+            {/* Image Previews Grid */}
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative group">
                     <img
                       src={imagePreviews[0]}
                       alt="Featured"
