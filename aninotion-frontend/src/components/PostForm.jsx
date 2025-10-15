@@ -1,97 +1,102 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { X, Upload, Image, Plus, Link, Check, Search, ChevronDown } from 'lucide-react';
-import { categoriesAPI, postsAPI, animeAPI } from '../services/api';
+import { X, Upload, Link, Check, Search } from 'lucide-react';
 
+// Mock API services - replace with actual imports
+const categoriesAPI = { getAll: async () => [] };
+const postsAPI = { create: async (data) => data, update: async (id, data) => data };
+const animeAPI = { search: async (query, options) => ({ data: [] }) };
 
 const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = false }) => {
   const [categories, setCategories] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [imageLinks, setImageLinks] = useState([]); // Track which images are from links
+  const [imageLinks, setImageLinks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
   const [error, setError] = useState('');
-  
-  // Anime suggestion states
+  const [formData, setFormData] = useState({
+    title: '',
+    category: '',
+    animeName: '',
+    content: '',
+    excerpt: '',
+    tags: '',
+    status: 'published'
+  });
+  const [formErrors, setFormErrors] = useState({});
+
   const [animeQuery, setAnimeQuery] = useState('');
   const [animeSuggestions, setAnimeSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearchingAnime, setIsSearchingAnime] = useState(false);
   const [selectedAnimeIndex, setSelectedAnimeIndex] = useState(-1);
   const [hasUserInteractedWithAnime, setHasUserInteractedWithAnime] = useState(false);
-  
+
   const fileInputRef = useRef(null);
   const animeInputRef = useRef(null);
   const suggestionsRef = useRef(null);
-  
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
-  // Fetch categories when component mounts
   useEffect(() => {
     if (isOpen) {
       fetchCategories();
     }
   }, [isOpen]);
 
-  // Additional effect to set category after categories are loaded
   useEffect(() => {
     if (isEdit && initialData && categories.length > 0 && initialData.category?._id) {
-      console.log('Setting category after categories loaded:', initialData.category._id);
-      setValue('category', initialData.category._id);
+      setFormData(prev => ({ ...prev, category: initialData.category._id }));
     }
-  }, [categories, isEdit, initialData, setValue]);
+  }, [categories, isEdit, initialData]);
 
-  // Populate form data when editing
   useEffect(() => {
     if (isOpen && isEdit && initialData) {
-      console.log('Populating form with initial data:', initialData);
-      console.log('Available categories:', categories);
-      
-      // Set form values
-      setValue('title', initialData.title || '');
-      setValue('category', initialData.category?._id || '');
-      setValue('content', initialData.content || '');
-      setValue('status', initialData.status || 'published');
-      setValue('excerpt', initialData.excerpt || '');
-      setValue('tags', initialData.tags ? initialData.tags.join(', ') : '');
-      
-      // Set anime name and query
+      setFormData({
+        title: initialData.title || '',
+        category: initialData.category?._id || '',
+        animeName: initialData.animeName || '',
+        content: initialData.content || '',
+        excerpt: initialData.excerpt || '',
+        tags: initialData.tags ? initialData.tags.join(', ') : '',
+        status: initialData.status || 'published'
+      });
+
       const animeName = initialData.animeName || '';
-      setValue('animeName', animeName);
       setAnimeQuery(animeName);
-      
-      // Set existing images if any
+
       if (initialData.images && initialData.images.length > 0) {
         setImagePreviews(initialData.images);
-        setImageLinks(new Array(initialData.images.length).fill(true)); // Mark as links since they're URLs
+        setImageLinks(new Array(initialData.images.length).fill(true));
       }
-      
-      console.log('Form populated - category set to:', initialData.category?._id);
     } else if (isOpen && !isEdit) {
-      // Reset form for new post
-      reset();
+      setFormData({
+        title: '',
+        category: '',
+        animeName: '',
+        content: '',
+        excerpt: '',
+        tags: '',
+        status: 'published'
+      });
       setImagePreviews([]);
       setImageLinks([]);
       setAnimeQuery('');
       setError('');
+      setFormErrors({});
       setHasUserInteractedWithAnime(false);
     }
-    
-    // Reset interaction state when form opens
+
     if (isOpen) {
       setHasUserInteractedWithAnime(false);
       setShowSuggestions(false);
       setAnimeSuggestions([]);
     }
-  }, [isOpen, isEdit, initialData, categories, setValue, reset]);
+  }, [isOpen, isEdit, initialData, categories]);
 
-  // Add paste event listener
   useEffect(() => {
     const handlePaste = (e) => {
       if (!isOpen) return;
-      
+
       const items = e.clipboardData?.items;
       if (items) {
         for (let i = 0; i < items.length; i++) {
@@ -109,7 +114,6 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     return () => document.removeEventListener('paste', handlePaste);
   }, [isOpen]);
 
-  // Debounced anime search effect
   useEffect(() => {
     if (!animeQuery.trim() || animeQuery.length < 2) {
       setAnimeSuggestions([]);
@@ -117,7 +121,6 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       return;
     }
 
-    // Only search and show suggestions if user has interacted with the anime input
     if (!hasUserInteractedWithAnime) {
       return;
     }
@@ -136,12 +139,11 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       } finally {
         setIsSearchingAnime(false);
       }
-    }, 500); // 0.5 second delay
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [animeQuery, hasUserInteractedWithAnime]);
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -170,56 +172,61 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     }
   };
 
-  // Handle anime input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
   const handleAnimeInputChange = (e) => {
     const value = e.target.value;
     setAnimeQuery(value);
-    setValue('animeName', value);
-    setHasUserInteractedWithAnime(true); // Mark as user-initiated change
+    setFormData(prev => ({ ...prev, animeName: value }));
+    setHasUserInteractedWithAnime(true);
+    if (formErrors.animeName) {
+      setFormErrors(prev => ({ ...prev, animeName: '' }));
+    }
   };
 
-  // Handle anime input blur (hide suggestions with delay)
   const handleAnimeInputBlur = () => {
-    // Add a small delay to allow clicking on suggestions before they disappear
     setTimeout(() => {
       setShowSuggestions(false);
       setSelectedAnimeIndex(-1);
     }, 200);
   };
 
-  // Handle anime input focus (show suggestions if available)
   const handleAnimeInputFocus = () => {
-    setHasUserInteractedWithAnime(true); // Mark as user-initiated interaction
+    setHasUserInteractedWithAnime(true);
     if (animeSuggestions.length > 0 && animeQuery.trim().length >= 2) {
       setShowSuggestions(true);
     }
   };
 
-  // Handle anime selection from suggestions
   const handleAnimeSelect = (anime) => {
     const animeData = anime.node || anime;
     const title = animeData.title;
     setAnimeQuery(title);
-    setValue('animeName', title);
+    setFormData(prev => ({ ...prev, animeName: title }));
     setShowSuggestions(false);
     setSelectedAnimeIndex(-1);
     animeInputRef.current?.focus();
   };
 
-  // Handle keyboard navigation in suggestions
   const handleAnimeKeyDown = (e) => {
     if (!showSuggestions || animeSuggestions.length === 0) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedAnimeIndex(prev => 
+        setSelectedAnimeIndex(prev =>
           prev < animeSuggestions.length - 1 ? prev + 1 : 0
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedAnimeIndex(prev => 
+        setSelectedAnimeIndex(prev =>
           prev > 0 ? prev - 1 : animeSuggestions.length - 1
         );
         break;
@@ -241,7 +248,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreviews(prev => [...prev, reader.result]);
-      setImageLinks(prev => [...prev, false]); // Mark as not from link
+      setImageLinks(prev => [...prev, false]);
     };
     reader.readAsDataURL(file);
   };
@@ -251,87 +258,96 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
     files.forEach(file => {
       handleFileToBase64(file);
     });
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  // const validateImageUrl = (url) => {
-  //   return new Promise((resolve) => {
-  //     const img = new Image();
-  //     img.onload = () => resolve(true);
-  //     img.onerror = () => resolve(false);
-  //     img.src = url;
-  //   });
-  // };
-
   const handleAddImageUrl = async () => {
-  if (!imageUrl.trim()) return;
+    if (!imageUrl.trim()) return;
 
-  // Basic URL format validation only
-  try {
-    new URL(imageUrl);
-  } catch (e) {
-    alert('Please enter a valid URL format (e.g., https://example.com/image.jpg)' + e.message);
-    return;
-  }
+    try {
+      new URL(imageUrl);
+    } catch (e) {
+      alert('Please enter a valid URL format');
+      return;
+    }
 
-  setIsValidatingUrl(true);
-  
-  try {
-    // Accept all URLs without validation - let browser handle loading
-    setImagePreviews(prev => [...prev, imageUrl]);
-    setImageLinks(prev => [...prev, true]); // Mark as from link
-    setImageUrl('');
-    setShowLinkInput(false);
-  } catch (error) {
-    console.error('Error adding image URL:', error);
-    alert('Error adding image URL. Please try again.');
-  } finally {
-    setIsValidatingUrl(false);
-  }
-};
+    setIsValidatingUrl(true);
+
+    try {
+      setImagePreviews(prev => [...prev, imageUrl]);
+      setImageLinks(prev => [...prev, true]);
+      setImageUrl('');
+      setShowLinkInput(false);
+    } catch (error) {
+      console.error('Error adding image URL:', error);
+      alert('Error adding image URL. Please try again.');
+    } finally {
+      setIsValidatingUrl(false);
+    }
+  };
 
   const removeImage = (index) => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
     setImageLinks(prev => prev.filter((_, i) => i !== index));
   };
 
-  const onSubmitForm = async (data) => {
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    if (!formData.category) errors.category = 'Category is required';
+    if (!formData.animeName.trim()) errors.animeName = 'Anime/Manga name is required';
+    if (!formData.content.trim()) errors.content = 'Content is required';
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     setError('');
+    
     try {
       const postData = {
-        title: data.title,
-        animeName: data.animeName,
-        category: data.category,
-        content: data.content,
-        status: data.status || 'published',
-        tags: data.tags,
-        excerpt: data.excerpt
+        title: formData.title,
+        animeName: formData.animeName,
+        category: formData.category,
+        content: formData.content,
+        status: formData.status,
+        tags: formData.tags,
+        excerpt: formData.excerpt
       };
 
-      // Only include images for new posts or if images were changed
       if (!isEdit || imagePreviews.length > 0) {
         postData.images = imagePreviews;
         postData.imageTypes = imageLinks;
       }
-      
+
       let result;
       if (isEdit && initialData) {
-        // Update existing post
         result = await postsAPI.update(initialData._id, postData);
       } else {
-        // Create new post
         result = await postsAPI.create(postData);
       }
-      
-      // Call the parent's onSubmit with the result
+
       await onSubmit(result);
-      
-      // Reset form state
-      reset();
+
+      setFormData({
+        title: '',
+        category: '',
+        animeName: '',
+        content: '',
+        excerpt: '',
+        tags: '',
+        status: 'published'
+      });
       setImagePreviews([]);
       setImageLinks([]);
       setImageUrl('');
@@ -352,263 +368,96 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
-        <div className="flex justify-between items-center p-4 sm:p-6 border-b">
-          <h2 className="text-xl sm:text-2xl font-bold">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-4xl w-full my-4 mx-2 sm:mx-4 max-h-[95vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b flex-shrink-0">
+          <h2 className="text-2xl font-bold text-gray-900">
             {isEdit ? 'Edit Post' : 'Create New Post'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1 touch-target"
+            className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close"
           >
-            <X size={20} className="sm:hidden" />
-            <X size={24} className="hidden sm:block" />
+            <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmitForm)} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {/* Category Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category *
-            </label>
-            <select
-              {...register('category', { required: 'Category is required' })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
-            >
-              <option value="">Select a category</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
-            )}
-            {/* Debug info - remove after testing */}
-            {isEdit && (
-              <div className="mt-1 text-xs text-gray-500">
-                Categories loaded: {categories.length}, 
-                Current category: {initialData?.category?.name} ({initialData?.category?._id})
+        <div className="overflow-y-auto flex-1">
+          <div className="px-6 py-6">
+            {error && (
+              <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4">
+                <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}
-          </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title *
-            </label>
-            <input
-              type="text"
-              {...register('title', { required: 'Title is required' })}
-              placeholder="Enter post title"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
-            />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-            )}
-          </div>
-
-          {/* Anime Name */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Anime/Manga Name *
-            </label>
-            <div className="relative">
-              <input
-                ref={animeInputRef}
-                type="text"
-                value={animeQuery}
-                onChange={handleAnimeInputChange}
-                onKeyDown={handleAnimeKeyDown}
-                onFocus={handleAnimeInputFocus}
-                onBlur={handleAnimeInputBlur}
-                placeholder="Start typing anime or manga name..."
-                className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
-                autoComplete="off"
-              />
+            {/* Featured Image Section */}
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Featured Image
+              </label>
               
-              {/* Search/Loading Icon */}
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                {isSearchingAnime ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                ) : (
-                  <Search size={20} className="text-gray-400" />
-                )}
-              </div>
-
-              {/* Suggestions Dropdown */}
-              {showSuggestions && (
-                <div
-                  ref={suggestionsRef}
-                  className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                  onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking suggestions
-                  onMouseUp={(e) => e.preventDefault()}   // Prevent blur when releasing click
-                >
-                  {animeSuggestions.length > 0 ? (
-                    <div className="py-1">
-                      {animeSuggestions.map((anime, index) => {
-                        const animeData = anime.node || anime;
-                        return (
-                          <button
-                            key={animeData.id}
-                            type="button"
-                            onClick={() => handleAnimeSelect(anime)}
-                            className={`w-full text-left px-4 py-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
-                              index === selectedAnimeIndex ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                            }`}
-                          >
-                            {/* Anime Poster */}
-                            {animeData.main_picture?.medium && (
-                              <img
-                                src={animeData.main_picture.medium}
-                                alt={animeData.title}
-                                className="w-12 h-16 object-cover rounded flex-shrink-0"
-                                referrerPolicy="no-referrer"
-                              />
-                            )}
-                            
-                            {/* Anime Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 truncate">
-                                {animeData.title}
-                              </div>
-                              {animeData.alternative_titles?.en && animeData.alternative_titles.en !== animeData.title && (
-                                <div className="text-sm text-gray-600 truncate">
-                                  {animeData.alternative_titles.en}
-                                </div>
-                              )}
-                              {animeData.start_date && (
-                                <div className="text-xs text-gray-500">
-                                  {new Date(animeData.start_date).getFullYear()}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Score */}
-                            {animeData.mean && (
-                              <div className="flex items-center text-yellow-600 flex-shrink-0">
-                                <span className="text-sm font-medium">★ {animeData.mean.toFixed(1)}</span>
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                      
-                      {/* Footer */}
-                      <div className="px-4 py-2 text-xs text-gray-500 border-t bg-gray-50">
-                        <div className="flex items-center justify-between">
-                          <span>Use ↑↓ to navigate, Enter to select, Esc to close</span>
-                          <span className="flex items-center">
-                            Powered by 
-                            <span className="ml-1 font-medium text-blue-600">MyAnimeList</span>
-                          </span>
-                        </div>
+              {imagePreviews.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="relative group rounded-xl overflow-hidden">
+                    <img
+                      src={imagePreviews[0]}
+                      alt="Featured"
+                      className="w-full h-64 sm:h-80 object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(0)}
+                      className="absolute top-3 right-3 bg-white text-gray-700 rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100"
+                    >
+                      <X size={20} />
+                    </button>
+                    {imageLinks[0] && (
+                      <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full flex items-center shadow-lg">
+                        <Link size={12} className="mr-1" />
+                        <span>URL</span>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="px-4 py-6 text-center text-gray-500">
-                      {isSearchingAnime ? (
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                          <span>Searching anime...</span>
+                    )}
+                  </div>
+
+                  {imagePreviews.length > 1 && (
+                    <div className="grid grid-cols-4 gap-3">
+                      {imagePreviews.slice(1).map((preview, index) => (
+                        <div key={index + 1} className="relative group rounded-lg overflow-hidden">
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 2}`}
+                            className="w-full h-20 object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index + 1)}
+                            className="absolute -top-1 -right-1 bg-white text-gray-700 rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={14} />
+                          </button>
+                          {imageLinks[index + 1] && (
+                            <div className="absolute top-1 left-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                              <Link size={8} />
+                            </div>
+                          )}
                         </div>
-                      ) : animeQuery.trim().length > 0 ? (
-                        <div>
-                          <div className="text-sm">No anime found for "{animeQuery}"</div>
-                          <div className="text-xs text-gray-400 mt-1">Try a different search term</div>
-                        </div>
-                      ) : (
-                        <div className="text-sm">Start typing to search for anime</div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-            
-            {/* Hidden input for form validation */}
-            <input
-              type="hidden"
-              {...register('animeName', { required: 'Anime/Manga name is required' })}
-            />
-            
-            {errors.animeName && (
-              <p className="text-red-500 text-sm mt-1">{errors.animeName.message}</p>
-            )}
-            
-            {/* Helper text */}
-            <p className="text-xs text-gray-500 mt-1">
-              Start typing to see suggestions from MyAnimeList database
-            </p>
-          </div>
-
-          {/* Multiple Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Add Photos
-              <span className="text-gray-500 text-xs ml-2 hidden sm:inline">
-                (Upload files, paste images with Ctrl+V, or add image URLs)
-              </span>
-              <span className="text-gray-500 text-xs ml-2 sm:hidden block mt-1">
-                Upload files, paste images, or add URLs
-              </span>
-            </label>
-            
-            {/* Image Previews Grid */}
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-24 sm:h-32 object-cover rounded-lg border"
-                      referrerPolicy="no-referrer"
-                    />
-                    {/* Badge to show if it's a link */}
-                    {imageLinks[index] && (
-                      <div className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-blue-500 text-white text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center">
-                        <Link size={8} className="mr-0.5 sm:mr-1 sm:hidden" />
-                        <Link size={10} className="mr-1 hidden sm:block" />
-                        <span className="text-xs">URL</span>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity touch-target"
-                      aria-label="Remove image"
-                    >
-                      <X size={14} className="sm:hidden" />
-                      <X size={16} className="hidden sm:block" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Upload Options */}
-            <div className="space-y-3 sm:space-y-4">
-              {/* File Upload Area */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 text-center hover:border-gray-400 transition-colors">
-                <div className="flex flex-col items-center">
-                  <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mb-2 sm:mb-4" />
-                  <div className="space-y-1 sm:space-y-2">
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer">
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                      <Upload className="h-8 w-8 text-gray-400" />
+                    </div>
                     <label className="cursor-pointer">
-                      <span className="text-sm font-medium text-gray-900 hover:text-blue-600">
-                        Click to upload images
+                      <span className="text-base font-medium text-blue-600 hover:text-blue-700">
+                        Click to upload
                       </span>
                       <input
                         ref={fileInputRef}
@@ -619,52 +468,37 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
                         onChange={handleImageChange}
                       />
                     </label>
-                    <p className="text-xs text-gray-500 hidden sm:block">
-                      or paste images with Ctrl+V
-                    </p>
-                    <p className="text-xs text-gray-500 sm:hidden">
-                      or paste images
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      PNG, JPG, GIF up to 10MB each
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">or drag and drop</p>
+                    <p className="text-xs text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Add Image URL Option */}
-              <div className="flex items-center justify-center">
-                <div className="text-sm text-gray-500">or</div>
-              </div>
-
-              {!showLinkInput ? (
-                <button
-                  type="button"
-                  onClick={() => setShowLinkInput(true)}
-                  className="w-full p-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center justify-center"
-                >
-                  <Link size={16} className="mr-2" />
-                  Add Image from URL
-                </button>
-              ) : (
-                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL
-                  </label>
-                  <div className="flex space-x-2">
+              <div className="mt-3">
+                {!showLinkInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowLinkInput(true)}
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center font-medium"
+                  >
+                    <Link size={14} className="mr-1" />
+                    Add image from URL
+                  </button>
+                ) : (
+                  <div className="flex space-x-2 mt-2">
                     <input
                       type="url"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                       placeholder="https://example.com/image.jpg"
-                      className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       onKeyPress={(e) => e.key === 'Enter' && handleAddImageUrl()}
                     />
                     <button
                       type="button"
                       onClick={handleAddImageUrl}
                       disabled={!imageUrl.trim() || isValidatingUrl}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                     >
                       {isValidatingUrl ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -678,98 +512,242 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
                         setShowLinkInput(false);
                         setImageUrl('');
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 flex items-center"
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
                       <X size={16} />
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter a direct link to an image (jpg, png, gif, etc.)
-                  </p>
-                </div>
+                )}
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="mb-6">
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="Post title"
+                className="w-full px-0 py-2 text-3xl sm:text-4xl font-bold border-0 border-b-2 border-gray-200 focus:border-blue-500 focus:ring-0 focus:outline-none placeholder-gray-300"
+              />
+              {formErrors.title && (
+                <p className="text-red-500 text-sm mt-2">{formErrors.title}</p>
               )}
             </div>
-          </div>
 
-          {/* Content */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Content *
-            </label>
-            <textarea
-              {...register('content', { required: 'Content is required' })}
-              rows={4}
-              placeholder="Write your thoughts about this anime/manga..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical text-base sm:rows-6"
-            />
-            {errors.content && (
-              <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
-            )}
-          </div>
+            {/* Metadata Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="flex items-center text-sm font-medium text-gray-600 mb-2">
+                  <span className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center mr-2 text-xs">📁</span>
+                  Category
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white"
+                >
+                  <option value="">Select category</option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.category && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.category}</p>
+                )}
+              </div>
 
-          {/* Excerpt (Optional) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Excerpt <span className="text-gray-500">(Optional)</span>
-            </label>
-            <textarea
-              {...register('excerpt')}
-              rows={2}
-              placeholder="Brief summary of the post (will be auto-generated if empty)..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical text-base"
-            />
-            <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate from content</p>
-          </div>
+              <div className="relative">
+                <label className="flex items-center text-sm font-medium text-gray-600 mb-2">
+                  <span className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center mr-2 text-xs">🎬</span>
+                  Anime/Manga
+                </label>
+                <div className="relative">
+                  <input
+                    ref={animeInputRef}
+                    type="text"
+                    value={animeQuery}
+                    onChange={handleAnimeInputChange}
+                    onKeyDown={handleAnimeKeyDown}
+                    onFocus={handleAnimeInputFocus}
+                    onBlur={handleAnimeInputBlur}
+                    placeholder="Search anime..."
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    autoComplete="off"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    {isSearchingAnime ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                    ) : (
+                      <Search size={20} className="text-gray-400" />
+                    )}
+                  </div>
 
-          {/* Tags (Optional) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tags <span className="text-gray-500">(Optional)</span>
-            </label>
-            <input
-              type="text"
-              {...register('tags')}
-              placeholder="action, adventure, comedy (separate with commas)..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
-            />
-            <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
-          </div>
+                  {showSuggestions && (
+                    <div
+                      ref={suggestionsRef}
+                      className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-80 overflow-y-auto"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onMouseUp={(e) => e.preventDefault()}
+                    >
+                      {animeSuggestions.length > 0 ? (
+                        <div className="py-2">
+                          {animeSuggestions.map((anime, index) => {
+                            const animeData = anime.node || anime;
+                            return (
+                              <button
+                                key={animeData.id}
+                                type="button"
+                                onClick={() => handleAnimeSelect(anime)}
+                                className={`w-full text-left px-4 py-3 flex items-center space-x-3 hover:bg-blue-50 transition-colors ${
+                                  index === selectedAnimeIndex ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                                }`}
+                              >
+                                {animeData.main_picture?.medium && (
+                                  <img
+                                    src={animeData.main_picture.medium}
+                                    alt={animeData.title}
+                                    className="w-12 h-16 object-cover rounded flex-shrink-0"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-gray-900 truncate">
+                                    {animeData.title}
+                                  </div>
+                                  {animeData.alternative_titles?.en && (
+                                    <div className="text-sm text-gray-600 truncate">
+                                      {animeData.alternative_titles.en}
+                                    </div>
+                                  )}
+                                  {animeData.start_date && (
+                                    <div className="text-xs text-gray-500">
+                                      {new Date(animeData.start_date).getFullYear()}
+                                    </div>
+                                  )}
+                                </div>
+                                {animeData.mean && (
+                                  <div className="text-yellow-600 flex-shrink-0">
+                                    <span className="text-sm font-medium">★ {animeData.mean.toFixed(1)}</span>
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-8 text-center text-gray-500">
+                          {isSearchingAnime ? (
+                            <div className="flex items-center justify-center space-x-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                              <span>Searching...</span>
+                            </div>
+                          ) : (
+                            <div className="text-sm">No results found</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {formErrors.animeName && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.animeName}</p>
+                )}
+              </div>
+            </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              {...register('status')}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
-            >
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-            </select>
-          </div>
+            {/* Content */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Content
+              </label>
+              <textarea
+                name="content"
+                value={formData.content}
+                onChange={handleInputChange}
+                rows={8}
+                placeholder="Write your thoughts..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical text-base leading-relaxed"
+              />
+              {formErrors.content && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.content}</p>
+              )}
+            </div>
 
-          {/* Submit Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-4 border-t mt-4 sm:mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-white text-base font-medium order-2 sm:order-1 touch-target"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-base font-medium order-1 sm:order-2 touch-target"
-            >
-              {isLoading 
-                ? (isEdit ? 'Updating...' : 'Creating...') 
-                : (isEdit ? 'Update Post' : 'Create Post')
-              }
-            </button>
+            {/* Excerpt */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Excerpt <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <textarea
+                name="excerpt"
+                value={formData.excerpt}
+                onChange={handleInputChange}
+                rows={2}
+                placeholder="Brief summary..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical text-base"
+              />
+            </div>
+
+            {/* Tags */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tags <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleInputChange}
+                placeholder="action, adventure, comedy"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+              />
+              <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+            </div>
+
+            {/* Status */}
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white"
+              >
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
           </div>
-        </form>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50 rounded-b-2xl flex-shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium transition-colors shadow-sm"
+          >
+            {isLoading
+              ? (isEdit ? 'Updating...' : 'Publishing...')
+              : (isEdit ? 'Update Post' : 'Publish Post')
+            }
+          </button>
+        </div>
       </div>
     </div>
   );
