@@ -392,41 +392,52 @@ export const postsAPI = {
     return response.json();
   },
 
-  //fetch all saved posts
-  fetchSavedPosts : async (token) => {
+  //  Fetch all saved posts for the logged-in user
+  fetchSavedPosts: async (token) => {
     try {
-      const res = await axios.get(`${API_BASE}/posts/users/me/saved`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${API_BASE_URL}/posts/users/me/saved`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      return res.data.savedPosts;
+
+      if (!response.ok) throw new Error('Failed to fetch saved posts');
+
+      const data = await response.json();
+      return data.savedPosts;
     } catch (err) {
       console.error("Error fetching saved posts:", err);
+      throw err;
     }
   },
 
-  //save or unsave posts
-  toggleSavePost : async (postId, token) => {
-    const isSaved = savedPosts.some((p) => p._id === postId);
+ 
+  // Save a post
+  savePost: async (postId, token) => {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/save`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to save post');
+    return response.json(); 
+  },
 
-    try {
-      if (!isSaved) {
-        const res = await axios.post(`${API_BASE}/posts/${postId}/save`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success("Post saved!");
-        return res.data;
-      } else {
-        const res = await axios.delete(`${API_BASE}/posts/${postId}/save`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.info("Post unsaved!");
-        return res.data;
-      }
-    } catch (err) {
-      console.error("Error toggling post save:", err);
-      toast.error("Something went wrong!");
-    }
-  }
+  // Unsave a post
+  unsavePost: async (postId, token) => {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/save`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to unsave post');
+    return response.json(); 
+  },
 };
 
 // Anime API

@@ -18,6 +18,7 @@ const AuthProvider = ({ children }) => {
       if (token && savedUser) {
         setUser(savedUser);
         setIsAuthenticated(true);
+        fetchSavedPosts();
       }
       
       setIsLoading(false);
@@ -31,6 +32,7 @@ const AuthProvider = ({ children }) => {
       const response = await authAPI.login(email, password);
       setUser(response.user);
       setIsAuthenticated(true);
+      fetchSavedPosts();
       return response;
     } catch (error) {
       console.error('Login error:', error);
@@ -42,6 +44,7 @@ const AuthProvider = ({ children }) => {
     authAPI.logout();
     setUser(null);
     setIsAuthenticated(false);
+    setSavedPosts([]);
   };
 
   // Update user state (used by OAuth callback)
@@ -92,26 +95,29 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  // Toggle save/unsave post
-  const toggleSavePost = async (postId) => {
+ const toggleSavePost = async (postId) => {
     const token = authAPI.getToken();
-    // if (!token) return taost.error('You must be logged in!');
+    if (!token) {
+      alert("You must be logged in to save posts!");
+      return;
+    }
+
     try {
-      await postsAPI.toggleSavePost(postId, token);
-      
-      // Update savedPosts state locally
-      setSavedPosts(prev =>
-        prev.some(p => p._id === postId)
-          ? prev.filter(p => p._id !== postId)
-          : [...prev, { _id: postId }]
-      );
-      
-      // toast.success(prev.some(p => p._id === postId) ? 'Post unsaved!' : 'Post saved!');
+      // Check if post is already saved
+      const isSaved = savedPosts.some(p => p._id === postId);
+
+      if (isSaved) {
+        await postsAPI.unsavePost(postId, token);
+        setSavedPosts(prev => prev.filter(p => p._id !== postId));
+      } else {
+        await postsAPI.savePost(postId, token);
+        setSavedPosts(prev => [...prev, { _id: postId }]);
+      }
     } catch (err) {
       console.error('Error toggling post save:', err);
-      // toast.error('Something went wrong!');
     }
   };
+  
   const value = {
     user,
     isAuthenticated,

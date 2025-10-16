@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star, Users, Play, Clock, Edit, Trash2, Heart, Eye } from 'lucide-react';
 import { postsAPI } from '../services/api';
@@ -7,7 +7,6 @@ import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PostForm from '../components/PostForm';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import { AuthContext } from '../context/AuthContext';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -18,9 +17,7 @@ const PostPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimeId, setSelectedAnimeId] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
-  const { savedPosts, toggleSavePost } = useContext(AuthContext);
-
- const isSaved = post && savedPosts.some(p => p._id === post._id);
+  
 
 
   // Engagement state
@@ -437,9 +434,7 @@ const PostPage = () => {
                   <Heart size={16} className="mr-1" />
                   <span className="text-sm sm:text-base font-medium">{(engagement.likesCount || 0).toLocaleString()} Likes</span>
                 </div>
-                <div className="flex items-center cursor-pointer select-none" onClick={() => toggleSavePost(post._id)}>
-                  <Bookmark size={16}className={`mr-1 ${isSaved ? 'text-yellow-500' : 'text-gray-500'}`}/>
-                </div>
+                
               </div>
 
               {/* Like Button */}
