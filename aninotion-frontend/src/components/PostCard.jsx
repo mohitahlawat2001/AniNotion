@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Calendar, Tag, ChevronLeft, ChevronRight, FileText, Eye, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ClickableCorner from './ClickableCorner';
@@ -6,13 +6,16 @@ import CategoryBadge from './CategoryBadge';
 import ImageGallery from './ImageGallery';
 import DateDisplay from './DateDisplay';
 import { postsAPI } from '../services/api';
-
+import { AuthContext } from '../context/AuthContext';
+import { Bookmark } from 'lucide-react';
 const PostCard = ({ post, layout = 'grid' }) => {
   const navigate = useNavigate();
   const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [showCustomTooltip, setShowCustomTooltip] = useState(false);
+const { savedPosts, toggleSavePost } = useContext(AuthContext);
 
+  const isSaved = post && savedPosts.some(p => p._id === post._id);
   // Fetch engagement data on mount
   useEffect(() => {
     const fetchEngagement = async () => {
@@ -216,7 +219,22 @@ const PostCard = ({ post, layout = 'grid' }) => {
                   {engagement.likesCount.toLocaleString()}
                 </span>
               )}
+              
             </div>
+
+             <button
+  onClick={() => toggleSavePost(post._id)}
+  className="p-1 rounded-full transition-all duration-200 hover:bg-yellow-50"
+  title={isSaved ? 'Unsave this post' : 'Save this post'}
+>
+  <Bookmark
+    size={16}
+    className={`transition-transform duration-200 ${
+      isSaved ? 'text-yellow-500 scale-110' : 'text-gray-700 hover:text-yellow-500'
+    }`}
+  />
+</button>
+
           </div>
         </div>
         </div>
@@ -357,6 +375,18 @@ const PostCard = ({ post, layout = 'grid' }) => {
                   {engagement.likesCount.toLocaleString()}
                 </span>
               )}
+               <button
+                onClick={() => toggleSavePost(post._id)}
+                className="p-1 rounded-full transition-all duration-200 hover:bg-yellow-50"
+                title={isSaved ? 'Unsave this post' : 'Save this post'}
+              >
+                <Bookmark
+                  size={15}
+                  className={`transition-transform duration-200 text-gray-100 ${
+                    isSaved ? 'text-yellow-500 scale-110' : 'text-gray-700 hover:text-yellow-500'
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </div>

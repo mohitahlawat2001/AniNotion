@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, postsAPI } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -7,6 +7,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [savedPosts, setSavedPosts] = useState([]);
 
   // Check authentication status on app load
   useEffect(() => {
@@ -17,6 +18,7 @@ const AuthProvider = ({ children }) => {
       if (token && savedUser) {
         setUser(savedUser);
         setIsAuthenticated(true);
+        fetchSavedPosts();
       }
       
       setIsLoading(false);
@@ -30,6 +32,7 @@ const AuthProvider = ({ children }) => {
       const response = await authAPI.login(email, password);
       setUser(response.user);
       setIsAuthenticated(true);
+      fetchSavedPosts();
       return response;
     } catch (error) {
       console.error('Login error:', error);
@@ -41,6 +44,7 @@ const AuthProvider = ({ children }) => {
     authAPI.logout();
     setUser(null);
     setIsAuthenticated(false);
+    setSavedPosts([]);
   };
 
   // Update user state (used by OAuth callback)
@@ -78,11 +82,47 @@ const AuthProvider = ({ children }) => {
   const isAdmin = () => {
     return hasRole('admin');
   };
+  
+  // Fetch saved posts for logged-in user
+  const fetchSavedPosts = async () => {
+    const token = authAPI.getToken();
+    if (!token) return;
+    try {
+      const posts = await postsAPI.fetchSavedPosts(token);
+      setSavedPosts(posts);
+    } catch (err) {
+      console.error('Error fetching saved posts:', err);
+    }
+  };
 
+ const toggleSavePost = async (postId) => {
+    const token = authAPI.getToken();
+    if (!token) {
+      alert("You must be logged in to save posts!");
+      return;
+    }
+
+    try {
+      // Check if post is already saved
+      const isSaved = savedPosts.some(p => p._id === postId);
+
+      if (isSaved) {
+        await postsAPI.unsavePost(postId, token);
+        setSavedPosts(prev => prev.filter(p => p._id !== postId));
+      } else {
+        await postsAPI.savePost(postId, token);
+        setSavedPosts(prev => [...prev, { _id: postId }]);
+      }
+    } catch (err) {
+      console.error('Error toggling post save:', err);
+    }
+  };
+  
   const value = {
     user,
     isAuthenticated,
     isLoading,
+    savedPosts,
     login,
     logout,
     updateUser,
@@ -91,7 +131,9 @@ const AuthProvider = ({ children }) => {
     setIsAuthenticated,
     hasRole,
     canWrite,
-    isAdmin
+    isAdmin,
+    fetchSavedPosts,
+    toggleSavePost,
   };
 
   return (

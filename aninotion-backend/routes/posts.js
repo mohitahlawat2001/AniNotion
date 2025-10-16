@@ -14,6 +14,7 @@ const {
 } = require('../utils/postHelpers');
 const logger = require('../config/logger');
 const viewCounter = require('../utils/viewCounter');
+const User = require('../models/User');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -1063,5 +1064,83 @@ router.put('/:id/publish', requireAuth, requireRole('admin', 'editor'), async (r
     res.status(500).json({ message: error.message });
   }
 });
+
+// ----------------------
+// Save a post, Delete a post and Get all saved posts.
+// ----------------------
+
+//save a post 
+router.post('/:id/save', requireAuth, async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    //  Check if post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    //  Add post to user's savedPosts (prevent duplicates)
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $addToSet: { savedPosts: postId } },
+      { new: true }
+    );
+
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+    res.status(200).json({ 
+      message: 'Post saved successfully!',
+      savedPosts: updatedUser.savedPosts // returns ObjectIds
+    });
+  } catch (err) {
+    console.error('Error saving post:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Unsave a post
+router.delete('/:id/save', requireAuth, async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    // Pull the post from savedPosts
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { savedPosts: postId } },
+      { new: true }
+    );
+
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+    res.status(200).json({ 
+      message: 'Post removed from saved posts!',
+      savedPosts: updatedUser.savedPosts
+    });
+  } catch (err) {
+    console.error('Error unsaving post:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all saved posts
+router.get('/users/me/saved', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate({ 
+        path: 'savedPosts', 
+        match: { deletedAt: null }, // ignore soft-deleted posts
+        select: 'title content createdAt updatedAt' // return only useful fields
+      });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.status(200).json({ savedPosts: user.savedPosts });
+  } catch (err) {
+    console.error('Error fetching saved posts:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 module.exports = router;

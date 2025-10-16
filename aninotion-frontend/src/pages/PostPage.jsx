@@ -17,6 +17,8 @@ const PostPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimeId, setSelectedAnimeId] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  
+
 
   // Engagement state
   const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
@@ -409,7 +411,6 @@ const PostPage = () => {
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
                 {post.title}
               </h1>
-
               {/* Anime Name */}
               <p className="text-base sm:text-lg text-gray-600 mb-3 sm:mb-4 font-medium">
                 📺 {post.animeName}
@@ -433,6 +434,7 @@ const PostPage = () => {
                   <Heart size={16} className="mr-1" />
                   <span className="text-sm sm:text-base font-medium">{(engagement.likesCount || 0).toLocaleString()} Likes</span>
                 </div>
+                
               </div>
 
               {/* Like Button */}
