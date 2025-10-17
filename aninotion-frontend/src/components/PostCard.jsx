@@ -59,7 +59,7 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
 
   // Content truncation logic
   const getDisplayContent = () => {
-    const maxLength = layout === 'list' ? 200 : 150;
+    const maxLength = layout === 'list' ? 120 : 50;
     const content = post.excerpt || post.content || '';
     if (content.length <= maxLength) {
       return content;
@@ -68,7 +68,7 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
   };
 
   const shouldShowExpandButton = () => {
-    const maxLength = layout === 'list' ? 300 : 150;
+    const maxLength = layout === 'list' ? 150 : 60;
     const content = post.excerpt || post.content || '';
     return content.length > maxLength;
   };
@@ -268,10 +268,17 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
 
   // Grid layout rendering (default)
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative h-[460px] sm:h-[480px] flex flex-col">
+      {/* Category Badge - Fixed at top left only when image exists */}
+      {images.length > 0 && (
+        <div className="absolute top-3 left-3 z-10">
+          <CategoryBadge category={post.category} variant="overlay" />
+        </div>
+      )}
+
       {/* Image Section */}
       {images.length > 0 && (
-        <div className="aspect-[4/3] sm:aspect-[3/2] overflow-hidden">
+        <div className="aspect-[4/3] sm:aspect-[3/2] overflow-hidden flex-shrink-0">
           <ImageGallery
             images={images}
             alt={post.title || 'Post image'}
@@ -282,11 +289,13 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
       )}
       
       {/* Content */}
-      <div className="p-3 sm:p-4 lg:p-6">
-        {/* Category Badge */}
-        <div className="mb-2">
-          <CategoryBadge category={post.category} />
-        </div>
+      <div className="p-3 sm:p-4 lg:p-6 flex-1 flex flex-col overflow-hidden">
+        {/* Category Badge - Inline when no image */}
+        {images.length === 0 && (
+          <div className="mb-2">
+            <CategoryBadge category={post.category} />
+          </div>
+        )}
 
         {/* Title */}
         <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
@@ -324,15 +333,15 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
             )}
           </div>
         )}        {/* Content Preview */}
-        <div className="mb-3 sm:mb-4">
-          <p className="text-gray-700 line-clamp-2 sm:line-clamp-3 text-sm leading-relaxed">
+        <div className="mb-3 sm:mb-4 flex-shrink-0">
+          <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
             {getDisplayContent()}
             {shouldShowExpandButton() && '...'}
           </p>
           {shouldShowExpandButton() && (
             <button
               onClick={handlePostClick}
-              className="text-blue-500 hover:text-blue-600 text-xs sm:text-sm font-medium mt-1 sm:mt-2 py-1 px-2 -mx-2 rounded touch-target"
+              className="text-gray-700 hover:text-blue-500 text-xs sm:text-sm transition-colors mt-1"
             >
               Show more
             </button>
@@ -340,12 +349,12 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
         </div>
 
         {/* Date */}
-        <div className="text-xs sm:text-sm">
+        <div className="text-xs sm:text-sm flex-shrink-0">
           <DateDisplay date={post.createdAt} />
         </div>
 
         {/* Engagement Stats */}
-        <div className="flex items-center justify-between mt-2 text-xs sm:text-sm text-gray-500">
+        <div className="flex items-center justify-between mt-auto pt-2 text-xs sm:text-sm text-gray-500 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <span className="flex items-center">
               <Eye className="w-3 h-3 mr-1" />

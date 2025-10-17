@@ -1126,16 +1126,25 @@ router.delete('/:id/save', requireAuth, async (req, res) => {
 // Get all saved posts
 router.get('/users/me/saved', requireAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-      .populate({ 
-        path: 'savedPosts', 
-        match: { deletedAt: null }, // ignore soft-deleted posts
-        select: 'title content createdAt updatedAt' // return only useful fields
-      });
-
+    // First get the user's saved post IDs that match permissions
+    const user = await User.findById(req.user._id).select('savedPosts');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    res.status(200).json({ savedPosts: user.savedPosts });
+    // Build query for saved posts with permission filtering
+    const query = {
+      ...buildPostQuery(req.user),
+      _id: { $in: user.savedPosts }
+    };
+
+    // Get posts using same processing as regular posts route
+    const posts = await Post.find(query)
+      .populate('category', 'name slug color')
+      .populate('createdBy', 'name email')
+      .select('-content -__v') // Same as regular posts
+      .sort({ createdAt: -1 }) // Sort by creation date, newest first
+      .lean(); // Same as regular posts
+
+    res.status(200).json({ savedPosts: posts });
   } catch (err) {
     console.error('Error fetching saved posts:', err);
     res.status(500).json({ error: 'Server error' });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Film, BookOpen, Plus, X, Database } from 'lucide-react';
+import { Home, Film, BookOpen, Plus, X, Database, Bookmark } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
@@ -74,8 +74,22 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
           <span className="text-sm lg:text-base">Home</span>
         </Link>
 
-        {/* Raw Data */}
-        <Link
+        {/* Saved */}
+        {isAuthenticated && (
+          <Link
+            to="/saved"
+            onClick={() => handleNavClick(() => {})}
+            className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+              location.pathname === '/saved' ? 'bg-primary/10 text-primary' : ''
+            }`}
+          >
+            <Bookmark size={20} />
+            <span className="text-sm lg:text-base">Saved</span>
+          </Link>
+        )}
+
+        {/* Raw Data will going to be off for now */}
+        {/* <Link
           to="/raw"
           onClick={() => isMobile && onMobileItemClick && onMobileItemClick()}
           className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
@@ -84,7 +98,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
         >
           <Database size={20} />
           <span className="text-sm lg:text-base">Raw Data</span>
-        </Link>
+        </Link> */}
         
         {/* Categories */}
         {categories.map((category) => (
