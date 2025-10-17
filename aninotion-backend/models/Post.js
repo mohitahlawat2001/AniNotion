@@ -58,6 +58,10 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  bookmarksCount: {
+    type: Number,
+    default: 0
+  },
   // Content organization
   tags: [{
     type: String,

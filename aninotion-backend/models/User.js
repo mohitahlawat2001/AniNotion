@@ -62,7 +62,8 @@ const userSchema = new mongoose.Schema({
   deletedAt: {
     type: Date
   },
-  savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }]
+  savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+  likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }]
 }, {
   timestamps: true
 });

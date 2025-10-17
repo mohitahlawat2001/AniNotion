@@ -10,38 +10,62 @@ import { AuthContext } from '../context/AuthContext';
 import { Bookmark } from 'lucide-react';
 const PostCard = ({ post, layout = 'grid' }) => {
   const navigate = useNavigate();
-  const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, liked: false });
+  const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, bookmarksCount: 0, liked: false });
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [showCustomTooltip, setShowCustomTooltip] = useState(false);
-const { savedPosts, toggleSavePost } = useContext(AuthContext);
+const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
 
   const isSaved = post && savedPosts.some(p => p._id === post._id);
   // Fetch engagement data on mount
   useEffect(() => {
     const fetchEngagement = async () => {
       try {
+        // Get basic engagement data (views, likes count)
         const data = await postsAPI.getEngagement(post._id, sessionId);
-        setEngagement(data);
+        
+        let liked = false;
+        // If user is authenticated, check if they liked this post
+        if (isAuthenticated) {
+          try {
+            const likeStatus = await postsAPI.checkLikedStatus(post._id);
+            liked = likeStatus.liked;
+          } catch (error) {
+            console.error('Error checking like status:', error);
+          }
+        }
+        
+        setEngagement({
+          views: data.views || post.views || 0,
+          likesCount: data.likes || post.likesCount || 0,
+          bookmarksCount: post.bookmarksCount || 0,
+          liked
+        });
       } catch (error) {
         console.error('Error fetching engagement data:', error);
         // Fallback to post data
         setEngagement({
           views: post.views || 0,
           likesCount: post.likesCount || 0,
+          bookmarksCount: post.bookmarksCount || 0,
           liked: false
         });
       }
     };
 
     fetchEngagement();
-  }, [post._id, sessionId, post.views, post.likesCount]);
+  }, [post._id, sessionId, post.views, post.likesCount, post.bookmarksCount, isAuthenticated]);
 
   // Handle like toggle
   const handleLikeToggle = async (e) => {
     e.stopPropagation(); // Prevent navigation to post page
     
+    if (!isAuthenticated) {
+      alert("You must be logged in to like posts!");
+      return;
+    }
+    
     try {
-      const result = await postsAPI.like(post._id, sessionId);
+      const result = await postsAPI.like(post._id);
       setEngagement(prev => ({
         ...prev,
         liked: result.liked,
@@ -223,7 +247,9 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
             </div>
 
              <button
-  onClick={() => toggleSavePost(post._id)}
+  onClick={() => toggleSavePost(post._id, (newCount) => {
+    setEngagement(prev => ({ ...prev, bookmarksCount: newCount }));
+  })}
   className="p-1 rounded-full transition-all duration-200 hover:bg-yellow-50"
   title={isSaved ? 'Unsave this post' : 'Save this post'}
 >
@@ -234,6 +260,11 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
     }`}
   />
 </button>
+{engagement.bookmarksCount >= 0 && (
+  <span className="font-medium text-gray-600">
+    {engagement.bookmarksCount.toLocaleString()}
+  </span>
+)}
 
           </div>
         </div>
@@ -385,7 +416,9 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
                 </span>
               )}
                <button
-                onClick={() => toggleSavePost(post._id)}
+                onClick={() => toggleSavePost(post._id, (newCount) => {
+                  setEngagement(prev => ({ ...prev, bookmarksCount: newCount }));
+                })}
                 className="p-1 rounded-full transition-all duration-200 hover:bg-yellow-50"
                 title={isSaved ? 'Unsave this post' : 'Save this post'}
               >
@@ -396,6 +429,11 @@ const { savedPosts, toggleSavePost } = useContext(AuthContext);
                   }`}
                 />
               </button>
+              {engagement.bookmarksCount >= 0 && (
+                <span className="font-medium text-gray-600">
+                  {engagement.bookmarksCount.toLocaleString()}
+                </span>
+              )}
             </div>
           </div>
         </div>

@@ -348,15 +348,13 @@ export const postsAPI = {
         method: 'POST'
       });
     } else {
-      // Anonymous like - send sessionId
-      const response = await fetch(`${API_BASE_URL}/posts/${id}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId })
-      });
-      if (!response.ok) throw new Error('Failed to like post');
-      return response.json();
+      throw new Error('Authentication required to like posts');
     }
+  },
+
+  // Check if current user has liked a post
+  checkLikedStatus: async (id) => {
+    return authenticatedFetch(`${API_BASE_URL}/posts/${id}/liked`);
   },
 
   // View tracking
@@ -392,7 +390,7 @@ export const postsAPI = {
     return response.json();
   },
 
-  //  Fetch all saved posts for the logged-in user
+    //  Fetch all saved posts for the logged-in user
   fetchSavedPosts: async (token) => {
     try {
       const response = await fetch(`${API_BASE_URL}/posts/users/me/saved`, {
@@ -401,13 +399,29 @@ export const postsAPI = {
           'Content-Type': 'application/json'
         }
       });
-
       if (!response.ok) throw new Error('Failed to fetch saved posts');
-
       const data = await response.json();
-      return data.savedPosts;
+      return data.savedPosts || [];
     } catch (err) {
       console.error("Error fetching saved posts:", err);
+      throw err;
+    }
+  },
+
+  // Fetch all liked posts for the logged-in user
+  fetchLikedPosts: async (token) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts/users/me/liked`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch liked posts');
+      const data = await response.json();
+      return data.likedPosts || [];
+    } catch (err) {
+      console.error("Error fetching liked posts:", err);
       throw err;
     }
   },

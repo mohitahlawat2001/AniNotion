@@ -8,6 +8,7 @@ const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [savedPosts, setSavedPosts] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
 
   // Check authentication status on app load
   useEffect(() => {
@@ -19,6 +20,7 @@ const AuthProvider = ({ children }) => {
         setUser(savedUser);
         setIsAuthenticated(true);
         fetchSavedPosts();
+        fetchLikedPosts();
       }
       
       setIsLoading(false);
@@ -33,6 +35,7 @@ const AuthProvider = ({ children }) => {
       setUser(response.user);
       setIsAuthenticated(true);
       fetchSavedPosts();
+      fetchLikedPosts();
       return response;
     } catch (error) {
       console.error('Login error:', error);
@@ -45,6 +48,7 @@ const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     setSavedPosts([]);
+    setLikedPosts([]);
   };
 
   // Update user state (used by OAuth callback)
@@ -95,7 +99,19 @@ const AuthProvider = ({ children }) => {
     }
   };
 
- const toggleSavePost = async (postId) => {
+  // Fetch liked posts for logged-in user
+  const fetchLikedPosts = async () => {
+    const token = authAPI.getToken();
+    if (!token) return;
+    try {
+      const posts = await postsAPI.fetchLikedPosts(token);
+      setLikedPosts(posts);
+    } catch (err) {
+      console.error('Error fetching liked posts:', err);
+    }
+  };
+
+ const toggleSavePost = async (postId, onBookmarkCountUpdate) => {
     const token = authAPI.getToken();
     if (!token) {
       alert("You must be logged in to save posts!");
@@ -106,12 +122,18 @@ const AuthProvider = ({ children }) => {
       // Check if post is already saved
       const isSaved = savedPosts.some(p => p._id === postId);
 
+      let result;
       if (isSaved) {
-        await postsAPI.unsavePost(postId, token);
+        result = await postsAPI.unsavePost(postId, token);
         setSavedPosts(prev => prev.filter(p => p._id !== postId));
       } else {
-        await postsAPI.savePost(postId, token);
+        result = await postsAPI.savePost(postId, token);
         setSavedPosts(prev => [...prev, { _id: postId }]);
+      }
+
+      // Call the callback with the updated bookmark count
+      if (onBookmarkCountUpdate && result.bookmarksCount !== undefined) {
+        onBookmarkCountUpdate(result.bookmarksCount);
       }
     } catch (err) {
       console.error('Error toggling post save:', err);
@@ -123,6 +145,7 @@ const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     savedPosts,
+    likedPosts,
     login,
     logout,
     updateUser,
@@ -133,6 +156,7 @@ const AuthProvider = ({ children }) => {
     canWrite,
     isAdmin,
     fetchSavedPosts,
+    fetchLikedPosts,
     toggleSavePost,
   };
 

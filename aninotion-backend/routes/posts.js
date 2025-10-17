@@ -75,7 +75,7 @@ router.get('/', optionalAuth, async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
     
     // Sort options
-    const validSortFields = ['publishedAt', 'createdAt', 'updatedAt', 'views', 'likesCount', 'title'];
+    const validSortFields = ['publishedAt', 'createdAt', 'updatedAt', 'views', 'likesCount', 'bookmarksCount', 'title'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'publishedAt';
     const sortDirection = sortOrder === 'asc' ? 1 : -1;
     
@@ -149,7 +149,7 @@ router.get('/category/:categoryId', optionalAuth, async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
     
     // Sort options
-    const validSortFields = ['publishedAt', 'createdAt', 'updatedAt', 'views', 'likesCount', 'title'];
+    const validSortFields = ['publishedAt', 'createdAt', 'updatedAt', 'views', 'likesCount', 'bookmarksCount', 'title'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'publishedAt';
     const sortDirection = sortOrder === 'asc' ? 1 : -1;
     
@@ -783,28 +783,16 @@ router.post('/:id/view', optionalAuth, async (req, res) => {
 });
 
 // Toggle like for a post
-router.post('/:id/like', optionalAuth, async (req, res) => {
+router.post('/:id/like', requireAuth, async (req, res) => {
   const startTime = Date.now();
   
   try {
     const { id } = req.params;
-    const { sessionId } = req.body;
-    const userId = req.user?._id;
-
-    // For anonymous users, require sessionId
-    if (!userId && !sessionId) {
-      return res.status(400).json({ message: 'Session ID is required for anonymous likes' });
-    }
-
-    // Use userId if authenticated, otherwise use sessionId for anonymous tracking
-    const likeIdentifier = userId || `anon_${sessionId}`;
+    const userId = req.user._id;
 
     logger.info("👍 Toggling post like", {
       postId: id,
       userId,
-      sessionId,
-      likeIdentifier,
-      isAuthenticated: !!userId,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
       requestId: req.id
@@ -816,20 +804,24 @@ router.post('/:id/like', optionalAuth, async (req, res) => {
       logger.warn("⚠️ Post not found for like toggle", {
         postId: id,
         userId,
-        sessionId,
         duration: Date.now() - startTime
       });
       return res.status(404).json({ message: 'Post not found' });
     }
 
     // Use Redis for like tracking
-    const { liked, likesCount } = await viewCounter.toggleLike(id, likeIdentifier);
+    const { liked, likesCount } = await viewCounter.toggleLike(id, userId);
+
+    // Update user's likedPosts array
+    if (liked) {
+      await User.findByIdAndUpdate(userId, { $addToSet: { likedPosts: id } });
+    } else {
+      await User.findByIdAndUpdate(userId, { $pull: { likedPosts: id } });
+    }
 
     logger.info("✅ Post like toggled", {
       postId: id,
       userId,
-      sessionId,
-      likeIdentifier,
       liked,
       likesCount,
       action: liked ? 'liked' : 'unliked',
@@ -1080,7 +1072,13 @@ router.post('/:id/save', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    //  Add post to user's savedPosts (prevent duplicates)
+    // Check if post is already saved by user
+    const user = await User.findById(req.user._id).select('savedPosts');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const wasAlreadySaved = user.savedPosts.some(id => id.toString() === postId);
+
+    // Add post to user's savedPosts (prevent duplicates)
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { $addToSet: { savedPosts: postId } },
@@ -1089,9 +1087,23 @@ router.post('/:id/save', requireAuth, async (req, res) => {
 
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
+    // Only increment bookmark count if post was not already saved
+    let updatedPost;
+    if (!wasAlreadySaved) {
+      updatedPost = await Post.findByIdAndUpdate(
+        postId, 
+        { $inc: { bookmarksCount: 1 } }, 
+        { new: true }
+      );
+    } else {
+      // Post was already saved, just return current count
+      updatedPost = await Post.findById(postId).select('bookmarksCount');
+    }
+
     res.status(200).json({ 
-      message: 'Post saved successfully!',
-      savedPosts: updatedUser.savedPosts // returns ObjectIds
+      message: wasAlreadySaved ? 'Post was already saved!' : 'Post saved successfully!',
+      savedPosts: updatedUser.savedPosts, // returns ObjectIds
+      bookmarksCount: updatedPost.bookmarksCount
     });
   } catch (err) {
     console.error('Error saving post:', err);
@@ -1104,6 +1116,12 @@ router.delete('/:id/save', requireAuth, async (req, res) => {
   try {
     const postId = req.params.id;
 
+    // Check if post is currently saved by user
+    const user = await User.findById(req.user._id).select('savedPosts');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const wasSaved = user.savedPosts.some(id => id.toString() === postId);
+
     // Pull the post from savedPosts
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
@@ -1113,9 +1131,23 @@ router.delete('/:id/save', requireAuth, async (req, res) => {
 
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
+    // Only decrement bookmark count if post was actually saved
+    let updatedPost;
+    if (wasSaved) {
+      updatedPost = await Post.findByIdAndUpdate(
+        postId, 
+        { $inc: { bookmarksCount: -1 } }, 
+        { new: true }
+      );
+    } else {
+      // Post was not saved, just return current count
+      updatedPost = await Post.findById(postId).select('bookmarksCount');
+    }
+
     res.status(200).json({ 
-      message: 'Post removed from saved posts!',
-      savedPosts: updatedUser.savedPosts
+      message: wasSaved ? 'Post removed from saved posts!' : 'Post was not saved!',
+      savedPosts: updatedUser.savedPosts,
+      bookmarksCount: updatedPost.bookmarksCount
     });
   } catch (err) {
     console.error('Error unsaving post:', err);
@@ -1148,6 +1180,55 @@ router.get('/users/me/saved', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Error fetching saved posts:', err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all liked posts for current user
+router.get('/users/me/liked', requireAuth, async (req, res) => {
+  try {
+    // First get the user's liked post IDs
+    const user = await User.findById(req.user._id).select('likedPosts');
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Build query for liked posts with permission filtering
+    const query = buildPostQuery(req.user, {
+      _id: { $in: user.likedPosts }
+    });
+
+    const posts = await Post.find(query)
+      .populate('category', 'name slug color')
+      .populate('createdBy', 'name email')
+      .select('-content -__v')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ likedPosts: posts });
+  } catch (err) {
+    console.error('Error fetching liked posts:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Check if current user has liked a specific post
+router.get('/:id/liked', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const hasLiked = await viewCounter.hasLiked(id, userId);
+
+    res.json({ liked: hasLiked });
+  } catch (error) {
+    logger.error("❌ Error checking like status:", {
+      error: error.message,
+      stack: error.stack,
+      postId: req.params.id,
+      userId: req.user._id
+    });
+
+    res.status(500).json({ message: error.message });
   }
 });
 

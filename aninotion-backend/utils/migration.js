@@ -80,6 +80,11 @@ const migratePostsFields = async () => {
             needsUpdate = true;
           }
           
+          if (post.bookmarksCount === undefined) {
+            post.bookmarksCount = 0;
+            needsUpdate = true;
+          }
+          
           // Generate excerpt if missing
           if (!post.excerpt && post.content) {
             post.excerpt = generateExcerpt(post.content);
