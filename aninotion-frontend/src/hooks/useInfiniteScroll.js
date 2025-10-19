@@ -1,76 +1,34 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 const useInfiniteScroll = (fetchMore, hasMore) => {
   const [isLoading, setIsLoading] = useState(false);
+  // Use a ref to store the latest fetchMore function without making it a dependency of useCallback
   const fetchMoreRef = useRef(fetchMore);
-  const hasMoreRef = useRef(hasMore);
-  const isLoadingRef = useRef(isLoading);
 
-  // Keep refs updated
+  // Keep fetchMoreRef updated with the latest fetchMore prop
   useEffect(() => {
     fetchMoreRef.current = fetchMore;
-    hasMoreRef.current = hasMore;
-    isLoadingRef.current = isLoading;
-  }, [fetchMore, hasMore, isLoading]);
+  }, [fetchMore]);
 
-  const handleScroll = useCallback(() => {
-    const scrollTop = window.scrollY || window.pageYOffset;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-    const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
-    
-    console.log('Scroll event detected:', {
-      scrollTop,
-      windowHeight,
-      documentHeight,
-      distanceFromBottom,
-      hasMore: hasMoreRef.current,
-      isLoading: isLoadingRef.current
-    });
-    
-    // Simple check: if we're within 100px of bottom and have more content
-    if (distanceFromBottom <= 100) {
-      console.log('Near bottom - checking conditions...');
-      if (hasMoreRef.current && !isLoadingRef.current) {
-        console.log('✅ Triggering fetchMore!');
-        setIsLoading(true);
-        fetchMoreRef.current().finally(() => {
+  // Public function to trigger loading more data
+  const loadMore = useCallback(() => {
+    // Only attempt to load more if not already loading and if there is more data available
+    if (!isLoading && hasMore) {
+      setIsLoading(true);
+      fetchMoreRef.current()
+        .finally(() => {
+          // Log completion, consistent with original style
           console.log('✅ fetchMore completed');
           setIsLoading(false);
         });
-      } else {
-        console.log('❌ Not triggering - hasMore:', hasMoreRef.current, 'isLoading:', isLoadingRef.current);
-      }
+    } else {
+      // Log why loadMore was not triggered, consistent with original style
+      console.log('❌ Not triggering loadMore - isLoading:', isLoading, 'hasMore:', hasMore);
     }
-  }, []); // Empty dependency array since we use refs
+  }, [isLoading, hasMore]); // Dependencies: isLoading (internal state) and hasMore (prop)
 
-  useEffect(() => {
-    console.log('📋 Setting up scroll listener');
-    
-    // Simple scroll listener
-    const scrollListener = () => {
-      console.log('🎯 Scroll event fired!');
-      handleScroll();
-    };
-    
-    // Add listeners to multiple targets to ensure detection
-    window.addEventListener('scroll', scrollListener, { passive: true });
-    document.addEventListener('scroll', scrollListener, { passive: true });
-    document.body.addEventListener('scroll', scrollListener, { passive: true });
-    
-    // Test immediately to see if we can detect scroll
-    console.log('🧪 Testing scroll detection...');
-    handleScroll();
-    
-    return () => {
-      console.log('🧹 Cleaning up scroll listeners');
-      window.removeEventListener('scroll', scrollListener);
-      document.removeEventListener('scroll', scrollListener);
-      document.body.removeEventListener('scroll', scrollListener);
-    };
-  }, [handleScroll]); // Include handleScroll dependency
-
-  return { isLoading };
+  // Return loading state, the loadMore function, and the hasMore status
+  return { isLoading, loadMore, hasMore };
 };
 
 export default useInfiniteScroll;
