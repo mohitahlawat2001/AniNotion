@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus } from 'lucide-react';
 import PostForm from '../components/PostForm';
 import PostsContainer from '../components/PostsContainer';
@@ -7,107 +7,74 @@ import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import { postsAPI } from '../services/api';
-
-const POSTS_PER_PAGE = 20;
+import useInfiniteScroll from '../hooks/useInfiniteScroll';
 
 const Home = () => {
-  const [posts, setPosts] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [pagination, setPagination] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMorePosts, setHasMorePosts] = useState(true);
 
+  // The hook now owns and provides all data-fetching state and logic.
+  const { posts, setPosts, isLoading, hasMore, loadMore } = useInfiniteScroll();
+
+  const loadMoreButtonRef = useRef(null);
+  const autoLoadTimerRef = useRef(null);
+
+  // Effect for IntersectionObserver to auto-load more posts
   useEffect(() => {
-    fetchInitialPosts();
-  }, []);
-
-  const fetchInitialPosts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await postsAPI.getAll({
-        page: 1,
-        limit: POSTS_PER_PAGE,
-      });
-
-      // Handle new API response format
-      if (
-        response &&
-        typeof response === 'object' &&
-        Array.isArray(response.posts)
-      ) {
-        setPosts(response.posts);
-        setPagination(response.pagination);
-        setCurrentPage(1);
-        setHasMorePosts(
-          response.pagination &&
-            response.pagination.page < response.pagination.pages
-        );
-      } else {
-        // Fallback for old format
-        setPosts(Array.isArray(response) ? response : []);
-        setHasMorePosts(false);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        // Check if the button is fully visible, there are more posts, and we are not already loading
+        if (entry.isIntersecting && entry.intersectionRatio === 1 && hasMore && !isLoading) {
+          if (!autoLoadTimerRef.current) {
+            autoLoadTimerRef.current = setTimeout(() => {
+              // Re-check conditions before calling loadMore, as state might have changed
+              if (loadMoreButtonRef.current && hasMore && !isLoading) {
+                loadMore();
+              }
+              autoLoadTimerRef.current = null; // Clear ref after execution
+            }, 5000); // 5-second delay
+          }
+        } else {
+          // If the button is not visible, clear any active timer
+          if (autoLoadTimerRef.current) {
+            clearTimeout(autoLoadTimerRef.current);
+            autoLoadTimerRef.current = null;
+          }
+        }
+      },
+      {
+        root: null, // Use the viewport as the root
+        threshold: 1.0, // Trigger when 100% of the target is visible
       }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setPosts([]);
-      setHasMorePosts(false);
-    } finally {
-      setIsLoading(false);
+    );
+
+    const buttonElement = loadMoreButtonRef.current;
+    if (buttonElement) {
+      observer.observe(buttonElement);
     }
+
+    // Cleanup function: disconnect observer and clear any pending timeout
+    return () => {
+      if (autoLoadTimerRef.current) {
+        clearTimeout(autoLoadTimerRef.current);
+      }
+      if (buttonElement) {
+        observer.unobserve(buttonElement);
+      }
+      observer.disconnect();
+    };
+  }, [hasMore, isLoading, loadMore]); // Re-run effect if these dependencies change
+
+  const handleCreatePost = (newPost) => {
+    // Prepend the new post to the existing list for instant UI feedback
+    setPosts((prevPosts) => [newPost, ...prevPosts]);
   };
 
-  const fetchMorePosts = useCallback(async () => {
-    if (!hasMorePosts || isLoadingMore) {
-      return;
-    }
-
-    try {
-      setIsLoadingMore(true);
-      const nextPage = currentPage + 1;
-      const response = await postsAPI.getAll({
-        page: nextPage,
-        limit: POSTS_PER_PAGE,
-      });
-
-      if (
-        response &&
-        typeof response === 'object' &&
-        Array.isArray(response.posts)
-      ) {
-        // Check if we already have these posts to prevent duplicates
-        setPosts((prevPosts) => {
-          const existingIds = new Set(prevPosts.map((post) => post._id));
-          const newPosts = response.posts.filter(
-            (post) => !existingIds.has(post._id)
-          );
-          return [...prevPosts, ...newPosts];
-        });
-        setPagination(response.pagination);
-        setCurrentPage(nextPage);
-        const newHasMore =
-          response.pagination &&
-          response.pagination.page < response.pagination.pages;
-        setHasMorePosts(newHasMore);
-      }
-    } catch (error) {
-      console.error('Error fetching more posts:', error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [currentPage, hasMorePosts, isLoadingMore]);
-
-  const handleCreatePost = async (newPost) => {
-    // PostForm now handles the API call, so we just need to update the local state
-    setPosts([newPost, ...posts]);
-  };
-
-  if (isLoading) {
+  // Initial loading state (shimmer UI)
+  if (isLoading && posts.length === 0) {
     return (
       <div>
-        {/* Header */}
+        {/* Header is shown during initial load for context */}
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
           <h1 className="text-2xl sm:text-3xl font-bold">Recent Posts</h1>
           <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
@@ -122,8 +89,6 @@ const Home = () => {
             </AuthButton>
           </div>
         </div>
-
-        {/* Shimmer Loading */}
         <LoadingSpinner type="shimmer" count={6} />
       </div>
     );
@@ -131,6 +96,13 @@ const Home = () => {
 
   return (
     <div>
+      <PostForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onCreatePost={handleCreatePost}
+      />
+      <ScrollToTopButton />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold">Recent Posts</h1>
@@ -157,61 +129,26 @@ const Home = () => {
         onCreatePost={() => setIsFormOpen(true)}
       />
 
-      {/* Show More Button */}
-      {hasMorePosts && posts.length > 0 && (
+      {/* Load More Button */}
+      {hasMore && posts.length > 0 && (
         <div className="flex justify-center mt-6 sm:mt-8 px-4 sm:px-0">
           <button
-            onClick={fetchMorePosts}
-            disabled={isLoadingMore}
+            ref={loadMoreButtonRef}
+            onClick={loadMore}
+            disabled={isLoading || !hasMore}
             className="group flex items-center space-x-2 bg-black/20 backdrop-blur-sm text-white hover:text-white hover:bg-black/30 disabled:bg-black/10 disabled:text-white/50 px-6 py-3 rounded-full transition-all duration-300 border border-white/30 disabled:border-white/20 min-w-[140px] justify-center touch-target"
           >
-            {isLoadingMore ? (
+            {isLoading ? (
               <>
                 <LoadingSpinner size="sm" />
-                <span className="text-sm sm:text-base font-medium">
-                  Loading...
-                </span>
+                <span className="text-sm sm:text-base font-medium">Loading...</span>
               </>
             ) : (
-              <>
-                <span className="text-sm sm:text-base font-medium">
-                  Show more
-                </span>
-                <svg
-                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-hover:scale-110 duration-200"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </>
+              <span className="text-sm sm:text-base font-medium">Load More</span>
             )}
           </button>
         </div>
       )}
-
-      {/* End of Posts Message */}
-      {!hasMorePosts && posts.length > 0 && pagination && (
-        <div className="text-center py-8 text-gray-500">
-          <p>You've reached the end! Showing all {pagination.total} posts.</p>
-        </div>
-      )}
-
-      {/* Post Form Modal */}
-      <PostForm
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSubmit={handleCreatePost}
-      />
-
-      {/* Scroll to Top Button */}
-      <ScrollToTopButton />
     </div>
   );
 };
