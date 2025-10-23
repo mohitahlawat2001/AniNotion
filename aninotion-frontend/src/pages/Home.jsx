@@ -7,6 +7,7 @@ import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import SEO from '../components/SEO';
 import { postsAPI } from '../services/api';
 
 const POSTS_PER_PAGE = 20;
@@ -131,6 +132,14 @@ const Home = () => {
 
   return (
     <div>
+      {/* SEO for Home Page */}
+      <SEO 
+        title="AniNotion - Anime Reviews, Guides & Insights"
+        description="Discover the latest anime reviews, episode guides, character insights, and comprehensive analysis. Join our community of anime enthusiasts."
+        url="/"
+        type="website"
+      />
+      
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold">Recent Posts</h1>

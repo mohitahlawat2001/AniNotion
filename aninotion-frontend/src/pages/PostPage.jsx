@@ -7,6 +7,8 @@ import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PostForm from '../components/PostForm';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import SEO from '../components/SEO';
+import { generatePostSEO } from '../utils/seoHelpers';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -300,8 +302,14 @@ const PostPage = () => {
     );
   }
 
+  // Generate SEO metadata
+  const seoData = generatePostSEO(post);
+
   return (
     <div className="max-w-6xl mx-auto">
+      {/* SEO Component */}
+      <SEO {...seoData} />
+      
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Main Post Content */}
         <div className="flex-1 max-w-none lg:max-w-3xl relative">

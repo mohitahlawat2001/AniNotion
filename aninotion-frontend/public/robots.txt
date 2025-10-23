@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /auth/
+
+# Disallow user-specific pages
+Disallow: /saved
+
+# Allow all other pages
+Allow: /post/*
+Allow: /anime/*
+Allow: /raw
+
+# Sitemap location
+Sitemap: https://aninotion.com/sitemap.xml
+
+# Crawl delay (optional - be nice to the server)
+Crawl-delay: 1
