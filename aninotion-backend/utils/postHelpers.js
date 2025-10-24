@@ -137,7 +137,11 @@ const isValidStatusTransition = (currentStatus, newStatus, userRole) => {
     return allowedTransitions[currentStatus]?.includes(newStatus) || false;
   }
   
-  // Viewers cannot change status
+  // Viewers can only publish their drafts or unpublish their published posts
+  if (userRole === 'viewer') {
+    return allowedTransitions[currentStatus]?.includes(newStatus) || false;
+  }
+  
   return false;
 };
 
@@ -150,9 +154,16 @@ const isValidStatusTransition = (currentStatus, newStatus, userRole) => {
 const buildPostQuery = (user, baseQuery = {}) => {
   const query = { ...baseQuery, isDeleted: false };
   
-  // Anonymous users or viewers can only see published posts
-  if (!user || user.role === 'viewer') {
+  // Anonymous users can only see published posts
+  if (!user) {
     query.status = 'published';
+  }
+  // Viewers can see published posts OR their own drafts
+  else if (user.role === 'viewer') {
+    query.$or = [
+      { status: 'published' },
+      { status: 'draft', createdBy: user._id }
+    ];
   }
   // Admins and editors can see all posts (unless specifically filtered)
   else if (user.role === 'admin' || user.role === 'editor') {

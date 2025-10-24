@@ -3,20 +3,22 @@ import { useLayout } from '../hooks/useLayout';
 import PostCard from './PostCard';
 import AuthButton from './AuthButton';
 
-const PostsContainer = ({ posts, emptyMessage, onCreatePost }) => {
+const PostsContainer = ({ posts, emptyMessage, onCreatePost, showEditButton = false, onEdit }) => {
   const { layout } = useLayout();
 
   if (posts.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="text-gray-500 mb-4">{emptyMessage}</div>
-        <AuthButton
-          onClick={onCreatePost}
-          className="btn-primary"
-          requireAuth={true}
-        >
-          Create your first post
-        </AuthButton>
+        {onCreatePost && (
+          <AuthButton
+            onClick={onCreatePost}
+            className="btn-primary"
+            requireAuth={true}
+          >
+            Create your first post
+          </AuthButton>
+        )}
       </div>
     );
   }
@@ -32,6 +34,8 @@ const PostsContainer = ({ posts, emptyMessage, onCreatePost }) => {
           key={post._id} 
           post={post} 
           layout={layout}
+          showEditButton={showEditButton}
+          onEdit={onEdit}
         />
       ))}
     </div>

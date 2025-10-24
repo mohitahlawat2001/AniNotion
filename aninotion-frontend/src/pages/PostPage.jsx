@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star, Users, Play, Clock, Edit, Trash2, Heart, Eye } from 'lucide-react';
 import { postsAPI } from '../services/api';
 import { useAnimeSearch, useAnimeDetails } from '../hooks/useAnime';
@@ -13,6 +13,7 @@ import { generatePostSEO } from '../utils/seoHelpers';
 const PostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, canWrite, isAdmin } = useAuth();
   const [post, setPost] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -83,6 +84,13 @@ const PostPage = () => {
 
     fetchPost();
   }, [id, sessionId]);
+
+  // Check if we're in edit mode based on URL
+  useEffect(() => {
+    if (location.pathname.includes('/edit')) {
+      setShowEditForm(true);
+    }
+  }, [location.pathname]);
 
   // Set up engaged view timer
   useEffect(() => {

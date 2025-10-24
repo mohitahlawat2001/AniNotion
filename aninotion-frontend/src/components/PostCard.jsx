@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Calendar, Tag, ChevronLeft, ChevronRight, FileText, Eye, Heart } from 'lucide-react';
+import { Calendar, Tag, ChevronLeft, ChevronRight, FileText, Eye, Heart, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ClickableCorner from './ClickableCorner';
 import CategoryBadge from './CategoryBadge';
@@ -8,7 +8,7 @@ import DateDisplay from './DateDisplay';
 import { postsAPI } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { Bookmark } from 'lucide-react';
-const PostCard = ({ post, layout = 'grid' }) => {
+const PostCard = ({ post, layout = 'grid', showEditButton = false, onEdit }) => {
   const navigate = useNavigate();
   const [engagement, setEngagement] = useState({ views: 0, likesCount: 0, bookmarksCount: 0, liked: false });
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
@@ -267,6 +267,21 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
 )}
 
           </div>
+          
+          {/* Edit Button for own posts */}
+          {showEditButton && onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(post._id);
+              }}
+              className="flex items-center space-x-1 px-2 py-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+              title="Edit this post"
+            >
+              <Edit size={14} />
+              <span className="text-xs font-medium">Edit</span>
+            </button>
+          )}
         </div>
         </div>
       </div>
@@ -436,6 +451,21 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
               )}
             </div>
           </div>
+          
+          {/* Edit Button for own posts */}
+          {showEditButton && onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(post._id);
+              }}
+              className="flex items-center space-x-1 px-2 py-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+              title="Edit this post"
+            >
+              <Edit size={14} />
+              <span className="text-xs font-medium">Edit</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -121,6 +121,94 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
+// Get current user's posts (including drafts)
+router.get('/users/me/posts', requireAuth, async (req, res) => {
+  try {
+    const { status, limit, page, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+    
+    logger.info("📝 Fetching user's own posts", {
+      userId: req.user._id,
+      userRole: req.user.role,
+      status
+    });
+    
+    // Build query - user can see all their own posts regardless of status
+    const query = {
+      createdBy: req.user._id,
+      isDeleted: { $ne: true }
+    };
+    
+    // Add status filter if provided
+    if (status) {
+      query.status = status;
+    }
+    
+    // Pagination
+    const limitNum = parseInt(limit) || 20;
+    const pageNum = parseInt(page) || 1;
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Sort options
+    const validSortFields = ['publishedAt', 'createdAt', 'updatedAt', 'views', 'title'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortDirection = sortOrder === 'asc' ? 1 : -1;
+    
+    const posts = await Post.find(query)
+      .populate('category', 'name slug color')
+      .select('-__v')
+      .sort({ [sortField]: sortDirection })
+      .limit(limitNum)
+      .skip(skip)
+      .lean();
+    
+    // Get total count for pagination
+    const totalCount = await Post.countDocuments(query);
+    
+    // Get counts by status
+    const draftCount = await Post.countDocuments({ 
+      createdBy: req.user._id, 
+      status: 'draft',
+      isDeleted: { $ne: true }
+    });
+    const publishedCount = await Post.countDocuments({ 
+      createdBy: req.user._id, 
+      status: 'published',
+      isDeleted: { $ne: true }
+    });
+    
+    logger.info("✅ User's posts fetched successfully", {
+      userId: req.user._id,
+      count: posts.length,
+      totalCount,
+      draftCount,
+      publishedCount
+    });
+    
+    res.json({
+      posts,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: totalCount,
+        pages: Math.ceil(totalCount / limitNum)
+      },
+      counts: {
+        draft: draftCount,
+        published: publishedCount,
+        total: totalCount
+      }
+    });
+  } catch (error) {
+    logger.error("❌ Error fetching user's posts:", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.user?._id
+    });
+    
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Get posts by category
 router.get('/category/:categoryId', optionalAuth, async (req, res) => {
   try {
@@ -394,6 +482,12 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
     const post = new Post(postData);
     const savedPost = await post.save();
     
+    // Add post to user's createdPosts array
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $addToSet: { createdPosts: savedPost._id } }
+    );
+    
     // Populate the response
     const populatedPost = await Post.findById(savedPost._id)
       .populate('category')
@@ -428,7 +522,7 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
 });
 
 // Update post
-router.put('/:id', requireAuth, requireRole('admin', 'editor'), async (req, res) => {
+router.put('/:id', requireAuth, requireRole('admin', 'editor', 'viewer'), async (req, res) => {
   try {
     const { 
       title, 
@@ -462,10 +556,12 @@ router.put('/:id', requireAuth, requireRole('admin', 'editor'), async (req, res)
     }
     
     // Check if user can edit this post
-    if (req.user.role !== 'admin' && 
+    // Admins and editors can edit any post
+    // Viewers can only edit posts they created
+    if ((req.user.role === 'viewer') && 
         existingPost.createdBy && 
         existingPost.createdBy.toString() !== req.user._id.toString()) {
-      logger.warn("⚠️ User attempted to edit post they don't own", {
+      logger.warn("⚠️ Viewer attempted to edit post they don't own", {
         postId: req.params.id,
         postCreatedBy: existingPost.createdBy,
         userId: req.user._id,
@@ -473,6 +569,19 @@ router.put('/:id', requireAuth, requireRole('admin', 'editor'), async (req, res)
       });
       return res.status(403).json({ 
         message: 'You can only edit posts you created' 
+      });
+    }
+    
+    // Viewers can only edit their draft posts, not published ones
+    // Admins and editors can edit any post status
+    if (req.user.role === 'viewer' && existingPost.status !== 'draft') {
+      logger.warn("⚠️ Viewer attempted to edit non-draft post", {
+        postId: req.params.id,
+        postStatus: existingPost.status,
+        userId: req.user._id
+      });
+      return res.status(403).json({ 
+        message: 'You can only edit your draft posts. Published posts cannot be edited.' 
       });
     }
     
@@ -603,6 +712,14 @@ router.delete('/:id', requireAuth, requireRole('admin', 'editor'), async (req, r
     post.isDeleted = true;
     post.updatedBy = req.user._id;
     await post.save();
+    
+    // Remove post from creator's createdPosts array
+    if (post.createdBy) {
+      await User.findByIdAndUpdate(
+        post.createdBy,
+        { $pull: { createdPosts: post._id } }
+      );
+    }
     
     logger.info("✅ Post soft deleted successfully", {
       postId: req.params.id,

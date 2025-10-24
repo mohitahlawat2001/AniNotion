@@ -426,6 +426,24 @@ export const postsAPI = {
     }
   },
 
+  // Fetch all posts created by the logged-in user (including drafts)
+  fetchMyPosts: async (token) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts/users/me/posts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch created posts');
+      const data = await response.json();
+      return data.posts || [];
+    } catch (err) {
+      console.error("Error fetching created posts:", err);
+      throw err;
+    }
+  },
+
  
   // Save a post
   savePost: async (postId, token) => {

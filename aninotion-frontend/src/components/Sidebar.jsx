@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Film, BookOpen, Plus, X, Database, Bookmark } from 'lucide-react';
+import { Home, Film, BookOpen, Plus, X, Database, Bookmark, FileText } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
@@ -85,6 +85,20 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
           >
             <Bookmark size={20} />
             <span className="text-sm lg:text-base">Saved</span>
+          </Link>
+        )}
+
+        {/* My Posts */}
+        {isAuthenticated && (
+          <Link
+            to="/my-posts"
+            onClick={() => handleNavClick(() => {})}
+            className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+              location.pathname === '/my-posts' ? 'bg-primary/10 text-primary' : ''
+            }`}
+          >
+            <FileText size={20} />
+            <span className="text-sm lg:text-base">My Posts</span>
           </Link>
         )}
 
