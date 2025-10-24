@@ -10,6 +10,10 @@ export const LayoutProvider = ({ children }) => {
     const savedLayout = localStorage.getItem('layout-preference');
     if (savedLayout && (savedLayout === 'grid' || savedLayout === 'list')) {
       setLayout(savedLayout);
+    } else {
+      // Default to list on mobile, grid on desktop
+      const isMobile = window.innerWidth < 768;
+      setLayout(isMobile ? 'list' : 'grid');
     }
   }, []);
 

@@ -9,7 +9,7 @@ const LayoutToggle = ({ className = "" }) => {
     <button
       onClick={toggleLayout}
       className={`
-        flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg
+        hidden md:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg
         border border-gray-300 hover:border-gray-400
         bg-white hover:bg-gray-50
         text-gray-600 hover:text-gray-800
