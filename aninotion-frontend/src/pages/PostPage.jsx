@@ -5,7 +5,7 @@ import { postsAPI } from '../services/api';
 import { useAnimeSearch, useAnimeDetails } from '../hooks/useAnime';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
-import PostForm from '../components/PostForm';
+import PostFormWithToggle from '../components/PostFormWithToggle';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import SEO from '../components/SEO';
 import { generatePostSEO } from '../utils/seoHelpers';
@@ -790,7 +790,7 @@ const PostPage = () => {
       )}
 
       {/* Edit Post Modal */}
-      <PostForm
+      <PostFormWithToggle
         isOpen={showEditForm}
         onClose={() => setShowEditForm(false)}
         onSubmit={handlePostUpdate}

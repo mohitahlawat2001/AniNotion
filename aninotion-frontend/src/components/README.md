@@ -4,7 +4,89 @@ This directory contains reusable UI components that can be used across different
 
 ## Components
 
-### 1. ClickableCorner
+### 1. PostFormWithToggle
+A wrapper component that allows users to switch between the classic PostForm and the new PostFormV1 with live preview.
+
+**Props:**
+- `isOpen` (boolean): Whether the form is open
+- `onClose` (function): Close handler
+- `onSubmit` (function): Submit handler
+- `initialData` (object): Initial data for editing (optional)
+- `isEdit` (boolean): Whether in edit mode (default: false)
+
+**Features:**
+- Saves user's form preference to localStorage
+- Toggle button to switch between Classic and List View forms
+- Persistent selection across sessions
+
+**Usage:**
+```jsx
+import PostFormWithToggle from '../components/PostFormWithToggle';
+
+<PostFormWithToggle
+  isOpen={isFormOpen}
+  onClose={() => setIsFormOpen(false)}
+  onSubmit={handleCreatePost}
+/>
+```
+
+### 2. PostFormV1
+A new post creation/editing form with Twitter/X-style list view and live preview.
+
+**Props:**
+- `isOpen` (boolean): Whether the form is open
+- `onClose` (function): Close handler
+- `onSubmit` (function): Submit handler
+- `initialData` (object): Initial data for editing (optional)
+- `isEdit` (boolean): Whether in edit mode (default: false)
+
+**Features:**
+- Split-screen layout with form on left and live preview on right
+- Real-time preview that updates as you type
+- Twitter/X-style card preview similar to PostCard list view
+- Anime auto-suggest with MyAnimeList integration
+- Multiple image upload support
+- Paste images directly with Ctrl+V
+- Image URL support
+
+**Usage:**
+```jsx
+import PostFormV1 from '../components/PostFormV1';
+
+<PostFormV1
+  isOpen={isFormOpen}
+  onClose={() => setIsFormOpen(false)}
+  onSubmit={handleCreatePost}
+/>
+```
+
+### 3. PostForm (Classic)
+The original full-featured vertical layout form for creating and editing posts.
+
+**Props:**
+- Same as PostFormV1
+
+**Features:**
+- Traditional vertical layout
+- All fields in single scrollable view
+- Full anime search integration
+- Season and episode tracking
+- Multiple image support
+
+### 4. ClickableCorner
+An animated corner CTA component with diagonal fold and hover effects.
+
+**Props:**
+- `onClick` (function): Click handler
+- `text` (string): Text to display (default: "READ")
+- `size` (string): Base size (default: "3.4rem")
+- `hoverSize` (string): Size on hover (default: "3.9rem")
+- `color` (string): Color theme - "emerald", "blue", "purple", "red" (default: "emerald")
+- `layout` (string): "grid" or "list" (default: "grid")
+- `className` (string): Additional CSS classes
+- `title` (string): Tooltip text
+
+### 4. ClickableCorner
 An animated corner CTA component with diagonal fold and hover effects.
 
 **Props:**
@@ -29,7 +111,7 @@ import ClickableCorner from './components/ClickableCorner';
 />
 ```
 
-### 2. CategoryBadge
+### 5. CategoryBadge
 A reusable category badge component.
 
 **Props:**
@@ -46,7 +128,7 @@ import CategoryBadge from './components/CategoryBadge';
 <CategoryBadge category="Anime" showIcon={false} />
 ```
 
-### 3. ImageGallery
+### 6. ImageGallery
 A reusable image gallery with navigation controls.
 
 **Props:**
@@ -68,7 +150,7 @@ import ImageGallery from './components/ImageGallery';
 />
 ```
 
-### 4. DateDisplay
+### 7. DateDisplay
 A reusable date display component with consistent formatting.
 
 **Props:**

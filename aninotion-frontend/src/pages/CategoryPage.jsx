@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import PostForm from '../components/PostForm';
+import PostFormWithToggle from '../components/PostFormWithToggle';
 import PostsContainer from '../components/PostsContainer';
 import LayoutToggle from '../components/LayoutToggle';
 import AuthButton from '../components/AuthButton';
@@ -188,7 +188,7 @@ const CategoryPage = ({ category }) => {
       )}
 
       {/* Post Form Modal */}
-      <PostForm
+      <PostFormWithToggle
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleCreatePost}
