@@ -456,23 +456,23 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                 </div>
 
                 {/* Season & Episode Inputs */}
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    <label className="text-xs text-gray-500">Season:</label>
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="flex items-center space-x-1 sm:space-x-2">
+                    <label className="text-xs text-gray-500 whitespace-nowrap">Season:</label>
                     <input
                       type="number"
                       {...register('seasonNumber', { min: 1 })}
                       placeholder="1"
-                      className="w-16 text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-primary"
+                      className="w-12 sm:w-16 text-sm text-gray-600 bg-white border border-gray-300 rounded px-1 sm:px-2 py-1 focus:ring-2 focus:ring-primary"
                     />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <label className="text-xs text-gray-500">Episode:</label>
+                  <div className="flex items-center space-x-1 sm:space-x-2">
+                    <label className="text-xs text-gray-500 whitespace-nowrap">Episode:</label>
                     <input
                       type="number"
                       {...register('episodeNumber', { min: 1 })}
                       placeholder="12"
-                      className="w-16 text-sm text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-primary"
+                      className="w-12 sm:w-16 text-sm text-gray-600 bg-white border border-gray-300 rounded px-1 sm:px-2 py-1 focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
@@ -498,7 +498,7 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                         <img
                           src={imagePreviews[0]}
                           alt="Preview"
-                          className="w-full max-h-80 object-cover"
+                          className="w-full max-h-48 sm:max-h-80 object-cover"
                           referrerPolicy="no-referrer"
                         />
                         <button
@@ -510,13 +510,13 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                         </button>
                       </div>
                     ) : imagePreviews.length === 2 ? (
-                      <div className="grid grid-cols-2 gap-0.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
                         {imagePreviews.map((img, idx) => (
                           <div key={idx} className="relative group">
                             <img
                               src={img}
                               alt={`Preview ${idx + 1}`}
-                              className="w-full h-48 object-cover"
+                              className="w-full h-32 sm:h-48 object-cover"
                               referrerPolicy="no-referrer"
                             />
                             <button
@@ -530,12 +530,12 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                         ))}
                       </div>
                     ) : imagePreviews.length === 3 ? (
-                      <div className="grid grid-cols-2 gap-0.5">
-                        <div className="relative group row-span-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
+                        <div className="relative group sm:row-span-2">
                           <img
                             src={imagePreviews[0]}
                             alt="Preview 1"
-                            className="w-full h-full object-cover"
+                            className="w-full h-32 sm:h-full object-cover"
                             referrerPolicy="no-referrer"
                           />
                           <button
@@ -551,7 +551,7 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                             <img
                               src={img}
                               alt={`Preview ${idx + 2}`}
-                              className="w-full h-24 object-cover"
+                              className="w-full h-24 sm:h-24 object-cover"
                               referrerPolicy="no-referrer"
                             />
                             <button
@@ -565,13 +565,13 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                         ))}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 gap-0.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-2 gap-0.5">
                         {imagePreviews.slice(0, 4).map((img, idx) => (
                           <div key={idx} className="relative group">
                             <img
                               src={img}
                               alt={`Preview ${idx + 1}`}
-                              className="w-full h-32 object-cover"
+                              className="w-full h-24 sm:h-32 object-cover"
                               referrerPolicy="no-referrer"
                             />
                             <button
@@ -589,7 +589,7 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                 )}
 
                 {/* Image Upload Button */}
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                   <label className="cursor-pointer text-blue-600 hover:text-blue-700 flex items-center space-x-1 text-sm">
                     <Upload size={16} />
                     <span>Add images</span>
@@ -602,15 +602,17 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                       onChange={handleImageChange}
                     />
                   </label>
-                  <span className="text-gray-400">•</span>
-                  <button
-                    type="button"
-                    onClick={() => setShowLinkInput(!showLinkInput)}
-                    className="text-blue-600 hover:text-blue-700 text-sm"
-                  >
-                    Add URL
-                  </button>
-                  <span className="text-gray-400 text-xs">or paste (Ctrl+V)</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 hidden sm:inline">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowLinkInput(!showLinkInput)}
+                      className="text-blue-600 hover:text-blue-700 text-sm"
+                    >
+                      Add URL
+                    </button>
+                    <span className="text-gray-400 text-xs">or paste (Ctrl+V)</span>
+                  </div>
                 </div>
 
                 {/* Image URL Input */}
