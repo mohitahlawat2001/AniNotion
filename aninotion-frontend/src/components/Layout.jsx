@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
+import DarkModeToggle from './DarkModeToggle';
 
 const Layout = ({ children, activeCategory, onCategoryChange }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,7 +15,7 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="app-root flex h-screen bg-gray-50">
       {/* Mobile menu button */}
       <button
         onClick={toggleMobileMenu}
@@ -23,6 +24,11 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
+
+      {/* Dark mode toggle - moved to bottom-right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <DarkModeToggle />
+      </div>
 
       {/* Mobile overlay */}
       {isMobileMenuOpen && (

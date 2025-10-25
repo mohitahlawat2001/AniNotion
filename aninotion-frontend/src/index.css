@@ -99,3 +99,55 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
+
+/* Dark mode variables and global overrides
+   - Toggle by adding the `dark` class on <html> or <body> (we add it to document.documentElement)
+   - Minimal, non-invasive overrides: sets app background, text color and darkens common white surfaces.
+*/
+:root {
+  --app-bg: #f8fafc; /* light page background */
+  --app-text: #111827; /* default text */
+  --card-bg: #ffffff; /* panels / cards */
+}
+
+.dark {
+  --app-bg: #071017; /* deep blue-black for app background */
+  --app-text: #ffffff; /* white text */
+  --card-bg: #0f1724; /* darker card background */
+}
+
+/* Top-level app wrapper that we add in Layout.jsx */
+.app-root {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+/* Make common Tailwind utility colors adapt when .dark is present.
+   These are conservative overrides so existing component classes mostly work
+   but visually follow the dark palette (backgrounds, borders, text).
+*/
+.dark .bg-white {
+  background-color: var(--card-bg) !important;
+  color: var(--app-text) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--app-bg) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: var(--app-text) !important;
+}
+
+.dark .border-gray-300,
+.dark .border-gray-200 {
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Mobile overlay tweak for dark mode */
+.dark .bg-black\/10 {
+  background-color: rgba(255,255,255,0.04) !important;
+}
+
