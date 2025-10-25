@@ -11,7 +11,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
   const [newCategoryName, setNewCategoryName] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasRole } = useAuth();
 
   useEffect(() => {
     fetchCategories();
@@ -132,7 +132,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
         ))}
 
         {/* Add Category */}
-        {isAuthenticated && (
+        {hasRole('editor') && (
           showAddCategory ? (
             <div className="p-3 border border-gray-300 rounded-lg">
               <input
