@@ -84,7 +84,13 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
   // Content truncation logic
   const getDisplayContent = () => {
     const maxLength = layout === 'list' ? 120 : 50;
-    const content = post.excerpt || post.content || '';
+    let content = post.excerpt || post.content || '';
+    
+    // Strip HTML tags for preview
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    content = tempDiv.textContent || tempDiv.innerText || '';
+    
     if (content.length <= maxLength) {
       return content;
     }
@@ -93,7 +99,13 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
 
   const shouldShowExpandButton = () => {
     const maxLength = layout === 'list' ? 150 : 60;
-    const content = post.excerpt || post.content || '';
+    let content = post.excerpt || post.content || '';
+    
+    // Strip HTML tags before checking length
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    content = tempDiv.textContent || tempDiv.innerText || '';
+    
     return content.length > maxLength;
   };
 

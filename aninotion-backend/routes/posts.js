@@ -12,6 +12,7 @@ const {
   isValidStatusTransition,
   buildPostQuery 
 } = require('../utils/postHelpers');
+const { sanitizers } = require('../utils/helpers');
 const logger = require('../config/logger');
 const viewCounter = require('../utils/viewCounter');
 const User = require('../models/User');
@@ -457,6 +458,9 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
     // Process tags
     const processedTags = processTags(tags);
     
+    // Sanitize HTML content to prevent XSS attacks
+    const sanitizedContent = sanitizers.html(content);
+    
     // Create post object
     const postData = {
       title,
@@ -465,13 +469,13 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
       episodeNumber,
       seasonNumber,
       category,
-      content,
+      content: sanitizedContent,
       status,
       tags: processedTags,
       images: imageUrls,
       createdBy: req.user._id,
-      excerpt: excerpt || generateExcerpt(content),
-      readingTimeMinutes: calculateReadingTime(content)
+      excerpt: excerpt || generateExcerpt(sanitizedContent),
+      readingTimeMinutes: calculateReadingTime(sanitizedContent)
     };
     
     // Set publishedAt if status is published
@@ -620,12 +624,14 @@ router.put('/:id', requireAuth, requireRole('admin', 'editor', 'viewer'), async 
     if (seasonNumber !== undefined) updateData.seasonNumber = seasonNumber;
     if (category !== undefined) updateData.category = category;
     if (content !== undefined) {
-      updateData.content = content;
+      // Sanitize HTML content to prevent XSS attacks
+      const sanitizedContent = sanitizers.html(content);
+      updateData.content = sanitizedContent;
       // Regenerate excerpt and reading time if content changed
       if (!excerpt) {
-        updateData.excerpt = generateExcerpt(content);
+        updateData.excerpt = generateExcerpt(sanitizedContent);
       }
-      updateData.readingTimeMinutes = calculateReadingTime(content);
+      updateData.readingTimeMinutes = calculateReadingTime(sanitizedContent);
     }
     if (excerpt !== undefined) updateData.excerpt = excerpt;
     if (tags !== undefined) updateData.tags = processTags(tags);

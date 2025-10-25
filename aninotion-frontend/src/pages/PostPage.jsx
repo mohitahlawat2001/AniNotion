@@ -9,6 +9,7 @@ import PostFormWithToggle from '../components/PostFormWithToggle';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import SEO from '../components/SEO';
 import { generatePostSEO } from '../utils/seoHelpers';
+import RichTextDisplay from '../components/RichTextDisplay';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -478,9 +479,7 @@ const PostPage = () => {
 
               {/* Full Content */}
               <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
-                <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
-                  {post.content}
-                </p>
+                <RichTextDisplay content={post.content} />
               </div>
             </div>
           </article>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { X, Upload, Image, Plus, Link, Check, Search, ChevronDown } from 'lucide-react';
 import { categoriesAPI, postsAPI, animeAPI } from '../services/api';
+import RichTextEditor from './RichTextEditor';
 
 
 const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = false }) => {
@@ -13,6 +14,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
   const [imageUrl, setImageUrl] = useState('');
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
   const [error, setError] = useState('');
+  const [contentHtml, setContentHtml] = useState(''); // For rich text editor
   
   // Anime suggestion states
   const [animeQuery, setAnimeQuery] = useState('');
@@ -53,6 +55,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       setValue('title', initialData.title || '');
       setValue('category', initialData.category?._id || '');
       setValue('content', initialData.content || '');
+      setContentHtml(initialData.content || ''); // Set rich text editor content
       setValue('status', initialData.status || 'published');
       setValue('excerpt', initialData.excerpt || '');
       setValue('tags', initialData.tags ? initialData.tags.join(', ') : '');
@@ -81,6 +84,7 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
       setImagePreviews([]);
       setImageLinks([]);
       setAnimeQuery('');
+      setContentHtml(''); // Reset rich text editor
       setError('');
       setHasUserInteractedWithAnime(false);
     }
@@ -765,15 +769,25 @@ const PostForm = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fals
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Content *
             </label>
-            <textarea
+            <RichTextEditor
+              value={contentHtml}
+              onChange={(html) => {
+                setContentHtml(html);
+                setValue('content', html);
+              }}
+              placeholder="Write your thoughts about this anime/manga... Use the toolbar to format your text!"
+              minHeight="300px"
+            />
+            <input
+              type="hidden"
               {...register('content', { required: 'Content is required' })}
-              rows={4}
-              placeholder="Write your thoughts about this anime/manga..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical text-base sm:rows-6"
             />
             {errors.content && (
               <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
             )}
+            <p className="text-xs text-gray-500 mt-2">
+              💡 Use the toolbar above to format your content with <strong>bold</strong>, <em>italic</em>, lists, links, and more!
+            </p>
           </div>
 
           {/* Excerpt (Optional) */}

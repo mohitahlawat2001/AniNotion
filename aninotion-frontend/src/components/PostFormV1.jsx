@@ -4,6 +4,7 @@ import { X, Upload, Link, Check, Search, Tag } from 'lucide-react';
 import { categoriesAPI, postsAPI, animeAPI } from '../services/api';
 import CategoryBadge from './CategoryBadge';
 import DateDisplay from './DateDisplay';
+import RichTextEditor from './RichTextEditor';
 
 const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = false }) => {
   const [categories, setCategories] = useState([]);
@@ -14,6 +15,7 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
   const [imageUrl, setImageUrl] = useState('');
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
   const [error, setError] = useState('');
+  const [contentHtml, setContentHtml] = useState(''); // For rich text editor
   
   // Anime suggestion states
   const [animeQuery, setAnimeQuery] = useState('');
@@ -53,6 +55,7 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
       setValue('title', initialData.title || '');
       setValue('category', initialData.category?._id || '');
       setValue('content', initialData.content || '');
+      setContentHtml(initialData.content || ''); // Set rich text editor content
       setValue('status', initialData.status || 'published');
       setValue('excerpt', initialData.excerpt || '');
       setValue('tags', initialData.tags ? initialData.tags.join(', ') : '');
@@ -73,6 +76,7 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
       setImagePreviews([]);
       setImageLinks([]);
       setAnimeQuery('');
+      setContentHtml(''); // Reset rich text editor
       setError('');
       setHasUserInteractedWithAnime(false);
     }
@@ -477,16 +481,23 @@ const PostFormV1 = ({ isOpen, onClose, onSubmit, initialData = null, isEdit = fa
                   </div>
                 </div>
 
-                {/* Content Textarea */}
-                <div>
-                  <textarea
+                {/* Content Rich Text Editor */}
+                <div className="-mx-4 sm:-mx-0">
+                  <RichTextEditor
+                    value={contentHtml}
+                    onChange={(html) => {
+                      setContentHtml(html);
+                      setValue('content', html);
+                    }}
+                    placeholder="Share your thoughts about this anime... Use the toolbar to format your text!"
+                    minHeight="250px"
+                  />
+                  <input
+                    type="hidden"
                     {...register('content', { required: 'Content is required' })}
-                    rows={4}
-                    placeholder="Share your thoughts about this anime..."
-                    className="w-full text-sm text-gray-900 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder-gray-400 resize-none"
                   />
                   {errors.content && (
-                    <p className="text-red-500 text-xs mt-1">{errors.content.message}</p>
+                    <p className="text-red-500 text-xs mt-1 px-4 sm:px-0">{errors.content.message}</p>
                   )}
                 </div>
 
