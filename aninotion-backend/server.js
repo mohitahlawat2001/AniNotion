@@ -117,15 +117,15 @@ const server = app.listen(PORT, async () => {
   });
   console.log(`Server is running on port ${PORT}`);
   
-  // Initialize automatic backup scheduler
-  try {
-    const backupScheduler = new BackupScheduler();
-    await backupScheduler.start();
-    logger.info("🔄 Automatic backup scheduler initialized");
-  } catch (error) {
-    logger.error("❌ Failed to initialize backup scheduler:", error);
-    // Don't stop server if backup scheduler fails
-  }
+  // // Initialize automatic backup scheduler
+  // try {
+  //   const backupScheduler = new BackupScheduler();
+  //   await backupScheduler.start();
+  //   logger.info("🔄 Automatic backup scheduler initialized");
+  // } catch (error) {
+  //   // logger.error("❌ Failed to initialize backup scheduler:", error);
+  //   // Don't stop server if backup scheduler fails
+  // }
 });
 
 // Graceful shutdown
