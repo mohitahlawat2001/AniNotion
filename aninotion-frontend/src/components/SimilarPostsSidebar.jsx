@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { recommendationsAPI } from '../services/api';
 import { Sparkles } from 'lucide-react';
 import RightSidebar from './RightSidebar';
@@ -7,6 +8,7 @@ import RightSidebar from './RightSidebar';
  * SimilarPostsSidebar Component
  *
  * Sidebar showing similar posts to a given post
+ * Only displays if user is authenticated
  * Can be used on post detail pages
  * Uses the RightSidebar template
  */
@@ -15,12 +17,15 @@ const SimilarPostsSidebar = ({
   limit = 5,
   className = ''
 }) => {
+  const { isAuthenticated } = useAuth();
   const [similarPosts, setSimilarPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!postId) {
+    // Only fetch if user is authenticated and postId is provided
+    if (!isAuthenticated || !postId) {
+      setSimilarPosts([]);
       setLoading(false);
       return;
     }
@@ -49,7 +54,7 @@ const SimilarPostsSidebar = ({
     };
 
     fetchSimilarPosts();
-  }, [postId, limit]);
+  }, [postId, limit, isAuthenticated]);
 
   // Badge configuration for similar posts (simple numbers)
   const similarBadgeConfig = (index) => {
@@ -59,6 +64,11 @@ const SimilarPostsSidebar = ({
       content: index + 1
     };
   };
+
+  // Don't render sidebar if user is not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <RightSidebar

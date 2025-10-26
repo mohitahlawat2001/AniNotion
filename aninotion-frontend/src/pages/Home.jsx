@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import TrendingSidebar from '../components/TrendingSidebar';
 import RecommendationsSidebar from '../components/RecommendationsSidebar';
+import LoginPromptSidebar from '../components/LoginPromptSidebar';
 import SEO from '../components/SEO';
 import { postsAPI } from '../services/api';
 import { LayoutContext } from '../context/LayoutContext';
@@ -225,6 +226,8 @@ const Home = () => {
         {isList && (
           <aside className="hidden lg:block w-80 flex-shrink-0">
             <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+              {/* Show LoginPromptSidebar if not authenticated, otherwise show Trending and Recommendations */}
+              <LoginPromptSidebar />
               <TrendingSidebar limit={5} timeframe={7} />
               <RecommendationsSidebar limit={5} />
             </div>

@@ -5,6 +5,7 @@ import PostsContainer from '../components/PostsContainer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import RecommendationsSidebar from '../components/RecommendationsSidebar';
+import LoginPromptSidebar from '../components/LoginPromptSidebar';
 import SEO from '../components/SEO';
 import { recommendationsAPI, categoriesAPI } from '../services/api';
 import { useNavigationStack } from '../contexts/NavigationContext';
@@ -174,6 +175,8 @@ const CategoryTrendingPage = () => {
         {/* Sidebars - Right Side (Desktop Only) */}
         <aside className="hidden lg:block w-80 flex-shrink-0">
           <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            {/* Show LoginPromptSidebar if not authenticated, otherwise show Recommendations */}
+            <LoginPromptSidebar />
             <RecommendationsSidebar limit={5} />
           </div>
         </aside>

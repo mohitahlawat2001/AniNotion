@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { recommendationsAPI } from '../services/api';
 import { Sparkles } from 'lucide-react';
 import RightSidebar from './RightSidebar';
@@ -7,6 +8,7 @@ import RightSidebar from './RightSidebar';
  * RecommendationsSidebar Component
  *
  * Sidebar showing personalized recommendations
+ * Only displays if user is authenticated
  * Placed below the trending sidebar
  * Uses the RightSidebar template
  */
@@ -14,11 +16,19 @@ const RecommendationsSidebar = ({
   limit = 5,
   className = ''
 }) => {
+  const { isAuthenticated } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Only fetch if user is authenticated
+    if (!isAuthenticated) {
+      setRecommendations([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchRecommendations = async () => {
       try {
         setLoading(true);
@@ -47,7 +57,7 @@ const RecommendationsSidebar = ({
     };
 
     fetchRecommendations();
-  }, [limit]);
+  }, [limit, isAuthenticated]);
 
   // Badge configuration for recommendations (sparkle icons)
   const recommendationsBadgeConfig = () => {
@@ -57,6 +67,11 @@ const RecommendationsSidebar = ({
       content: <Sparkles size={12} />
     };
   };
+
+  // Don't render sidebar if user is not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <RightSidebar

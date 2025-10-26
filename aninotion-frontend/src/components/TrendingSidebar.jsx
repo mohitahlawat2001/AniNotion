@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { recommendationsAPI } from '../services/api';
 import { Flame, TrendingUp } from 'lucide-react';
 import RightSidebar from './RightSidebar';
@@ -8,6 +9,7 @@ import RightSidebar from './RightSidebar';
  *
  * Twitter-style trending sidebar for desktop view
  * Shows compact trending posts on the right side
+ * Only displays if user is authenticated
  * Uses the RightSidebar template
  * 
  * Can show global trending or category-specific trending
@@ -19,11 +21,19 @@ const TrendingSidebar = ({
   viewMoreLink = null, // Optional: custom link for "Show more" button
   className = ''
 }) => {
+  const { isAuthenticated } = useAuth();
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Only fetch if user is authenticated
+    if (!isAuthenticated) {
+      setTrending([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchTrending = async () => {
       try {
         setLoading(true);
@@ -49,7 +59,7 @@ const TrendingSidebar = ({
     };
 
     fetchTrending();
-  }, [limit, timeframe, categoryId]);
+  }, [limit, timeframe, categoryId, isAuthenticated]);
 
   // Badge configuration for trending (top 3 get special colors + icon)
   const trendingBadgeConfig = (index) => {
@@ -78,6 +88,11 @@ const TrendingSidebar = ({
       showIcon: false
     };
   };
+
+  // Don't render sidebar if user is not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <RightSidebar
