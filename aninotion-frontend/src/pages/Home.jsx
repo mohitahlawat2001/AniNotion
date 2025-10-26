@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Plus } from 'lucide-react';
 import PostFormWithToggle from '../components/PostFormWithToggle';
 import PostsContainer from '../components/PostsContainer';
@@ -7,8 +7,11 @@ import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import TrendingSidebar from '../components/TrendingSidebar';
+import RecommendationsSidebar from '../components/RecommendationsSidebar';
 import SEO from '../components/SEO';
 import { postsAPI } from '../services/api';
+import { LayoutContext } from '../context/LayoutContext';
 
 const POSTS_PER_PAGE = 20;
 
@@ -20,6 +23,7 @@ const Home = () => {
   const [pagination, setPagination] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMorePosts, setHasMorePosts] = useState(true);
+  const { isList } = useContext(LayoutContext);
 
   useEffect(() => {
     fetchInitialPosts();
@@ -159,58 +163,74 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Posts Container */}
-      <PostsContainer
-        posts={posts}
-        emptyMessage="No posts yet!"
-        onCreatePost={() => setIsFormOpen(true)}
-      />
+      {/* Two Column Layout - Posts + Sidebar */}
+      <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+        {/* Main Content - Left Side */}
+        <div className="flex-1 min-w-0">
+          {/* Posts Container */}
+          <PostsContainer
+            posts={posts}
+            emptyMessage="No posts yet!"
+            onCreatePost={() => setIsFormOpen(true)}
+          />
 
-      {/* Show More Button */}
-      {hasMorePosts && posts.length > 0 && (
-        <div className="flex justify-center mt-6 sm:mt-8 px-4 sm:px-0">
-          <button
-            onClick={fetchMorePosts}
-            disabled={isLoadingMore}
-            className="group flex items-center space-x-2 bg-black/20 backdrop-blur-sm text-white hover:text-white hover:bg-black/30 disabled:bg-black/10 disabled:text-white/50 px-6 py-3 rounded-full transition-all duration-300 border border-white/30 disabled:border-white/20 min-w-[140px] justify-center touch-target"
-          >
-            {isLoadingMore ? (
-              <>
-                <LoadingSpinner size="sm" />
-                <span className="text-sm sm:text-base font-medium">
-                  Loading...
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-sm sm:text-base font-medium">
-                  Show more
-                </span>
-                <svg
-                  className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-hover:scale-110 duration-200"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </>
-            )}
-          </button>
-        </div>
-      )}
+          {/* Show More Button */}
+          {hasMorePosts && posts.length > 0 && (
+            <div className="flex justify-center mt-6 sm:mt-8 px-4 sm:px-0">
+              <button
+                onClick={fetchMorePosts}
+                disabled={isLoadingMore}
+                className="group flex items-center space-x-2 bg-black/20 backdrop-blur-sm text-white hover:text-white hover:bg-black/30 disabled:bg-black/10 disabled:text-white/50 px-6 py-3 rounded-full transition-all duration-300 border border-white/30 disabled:border-white/20 min-w-[140px] justify-center touch-target"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span className="text-sm sm:text-base font-medium">
+                      Loading...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm sm:text-base font-medium">
+                      Show more
+                    </span>
+                    <svg
+                      className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-hover:scale-110 duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
-      {/* End of Posts Message */}
-      {!hasMorePosts && posts.length > 0 && pagination && (
-        <div className="text-center py-8 text-gray-500">
-          <p>You've reached the end! Showing all {pagination.total} posts.</p>
+          {/* End of Posts Message */}
+          {!hasMorePosts && posts.length > 0 && pagination && (
+            <div className="text-center py-8 text-gray-500">
+              <p>You've reached the end! Showing all {pagination.total} posts.</p>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Sidebars - Right Side (Desktop Only, List View Only) */}
+        {isList && (
+          <aside className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+              <TrendingSidebar limit={5} timeframe={7} />
+              <RecommendationsSidebar limit={5} />
+            </div>
+          </aside>
+        )}
+      </div>
 
       {/* Post Form Modal */}
       <PostFormWithToggle

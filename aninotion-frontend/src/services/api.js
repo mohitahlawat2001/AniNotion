@@ -685,3 +685,139 @@ export const animeAPI = {
     });
   }
 };
+
+// Recommendations API
+export const recommendationsAPI = {
+  // Get similar posts for a specific post
+  getSimilarPosts: async (postId, options = {}) => {
+    const { limit = 6, minScore = 0.1, includeBreakdown = false } = options;
+    
+    const queryParams = new URLSearchParams({
+      limit: limit.toString(),
+      minScore: minScore.toString(),
+      includeBreakdown: includeBreakdown.toString()
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/recommendations/similar/${postId}?${queryParams}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch similar posts');
+    }
+
+    return response.json();
+  },
+
+  // Get personalized recommendations based on post history
+  getPersonalized: async (postIds, options = {}) => {
+    const { limit = 10, diversityFactor = 0.3 } = options;
+
+    const response = await fetch(`${API_BASE_URL}/recommendations/personalized`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postIds, limit, diversityFactor })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch personalized recommendations');
+    }
+
+    return response.json();
+  },
+
+  // Get posts from a specific anime series
+  getAnimeRecommendations: async (animeName, options = {}) => {
+    const { limit = 10 } = options;
+    
+    const queryParams = new URLSearchParams({
+      limit: limit.toString()
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/recommendations/anime/${encodeURIComponent(animeName)}?${queryParams}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch anime recommendations');
+    }
+
+    return response.json();
+  },
+
+  // Get posts with a specific tag
+  getTagRecommendations: async (tag, options = {}) => {
+    const { limit = 10 } = options;
+    
+    const queryParams = new URLSearchParams({
+      limit: limit.toString()
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/recommendations/tag/${encodeURIComponent(tag)}?${queryParams}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch tag recommendations');
+    }
+
+    return response.json();
+  },
+
+  // Get trending posts
+  getTrending: async (options = {}) => {
+    const { limit = 10, timeframe = 7 } = options;
+    
+    const queryParams = new URLSearchParams({
+      limit: limit.toString(),
+      timeframe: timeframe.toString()
+    });
+
+    const url = `${API_BASE_URL}/recommendations/trending?${queryParams}`;
+    console.log('🔍 API Call:', url);
+    console.log('🔍 API_BASE_URL:', API_BASE_URL);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('❌ API Error:', response.status, response.statusText);
+      throw new Error('Failed to fetch trending posts');
+    }
+
+    return response.json();
+  },
+
+  // Get trending posts by category
+  getTrendingByCategory: async (categoryId, options = {}) => {
+    const { limit = 10, timeframe = 7 } = options;
+    
+    const queryParams = new URLSearchParams({
+      limit: limit.toString(),
+      timeframe: timeframe.toString()
+    });
+
+    const url = `${API_BASE_URL}/recommendations/trending/category/${categoryId}?${queryParams}`;
+    console.log('🔍 API Call (Trending by Category):', url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('❌ API Error:', response.status, response.statusText);
+      throw new Error('Failed to fetch trending posts by category');
+    }
+
+    return response.json();
+  },
+
+  // Clear cache (admin only)
+  clearCache: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/recommendations/cache`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Get cache statistics (admin only)
+  getCacheStats: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/recommendations/cache/stats`);
+  }
+};

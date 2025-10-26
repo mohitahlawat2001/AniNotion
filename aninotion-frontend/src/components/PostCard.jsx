@@ -110,7 +110,9 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
   };
 
   const handlePostClick = () => {
-    navigate(`/post/${post._id}`);
+    navigate(`/post/${post._id}`, { 
+      state: { from: window.location.pathname }
+    });
   };
 
   // Get images array - prioritize 'images' array, fallback to single 'image'

@@ -4,23 +4,31 @@ import { Calendar, Tag, ChevronLeft, ChevronRight, ArrowLeft, ExternalLink, Star
 import { postsAPI } from '../services/api';
 import { useAnimeSearch, useAnimeDetails } from '../hooks/useAnime';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigationStack } from '../contexts/NavigationContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PostFormWithToggle from '../components/PostFormWithToggle';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import SEO from '../components/SEO';
 import { generatePostSEO } from '../utils/seoHelpers';
 import RichTextDisplay from '../components/RichTextDisplay';
+import RecommendedPosts from '../components/RecommendedPosts';
 
 const PostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, canWrite, isAdmin } = useAuth();
+  const { navigateBack } = useNavigationStack();
   const [post, setPost] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimeId, setSelectedAnimeId] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
+
+  // Handle smart back navigation using stack
+  const handleBackClick = () => {
+    navigateBack();
+  };
   
 
 
@@ -324,7 +332,7 @@ const PostPage = () => {
         <div className="flex-1 max-w-none lg:max-w-3xl relative">
           {/* See-through Back Button - Right side on mobile, left on larger screens */}
           <button
-            onClick={() => navigate(-1)}
+            onClick={handleBackClick}
             className="absolute top-4 right-4 sm:left-4 sm:right-auto z-10 flex items-center space-x-2 bg-black/20 backdrop-blur-sm text-white hover:text-white hover:bg-black/30 px-4 py-2 rounded-full transition-all duration-300 border border-white/30 group"
           >
             <ArrowLeft size={18} className="sm:hidden group-hover:scale-110 transition-transform duration-200" />
@@ -485,16 +493,13 @@ const PostPage = () => {
           </article>
         </div>
 
-        {/* Recommendations Sidebar - Below content on mobile, sidebar on desktop */}
-        <div className="w-full lg:w-80 mt-6 lg:mt-0">
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Recommended Posts
-            </h3>
-            <div className="text-gray-500 text-center py-8">
-              Coming soon...
-            </div>
-          </div>
+        {/* Recommendations Sidebar - Desktop Only */}
+        <div className="hidden lg:block w-80 mt-6 lg:mt-0">
+          <RecommendedPosts 
+            postId={post?._id}
+            type="similar"
+            limit={6}
+          />
         </div>
 
         

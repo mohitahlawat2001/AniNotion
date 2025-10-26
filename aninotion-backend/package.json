@@ -14,7 +14,8 @@
     "health": "npm run cli health",
     "check:oauth": "bash scripts/check-oauth.sh",
     "test:oauth": "node scripts/test-oauth-endpoints.js",
-    "test:signup": "bash scripts/test-signup.sh"
+    "test:signup": "bash scripts/test-signup.sh",
+    "test:recommendations": "node scripts/test-recommendations.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "multer": "^2.0.0",
+    "natural": "^8.1.0",
+    "node-cache": "^5.1.2",
     "node-cron": "^4.2.1",
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",

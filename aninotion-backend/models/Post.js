@@ -90,6 +90,31 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: false
   }], // Array of image URLs
+  // Recommendation engine fields
+  contentHash: {
+    type: String,
+    index: true
+  },
+  contentLength: {
+    type: Number,
+    default: 0
+  },
+  // Store TF-IDF features for similarity calculations (can be populated on-demand)
+  tfidfFeatures: {
+    type: Map,
+    of: Number,
+    default: new Map()
+  },
+  // Engagement score for ranking recommendations
+  engagementScore: {
+    type: Number,
+    default: 0,
+    index: true
+  },
+  // Last time similarity was calculated
+  lastSimilarityUpdate: {
+    type: Date
+  }
 }, {
   timestamps: true
 });
@@ -139,6 +164,23 @@ postSchema.methods.calculateReadingTime = function() {
   return this.readingTimeMinutes;
 };
 
+// Instance method to calculate engagement score
+postSchema.methods.calculateEngagementScore = function() {
+  // Weighted engagement score: views (0.3) + likes (0.5) + bookmarks (0.2)
+  const viewsScore = (this.views || 0) * 0.3;
+  const likesScore = (this.likesCount || 0) * 0.5;
+  const bookmarksScore = (this.bookmarksCount || 0) * 0.2;
+  
+  // Apply time decay factor (newer posts get slight boost)
+  const daysSincePublish = this.publishedAt 
+    ? (Date.now() - this.publishedAt.getTime()) / (1000 * 60 * 60 * 24)
+    : 0;
+  const timeFactor = Math.exp(-daysSincePublish / 365); // Decay over a year
+  
+  this.engagementScore = (viewsScore + likesScore + bookmarksScore) * (0.5 + 0.5 * timeFactor);
+  return this.engagementScore;
+};
+
 // Pre-save middleware to auto-generate fields
 postSchema.pre('save', function(next) {
   // Generate excerpt if not provided
@@ -149,6 +191,11 @@ postSchema.pre('save', function(next) {
   // Calculate reading time if not provided
   if (!this.readingTimeMinutes && this.content) {
     this.calculateReadingTime();
+  }
+  
+  // Calculate content length
+  if (this.content) {
+    this.contentLength = this.content.length;
   }
   
   // Set publishedAt if status is published and not already set
