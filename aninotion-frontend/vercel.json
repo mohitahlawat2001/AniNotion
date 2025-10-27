@@ -1,4 +1,16 @@
 {
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://aninotion.com/api/sitemap.xml",
+      "permanent": true
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "https://aninotion.com/api/rss.xml",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

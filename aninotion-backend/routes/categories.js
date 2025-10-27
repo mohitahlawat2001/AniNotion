@@ -2,18 +2,45 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
 const logger = require('../config/logger');
+const { optionalAuth } = require('../middleware/auth');
+
+// Helper function to get role hierarchy value
+const getRoleValue = (role) => {
+  const roleHierarchy = { 'viewer': 1, 'editor': 2, 'admin': 3 };
+  return roleHierarchy[role] || 0;
+};
+
+// Helper function to filter categories based on user role
+const filterCategoriesByRole = (categories, userRole) => {
+  return categories.filter(category => {
+    // If no minRole is set, category is visible to everyone
+    if (!category.minRole) return true;
+    
+    // If no user role provided (not authenticated), can only see categories with no minRole
+    if (!userRole) return false;
+    
+    // Check role hierarchy
+    return getRoleValue(userRole) >= getRoleValue(category.minRole);
+  });
+};
 
 // Get all categories
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     logger.info("📂 Fetching all categories");
     const categories = await Category.find().sort({ createdAt: -1 });
     
+    // Filter categories based on user role
+    const userRole = req.user?.role;
+    const filteredCategories = filterCategoriesByRole(categories, userRole);
+    
     logger.info("✅ Categories fetched successfully", {
-      count: categories.length
+      totalCount: categories.length,
+      filteredCount: filteredCategories.length,
+      userRole: userRole || 'anonymous'
     });
     
-    res.json(categories);
+    res.json(filteredCategories);
   } catch (error) {
     logger.error("❌ Error fetching categories:", {
       error: error.message,
@@ -27,18 +54,27 @@ router.get('/', async (req, res) => {
 // Create new category
 router.post('/', async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, minRole } = req.body;
     const slug = name.toLowerCase().replace(/\s+/g, '-');
     
     logger.info("📝 Creating new category", {
       name,
-      slug
+      slug,
+      minRole: minRole || 'none (visible to all)'
     });
+    
+    // Validate minRole if provided
+    if (minRole && !['viewer', 'editor', 'admin'].includes(minRole)) {
+      return res.status(400).json({ 
+        message: 'Invalid minRole. Must be one of: viewer, editor, admin, or null' 
+      });
+    }
     
     const category = new Category({
       name,
       slug,
-      isDefault: false
+      isDefault: false,
+      minRole: minRole || null // null means visible to all
     });
     
     const savedCategory = await category.save();
@@ -46,7 +82,8 @@ router.post('/', async (req, res) => {
     logger.info("✅ Category created successfully", {
       id: savedCategory._id,
       name: savedCategory.name,
-      slug: savedCategory.slug
+      slug: savedCategory.slug,
+      minRole: savedCategory.minRole || 'none (visible to all)'
     });
     
     res.status(201).json(savedCategory);

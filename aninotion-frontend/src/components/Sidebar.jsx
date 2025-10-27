@@ -9,13 +9,14 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryMinRole, setNewCategoryMinRole] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, hasRole } = useAuth();
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [isAuthenticated]); // Refetch categories when authentication state changes
 
   const fetchCategories = async () => {
     try {
@@ -30,9 +31,14 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
     if (!newCategoryName.trim()) return;
 
     try {
-      const newCategory = await categoriesAPI.create({ name: newCategoryName.trim() });
+      const categoryData = { 
+        name: newCategoryName.trim(),
+        minRole: newCategoryMinRole || null
+      };
+      const newCategory = await categoriesAPI.create(categoryData);
       setCategories([...categories, newCategory]);
       setNewCategoryName('');
+      setNewCategoryMinRole(null);
       setShowAddCategory(false);
     } catch (error) {
       console.error('Error creating category:', error);
@@ -144,6 +150,16 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
                 onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
                 autoFocus
               />
+              <select
+                value={newCategoryMinRole || ''}
+                onChange={(e) => setNewCategoryMinRole(e.target.value || null)}
+                className="w-full p-2 text-sm border border-gray-300 rounded mb-2"
+              >
+                <option value="">Visible to all (public)</option>
+                <option value="viewer">Viewer and above</option>
+                <option value="editor">Editor and above</option>
+                <option value="admin">Admin only</option>
+              </select>
               <div className="flex space-x-2">
                 <button
                   onClick={handleAddCategory}
@@ -155,6 +171,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
                   onClick={() => {
                     setShowAddCategory(false);
                     setNewCategoryName('');
+                    setNewCategoryMinRole(null);
                   }}
                   className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded hover:bg-gray-300"
                 >

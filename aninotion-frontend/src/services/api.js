@@ -181,7 +181,14 @@ export const authAPI = {
 // Categories API
 export const categoriesAPI = {
   getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/categories`);
+    // Include auth token if available for proper role-based filtering
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+    
+    const response = await fetch(`${API_BASE_URL}/categories`, { headers });
     if (!response.ok) throw new Error('Failed to fetch categories');
     return response.json();
   },

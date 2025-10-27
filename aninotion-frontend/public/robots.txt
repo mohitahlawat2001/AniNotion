@@ -13,8 +13,8 @@ Allow: /post/*
 Allow: /anime/*
 Allow: /raw
 
-# Sitemap location
-Sitemap: https://aninotion.com/sitemap.xml
+# Sitemap location (use backend-generated sitemap)
+Sitemap: https://aninotion.com/api/sitemap.xml
 
 # Crawl delay (optional - be nice to the server)
 Crawl-delay: 1

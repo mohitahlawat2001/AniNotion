@@ -10,12 +10,14 @@
     "backup": "npm run cli backup",
     "migrate": "npm run cli migration",
     "migrate:v0.5": "npm run cli migration:v0.5",
+    "migrate:category-roles": "node scripts/migrate-add-minrole.js",
     "seed:admin": "node scripts/seedAdmin.js",
     "health": "npm run cli health",
     "check:oauth": "bash scripts/check-oauth.sh",
     "test:oauth": "node scripts/test-oauth-endpoints.js",
     "test:signup": "bash scripts/test-signup.sh",
-    "test:recommendations": "node scripts/test-recommendations.js"
+    "test:recommendations": "node scripts/test-recommendations.js",
+    "test:category-roles": "node scripts/test-category-roles.js"
   },
   "keywords": [],
   "author": "",
