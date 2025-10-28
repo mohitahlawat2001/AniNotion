@@ -1,4 +1,6 @@
-// Load environment variables FIRST, before any other imports
+// Build and export the Express app without starting the HTTP server
+// This file is intended for tests and other consumers that need the app
+// without side-effects like connecting to the DB or starting listeners.
 require('dotenv').config();
 
 const express = require('express');
@@ -6,10 +8,8 @@ const logTestRouter = require("./routes/log-test");
 const cronRouter = require("./routes/cron");
 const requestLogger = require("./middleware/logging");
 const cors = require('cors');
-const mongoose = require('mongoose');
 const passport = require('./config/passport');
 
-const connectDB = require('./config/database');
 const categoryRoutes = require('./routes/categories');
 const postRoutes = require('./routes/posts');
 const authRoutes = require('./routes/auth');
@@ -18,35 +18,20 @@ const animeRoutes = require('./routes/anime');
 const sitemapRoutes = require('./routes/sitemap');
 const recommendationRoutes = require('./routes/recommendations');
 const logger = require('./config/logger');
-const BackupScheduler = require('./utils/backupScheduler');
 
 const app = express();
 
 // Apply performance monitoring first, then logging
 app.use(requestLogger.performanceMonitor());
 app.use(requestLogger.requestLogger());
-const PORT = process.env.PORT || 5000;
-
-// Log server startup
-logger.info("🚀 Server initializing...", {
-  nodeEnv: process.env.NODE_ENV,
-  port: PORT,
-  appName: process.env.APP_NAME || "aninotion",
-  logLevel: process.env.LOG_LEVEL || "info"
-});
-
-// Connect to MongoDB
-connectDB();
 
 // Middleware
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
-app.use(express.urlencoded({ limit: '50mb',extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Initialize Passport
 app.use(passport.initialize());
-
-logger.info("✅ Middleware configured successfully");
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -111,55 +96,4 @@ app.use((req, res) => {
   });
 });
 
-let server;
-
-// Start the server only when this file is run directly. This allows importing
-// the `app` instance in tests without starting the HTTP server.
-if (require.main === module) {
-  server = app.listen(PORT, async () => {
-    logger.info("🎉 Server started successfully", {
-      port: PORT,
-      environment: process.env.NODE_ENV || "development",
-      timestamp: new Date().toISOString()
-    });
-    console.log(`Server is running on port ${PORT}`);
-    
-    // // Initialize automatic backup scheduler
-    // try {
-    //   const backupScheduler = new BackupScheduler();
-    //   await backupScheduler.start();
-    //   logger.info("🔄 Automatic backup scheduler initialized");
-    // } catch (error) {
-    //   // logger.error("❌ Failed to initialize backup scheduler:", error);
-    //   // Don't stop server if backup scheduler fails
-    // }
-  });
-}
-
-// Graceful shutdown
-process.on("SIGTERM", () => {
-  logger.info("SIGTERM received, shutting down gracefully");
-  if (server) {
-    server.close(() => {
-      logger.info("Server closed successfully");
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
-
-process.on("SIGINT", () => {
-  logger.info("SIGINT received, shutting down gracefully");
-  if (server) {
-    server.close(() => {
-      logger.info("Server closed successfully");
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
-
-// Export the app for testing and importing without starting the server
 module.exports = app;

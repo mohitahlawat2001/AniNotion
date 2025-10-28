@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "concurrently \"nodemon server.js\" \"nodemon ./routes/*.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
+  "test": "jest --runInBand --detectOpenHandles",
     "cli": "node scripts/cli.js",
     "backup": "npm run cli backup",
     "migrate": "npm run cli migration",
@@ -48,7 +48,10 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "jest": "^30.2.0",
+    "nock": "^14.0.10",
     "nodemon": "^3.1.10",
-    "pino-pretty": "^13.1.1"
+    "pino-pretty": "^13.1.1",
+    "supertest": "^7.1.4"
   }
 }
