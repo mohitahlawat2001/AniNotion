@@ -8,10 +8,16 @@ const { getJson, setJson, buildCacheKey, shouldBypassCache } = require('../utils
 const MAL_BASE_URL = 'https://api.myanimelist.net/v2';
 
 // Cache TTLs (Time-To-Live) in seconds
-const TTL_SEARCH = parseInt(process.env.ANINOTION_CACHE_TTL_SEARCH || '600');
-const TTL_DETAILS = parseInt(process.env.ANINOTION_CACHE_TTL_DETAILS || '86400');
-const TTL_RANKING = parseInt(process.env.ANINOTION_CACHE_TTL_RANKING || '1800');
-const TTL_SEASON = parseInt(process.env.ANINOTION_CACHE_TTL_SEASON || '3600');
+function parseTtl(envValue, defaultValue) {
+  const parsed = Number.parseInt(String(envValue ?? ''), 10);
+  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed <= 0) return defaultValue;
+  return parsed;
+}
+
+const TTL_SEARCH = parseTtl(process.env.ANINOTION_CACHE_TTL_SEARCH, 600);
+const TTL_DETAILS = parseTtl(process.env.ANINOTION_CACHE_TTL_DETAILS, 86400);
+const TTL_RANKING = parseTtl(process.env.ANINOTION_CACHE_TTL_RANKING, 1800);
+const TTL_SEASON = parseTtl(process.env.ANINOTION_CACHE_TTL_SEASON, 3600);
 
 // Helper function to create axios instance with MAL headers
 const createMALRequest = () => {
