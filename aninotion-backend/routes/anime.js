@@ -3,6 +3,17 @@ const axios = require('axios');
 const router = express.Router();
 const logger = require('../config/logger');
 const { getJson, setJson, buildCacheKey, shouldBypassCache } = require('../utils/cache');
+const crypto = require('crypto');
+
+// helper for safe key logging (12-hex hash)
+function keyHash(key) {
+  try {
+    return crypto.createHash('sha256').update(String(key)).digest('hex').slice(0, 12);
+  } catch (err) {
+    logger.debug({ err }, 'keyHash failed');
+    return 'hash_error';
+  }
+}
 
 // MyAnimeList API base URL
 const MAL_BASE_URL = 'https://api.myanimelist.net/v2';
@@ -36,6 +47,7 @@ function parsePositiveInt(value, defaultValue) {
   return v;
 }
 
+
 // Get anime list by search query
 router.get('/search', async (req, res) => {
   // Validate and sanitize input
@@ -49,7 +61,7 @@ router.get('/search', async (req, res) => {
   }
 
   const limitRequested = parsePositiveInt(req.query.limit, 100);
-  const limit = Math.min(limitRequested, 100); // MAL API max 100
+  const limit = Math.max(1, Math.min(limitRequested, 100)); // 1..100
   const offset = parsePositiveInt(req.query.offset, 0);
   const fields = req.query.fields;
 
@@ -63,25 +75,24 @@ router.get('/search', async (req, res) => {
     try {
       const cachedData = await getJson(cacheKey);
       if (cachedData) {
-        logger.info('Cache HIT', { cacheKey });
+        logger.info('Cache HIT', { keyHash: keyHash(cacheKey) });
         cachedData.cached = true;
         return res.json(cachedData);
       }
-      logger.info('Cache MISS', { cacheKey });
+      logger.info('Cache MISS', { keyHash: keyHash(cacheKey) });
     } catch (err) {
-      logger.error({ err, cacheKey }, 'Error reading from cache (search)');
+      logger.error({ err, keyHash: keyHash(cacheKey) }, 'Error reading from cache (search)');
       // continue to fetch from MAL
     }
   }
 
   const malClient = createMALRequest();
-  logger.info('Searching anime on MyAnimeList', { query: q, limit, offset });
+  logger.info('Searching anime on MyAnimeList', { queryLen: q.length, queryPreview: q.slice(0, 24), limit, offset });
 
   try {
     const response = await malClient.get('/anime', { params });
 
     logger.info('MyAnimeList search successful', {
-      query: q,
       resultsCount: response.data.data?.length || 0
     });
 
@@ -98,7 +109,7 @@ router.get('/search', async (req, res) => {
       try {
         await setJson(cacheKey, responsePayload, TTL_SEARCH);
       } catch (err) {
-        logger.error({ err, cacheKey }, 'Failed to set search result in cache');
+        logger.error({ err, keyHash: keyHash(cacheKey) }, 'Failed to set search result in cache');
       }
     }
 
@@ -108,7 +119,8 @@ router.get('/search', async (req, res) => {
       error: error.message,
       status: error.response?.status,
       data: error.response?.data,
-      query: q
+      queryLen: q.length,
+      queryPreview: q.slice(0, 24)
     });
 
     return res.status(error.response?.status || 500).json({
@@ -140,13 +152,13 @@ router.get('/details/:anime_id', async (req, res) => {
     try {
       const cachedData = await getJson(cacheKey);
       if (cachedData) {
-        logger.info('Cache HIT', { cacheKey });
+        logger.info('Cache HIT', { keyHash: keyHash(cacheKey) });
         cachedData.cached = true;
         return res.json(cachedData);
       }
-      logger.info('Cache MISS', { cacheKey });
+      logger.info('Cache MISS', { keyHash: keyHash(cacheKey) });
     } catch (err) {
-      logger.error({ err, cacheKey }, 'Error reading from cache (details)');
+      logger.error({ err, keyHash: keyHash(cacheKey) }, 'Error reading from cache (details)');
     }
   }
 
@@ -164,7 +176,7 @@ router.get('/details/:anime_id', async (req, res) => {
       try {
         await setJson(cacheKey, responsePayload, TTL_DETAILS);
       } catch (err) {
-        logger.error({ err, cacheKey }, 'Failed to set details in cache');
+        logger.error({ err, keyHash: keyHash(cacheKey) }, 'Failed to set details in cache');
       }
     }
 
@@ -199,7 +211,7 @@ router.get('/ranking', async (req, res) => {
   }
 
   const limitRequested = parsePositiveInt(req.query.limit, 100);
-  const limit = Math.min(limitRequested, 500); // MAL API max 500
+  const limit = Math.max(1, Math.min(limitRequested, 500)); // 1..500
   const offset = parsePositiveInt(req.query.offset, 0);
   const fields = req.query.fields;
 
@@ -212,13 +224,13 @@ router.get('/ranking', async (req, res) => {
     try {
       const cachedData = await getJson(cacheKey);
       if (cachedData) {
-        logger.info('Cache HIT', { cacheKey });
+        logger.info('Cache HIT', { keyHash: keyHash(cacheKey) });
         cachedData.cached = true;
         return res.json(cachedData);
       }
-      logger.info('Cache MISS', { cacheKey });
+      logger.info('Cache MISS', { keyHash: keyHash(cacheKey) });
     } catch (err) {
-      logger.error({ err, cacheKey }, 'Error reading from cache (ranking)');
+      logger.error({ err, keyHash: keyHash(cacheKey) }, 'Error reading from cache (ranking)');
     }
   }
 
@@ -236,7 +248,7 @@ router.get('/ranking', async (req, res) => {
       try {
         await setJson(cacheKey, responsePayload, TTL_RANKING);
       } catch (err) {
-        logger.error({ err, cacheKey }, 'Failed to set ranking in cache');
+        logger.error({ err, keyHash: keyHash(cacheKey) }, 'Failed to set ranking in cache');
       }
     }
 
@@ -267,7 +279,7 @@ router.get('/season/:year/:season', async (req, res) => {
 
   const sort = req.query.sort;
   const limitRequested = parsePositiveInt(req.query.limit, 100);
-  const limit = Math.min(limitRequested, 500);
+  const limit = Math.max(1, Math.min(limitRequested, 500));
   const offset = parsePositiveInt(req.query.offset, 0);
   const fields = req.query.fields;
 
@@ -282,13 +294,13 @@ router.get('/season/:year/:season', async (req, res) => {
     try {
       const cachedData = await getJson(cacheKey);
       if (cachedData) {
-        logger.info('Cache HIT', { cacheKey });
+        logger.info('Cache HIT', { keyHash: keyHash(cacheKey) });
         cachedData.cached = true;
         return res.json(cachedData);
       }
-      logger.info('Cache MISS', { cacheKey });
+      logger.info('Cache MISS', { keyHash: keyHash(cacheKey) });
     } catch (err) {
-      logger.error({ err, cacheKey }, 'Error reading from cache (season)');
+      logger.error({ err, keyHash: keyHash(cacheKey) }, 'Error reading from cache (season)');
     }
   }
 
@@ -312,7 +324,7 @@ router.get('/season/:year/:season', async (req, res) => {
       try {
         await setJson(cacheKey, responsePayload, TTL_SEASON);
       } catch (err) {
-        logger.error({ err, cacheKey }, 'Failed to set season in cache');
+        logger.error({ err, keyHash: keyHash(cacheKey) }, 'Failed to set season in cache');
       }
     }
 
