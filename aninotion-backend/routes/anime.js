@@ -2,7 +2,6 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const logger = require('../config/logger');
-const cache = require('../utils/cache');
 const { getJson, setJson, buildCacheKey, shouldBypassCache } = require('../utils/cache');
 
 // MyAnimeList API base URL

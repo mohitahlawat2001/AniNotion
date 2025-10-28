@@ -7,10 +7,6 @@ jest.mock('../config/database', () => {
 // Mock the logging middleware so it does nothing. We mock the middleware
 // instead of the logger to avoid side-effects from logger transports and to
 // keep request logging inert during tests.
-// Mock the database connection (KEEP THIS)
-jest.mock('../config/database', () => ({
-  connectDB: jest.fn(() => Promise.resolve()),
-}));
 
 // 1. Mock the logger to fix "open handle" error
 jest.mock('../config/logger', () => {
