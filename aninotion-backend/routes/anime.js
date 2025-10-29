@@ -18,6 +18,9 @@ function keyHash(key) {
 // MyAnimeList API base URL
 const MAL_BASE_URL = 'https://api.myanimelist.net/v2';
 
+// Default fields for anime details
+const DEFAULT_ANIME_FIELDS = 'id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics';
+
 // Cache TTLs (Time-To-Live) in seconds
 function parseTtl(envValue, defaultValue) {
   const parsed = Number.parseInt(String(envValue ?? ''), 10);
@@ -144,7 +147,7 @@ router.get('/details/:anime_id', async (req, res) => {
   const fields = req.query.fields;
   const params = {};
   if (fields) params.fields = fields;
-  else params.fields = 'id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics';
+  else params.fields = DEFAULT_ANIME_FIELDS;
 
   const cacheKey = buildCacheKey(`details:${animeId}`, { fields: params.fields });
 
@@ -317,7 +320,7 @@ router.get('/season/:year/:season', async (req, res) => {
       cached: false,
       data: response.data.data || [],
       paging: response.data.paging || {},
-      season: { year: parseInt(year, 10), season }
+  season: { year, season }
     };
 
     if (!shouldBypassCache(req)) {
