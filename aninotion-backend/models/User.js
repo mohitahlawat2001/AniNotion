@@ -73,7 +73,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ status: 1 });
-userSchema.index({ googleId: 1 });
+// Removed duplicate googleId index since unique: true creates it automatically
 
 // Virtual for password (write-only)
 userSchema.virtual('password').set(function(password) {
