@@ -87,10 +87,11 @@ router.get('/', optionalAuth, async (req, res) => {
       .sort({ [sortField]: sortDirection })
       .limit(limitNum)
       .skip(skip)
+      .maxTimeMS(10000) // Timeout after 10 seconds
       .lean();
     
     // Get total count for pagination
-    const totalCount = await Post.countDocuments(query);
+    const totalCount = await Post.countDocuments(query).maxTimeMS(5000); // Timeout after 5 seconds
     
     logger.info("✅ Posts fetched successfully", {
       count: posts.length,
@@ -115,7 +116,13 @@ router.get('/', optionalAuth, async (req, res) => {
     logger.error("❌ Error fetching posts:", {
       error: error.message,
       stack: error.stack,
-      userId: req.user?._id
+      userId: req.user?._id,
+      query: JSON.stringify(query),
+      sortField,
+      sortDirection,
+      limitNum,
+      pageNum,
+      skip
     });
     
     res.status(500).json({ message: error.message });

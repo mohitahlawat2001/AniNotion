@@ -122,6 +122,7 @@ const postSchema = new mongoose.Schema({
 // Indexes for performance and uniqueness
 postSchema.index({ status: 1, publishedAt: -1 });
 postSchema.index({ category: 1, status: 1 });
+postSchema.index({ category: 1, status: 1, publishedAt: -1 }); // Added for category filter + status + sort
 postSchema.index({ createdBy: 1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ isDeleted: 1 });
