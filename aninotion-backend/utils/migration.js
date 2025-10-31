@@ -212,11 +212,13 @@ const addSlugIndex = async () => {
     }
     
     // Add unique index
+    // Use $type and $gt to ensure slug is a non-empty string. Avoid $ne (which becomes a $not expression)
+    // because partial indexes do not support $not/$ne expressions.
     await Post.collection.createIndex(
       { slug: 1 }, 
       { 
         unique: true, 
-        partialFilterExpression: { slug: { $exists: true, $ne: null, $ne: '' } }
+        partialFilterExpression: { slug: { $type: 'string', $gt: '' } }
       }
     );
     

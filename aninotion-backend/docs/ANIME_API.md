@@ -276,3 +276,38 @@ curl "http://localhost:5000/api/anime/ranking?ranking_type=all&limit=10"
 ```bash
 curl "http://localhost:5000/api/anime/season/2024/fall?limit=20"
 ```
+
+## Caching
+
+To improve performance and reduce rate-limiting from the MyAnimeList API, all data-fetching endpoints in this API (except `/health`) use an Upstash Redis cache.
+
+### How it Works
+When a request is made (e.g., `/search`), the server first checks Redis for a cached result.
+
+- Cache HIT: If a valid result is found, it is returned immediately. The JSON response will include a new property: `"cached": true`.
+
+- Cache MISS: If no result is found, the server calls the MyAnimeList API, stores the result in Redis, and then returns it. The JSON response will have `"cached": false`.
+
+### Cache TTLs (Time-To-Live)
+By default, cached data will expire after a set time:
+
+- `/search`: 10 minutes (600s)
+
+- `/details/:id`: 24 hours (86400s)
+
+- `/ranking`: 30 minutes (1800s)
+
+- `/season/:year/:season`: 1 hour (3600s)
+
+These values can be configured in the environment variables.
+
+### Configuration
+To enable caching, the following environment variables must be set:
+
+- `UPSTASH_REDIS_REST_URL`
+
+- `UPSTASH_REDIS_REST_TOKEN`
+
+To globally disable the cache for debugging, set:
+
+- `ANINOTION_CACHE_ENABLED=false`
