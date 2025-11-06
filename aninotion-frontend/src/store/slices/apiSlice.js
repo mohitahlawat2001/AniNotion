@@ -34,6 +34,12 @@ export const apiSlice = createApi({
   baseQuery: baseQueryWithReauth,
   // Cache time in seconds (default is 60s, we'll set longer for static content)
   keepUnusedDataFor: 300, // 5 minutes
+  // Prevent automatic refetching on component mount/arg change
+  refetchOnMountOrArgChange: false,
+  // Refetch on window focus (can be disabled if too aggressive)
+  refetchOnFocus: false,
+  // Refetch on network reconnect
+  refetchOnReconnect: true,
   // Tag types for cache invalidation
   tagTypes: ['Post', 'Category', 'User', 'Anime', 'Recommendations', 'Auth'],
   endpoints: (builder) => ({
@@ -50,7 +56,8 @@ export const apiSlice = createApi({
         if (category) params.append('category', category);
         if (tags) params.append('tags', Array.isArray(tags) ? tags.join(',') : tags);
         
-        return `/posts?${params}`;
+        const url = `/posts?${params}`;
+        return url;
       },
       providesTags: (result) =>
         result?.posts

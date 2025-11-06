@@ -12,5 +12,6 @@ export const store = configureStore({
     getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
-// Enable refetchOnFocus and refetchOnReconnect behaviors
+// Enable listeners for refetchOnReconnect only (focus disabled in apiSlice config)
+// This enables automatic refetching when internet connection is restored
 setupListeners(store.dispatch);
