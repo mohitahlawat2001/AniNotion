@@ -13,6 +13,7 @@ import TrendingPage from './pages/TrendingPage';
 import CategoryTrendingPage from './pages/CategoryTrendingPage';
 import PersonalizedPage from './pages/PersonalizedPage';
 import SimilarPostsPage from './pages/SimilarPostsPage';
+import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import { LayoutProvider } from './context/LayoutContext';
 import { AuthProvider } from './context/AuthContext';
 import { NavigationProvider } from './contexts/NavigationContext';
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/raw" element={<RawPage />} />
                 <Route path="/saved" element={<SavedPage />} />
                 <Route path="/my-posts" element={<MyPostsPage />} />
+                <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
               </Routes>
             </Layout>

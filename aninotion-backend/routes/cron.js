@@ -2,6 +2,8 @@ const express = require("express");
 const { sendDailyLogs } = require("../scripts/sendDailyLogs");
 const viewCounter = require("../utils/viewCounter");
 const Post = require("../models/Post");
+const analyticsService = require("../services/analyticsService");
+const { isAnalyticsEnabled } = require("../config/analyticsDatabase");
 
 const router = express.Router();
 
@@ -134,6 +136,138 @@ router.get("/sync-engagement", async (req, res) => {
 
     res.status(500).json({
       error: "Failed to sync engagement data",
+      details: String(err?.message || err),
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /cron/aggregate-analytics?secret=...
+ * Aggregate daily analytics data - run at end of day
+ */
+router.get("/aggregate-analytics", async (req, res) => {
+  console.log("📊 Analytics aggregation cron hit:", {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url
+  });
+
+  try {
+    const secret = req.query.secret || req.headers["x-cron-secret"];
+
+    if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+      console.log("❌ Authentication failed");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!isAnalyticsEnabled()) {
+      return res.status(503).json({
+        error: "Analytics not enabled",
+        message: "ANALYTICS_DATABASE_URL is not configured"
+      });
+    }
+
+    console.log("✅ Authentication successful, starting analytics aggregation...");
+
+    // Aggregate yesterday's data (or specified date)
+    const date = req.query.date || (() => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toISOString().split('T')[0];
+    })();
+
+    const success = await analyticsService.aggregateDailyAnalytics(date);
+
+    if (!success) {
+      return res.status(500).json({
+        error: "Failed to aggregate analytics",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    console.log("✅ Analytics aggregation completed for date:", date);
+
+    res.json({
+      success: true,
+      date,
+      message: "Daily analytics aggregated successfully",
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("💥 Error in analytics aggregation:", {
+      error: err.message,
+      stack: err.stack,
+      timestamp: new Date().toISOString()
+    });
+
+    res.status(500).json({
+      error: "Failed to aggregate analytics",
+      details: String(err?.message || err),
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /cron/cleanup-analytics?secret=...&retentionDays=90
+ * Clean up old analytics data based on retention policy
+ */
+router.get("/cleanup-analytics", async (req, res) => {
+  console.log("🧹 Analytics cleanup cron hit:", {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url
+  });
+
+  try {
+    const secret = req.query.secret || req.headers["x-cron-secret"];
+
+    if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+      console.log("❌ Authentication failed");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!isAnalyticsEnabled()) {
+      return res.status(503).json({
+        error: "Analytics not enabled",
+        message: "ANALYTICS_DATABASE_URL is not configured"
+      });
+    }
+
+    console.log("✅ Authentication successful, starting analytics cleanup...");
+
+    const retentionDays = parseInt(req.query.retentionDays) || 90;
+    const deletedCount = await analyticsService.cleanupOldData(retentionDays);
+
+    if (deletedCount === null) {
+      return res.status(500).json({
+        error: "Failed to cleanup analytics",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    console.log("✅ Analytics cleanup completed:", {
+      deletedRecords: deletedCount,
+      retentionDays
+    });
+
+    res.json({
+      success: true,
+      deletedRecords: deletedCount,
+      retentionDays,
+      message: `Cleaned up ${deletedCount} old analytics records`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("💥 Error in analytics cleanup:", {
+      error: err.message,
+      stack: err.stack,
+      timestamp: new Date().toISOString()
+    });
+
+    res.status(500).json({
+      error: "Failed to cleanup analytics",
       details: String(err?.message || err),
       timestamp: new Date().toISOString()
     });

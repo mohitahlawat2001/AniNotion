@@ -828,3 +828,92 @@ export const recommendationsAPI = {
     return authenticatedFetch(`${API_BASE_URL}/recommendations/cache/stats`);
   }
 };
+
+// Analytics API (admin only)
+export const analyticsAPI = {
+  // Get full dashboard data
+  getDashboard: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/dashboard`);
+  },
+
+  // Get realtime visitor data
+  getRealtime: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/realtime`);
+  },
+
+  // Get today's summary
+  getToday: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/today`);
+  },
+
+  // Get top content
+  getTopContent: async (options = {}) => {
+    const { limit = 10, days = 7 } = options;
+    const queryParams = new URLSearchParams({
+      limit: limit.toString(),
+      days: days.toString()
+    });
+    return authenticatedFetch(`${API_BASE_URL}/analytics/top-content?${queryParams}`);
+  },
+
+  // Get traffic sources
+  getTrafficSources: async (days = 7) => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/traffic-sources?days=${days}`);
+  },
+
+  // Get device breakdown
+  getDevices: async (days = 7) => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/devices?days=${days}`);
+  },
+
+  // Get hourly breakdown for today
+  getHourly: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/hourly`);
+  },
+
+  // Track a page view (for client-side tracking if needed)
+  trackPageView: async (data) => {
+    return fetch(`${API_BASE_URL}/analytics/track`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }).then(res => res.json());
+  },
+
+  // Trigger daily aggregation (admin only)
+  aggregateStats: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/aggregate`, {
+      method: 'POST'
+    });
+  },
+
+  // Cleanup old data (admin only)
+  cleanupData: async (days = 90) => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/cleanup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ days })
+    });
+  },
+
+  // Get debug info (admin only)
+  getDebug: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/debug`);
+  },
+
+  // Get status (admin only)
+  getStatus: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/status`);
+  },
+
+  // Reset analytics tables (admin only - use with caution!)
+  resetTables: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/reset`, {
+      method: 'POST'
+    });
+  }
+};

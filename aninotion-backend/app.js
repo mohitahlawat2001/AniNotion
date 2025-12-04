@@ -17,13 +17,22 @@ const userRoutes = require('./routes/users');
 const animeRoutes = require('./routes/anime');
 const sitemapRoutes = require('./routes/sitemap');
 const recommendationRoutes = require('./routes/recommendations');
+const analyticsRoutes = require('./routes/analytics');
 const logger = require('./config/logger');
+
+// Analytics
+const { analyticsMiddleware, sessionMiddleware, attachLogAction } = require('./middleware/analytics');
 
 const app = express();
 
 // Apply performance monitoring first, then logging
 app.use(requestLogger.performanceMonitor());
 app.use(requestLogger.requestLogger());
+
+// Analytics middleware - tracks all requests
+app.use(sessionMiddleware());
+app.use(analyticsMiddleware());
+app.use(attachLogAction());
 
 // Middleware
 app.use(cors());
@@ -40,6 +49,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/anime', animeRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api', sitemapRoutes); // Sitemap and RSS routes
 
 // Root route

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "concurrently \"nodemon server.js\" \"nodemon ./routes/*.js\"",
-  "test": "jest --runInBand --detectOpenHandles",
+    "test": "jest --runInBand --detectOpenHandles",
     "cli": "node scripts/cli.js",
     "backup": "npm run cli backup",
     "migrate": "npm run cli migration",
@@ -17,7 +17,8 @@
     "test:oauth": "node scripts/test-oauth-endpoints.js",
     "test:signup": "bash scripts/test-signup.sh",
     "test:recommendations": "node scripts/test-recommendations.js",
-    "test:category-roles": "node scripts/test-category-roles.js"
+    "test:category-roles": "node scripts/test-category-roles.js",
+    "test:analytics": "node scripts/test-analytics.js"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +43,7 @@
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.16.3",
     "pino": "^9.9.0",
     "pino-abstract-transport": "^2.0.0",
     "pino-http": "^10.5.0",
