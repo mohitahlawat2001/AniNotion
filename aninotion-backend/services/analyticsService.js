@@ -280,6 +280,164 @@ const logRealtimeActivity = async (data) => {
 };
 
 // ============================================
+// PAGE/CATEGORY/POST STATS TRACKING
+// ============================================
+
+/**
+ * Track a page view (home, trending, recommendations, similar posts, etc.)
+ */
+const trackPageStats = async (pageName, displayName = null) => {
+  if (!isAnalyticsEnabled()) return null;
+
+  try {
+    const result = await query(`
+      INSERT INTO page_stats (page_name, display_name, total_views, last_viewed_at)
+      VALUES ($1, $2, 1, NOW())
+      ON CONFLICT (page_name) DO UPDATE SET
+        display_name = COALESCE($2, page_stats.display_name),
+        total_views = page_stats.total_views + 1,
+        last_viewed_at = NOW()
+      RETURNING id, total_views
+    `, [pageName, displayName || pageName]);
+
+    return result.rows[0];
+  } catch (error) {
+    logger.error('Failed to track page stats', { error: error.message, pageName });
+    return null;
+  }
+};
+
+/**
+ * Track a category view
+ */
+const trackCategoryStats = async (categoryId, categoryName = null) => {
+  if (!isAnalyticsEnabled()) return null;
+
+  try {
+    const result = await query(`
+      INSERT INTO category_stats (category_id, category_name, total_views, last_viewed_at)
+      VALUES ($1, $2, 1, NOW())
+      ON CONFLICT (category_id) DO UPDATE SET
+        category_name = COALESCE($2, category_stats.category_name),
+        total_views = category_stats.total_views + 1,
+        last_viewed_at = NOW()
+      RETURNING id, total_views
+    `, [categoryId, categoryName]);
+
+    return result.rows[0];
+  } catch (error) {
+    logger.error('Failed to track category stats', { error: error.message, categoryId });
+    return null;
+  }
+};
+
+/**
+ * Track a post view
+ */
+const trackPostStats = async (postId, postTitle = null, categoryId = null, categoryName = null) => {
+  if (!isAnalyticsEnabled()) return null;
+
+  try {
+    const result = await query(`
+      INSERT INTO post_stats (post_id, post_title, category_id, category_name, total_views, last_viewed_at)
+      VALUES ($1, $2, $3, $4, 1, NOW())
+      ON CONFLICT (post_id) DO UPDATE SET
+        post_title = COALESCE($2, post_stats.post_title),
+        category_id = COALESCE($3, post_stats.category_id),
+        category_name = COALESCE($4, post_stats.category_name),
+        total_views = post_stats.total_views + 1,
+        last_viewed_at = NOW()
+      RETURNING id, total_views
+    `, [postId, postTitle, categoryId, categoryName]);
+
+    return result.rows[0];
+  } catch (error) {
+    logger.error('Failed to track post stats', { error: error.message, postId });
+    return null;
+  }
+};
+
+/**
+ * Get page stats for dashboard
+ */
+const getPageStats = async (limit = 20) => {
+  if (!isAnalyticsEnabled()) return null;
+
+  try {
+    const result = await query(`
+      SELECT 
+        page_name,
+        display_name,
+        total_views,
+        first_viewed_at,
+        last_viewed_at
+      FROM page_stats
+      ORDER BY total_views DESC
+      LIMIT $1
+    `, [limit]);
+
+    return result.rows;
+  } catch (error) {
+    logger.error('Failed to get page stats', { error: error.message });
+    return null;
+  }
+};
+
+/**
+ * Get category stats for dashboard
+ */
+const getCategoryStats = async (limit = 20) => {
+  if (!isAnalyticsEnabled()) return null;
+
+  try {
+    const result = await query(`
+      SELECT 
+        category_id,
+        category_name,
+        total_views,
+        first_viewed_at,
+        last_viewed_at
+      FROM category_stats
+      ORDER BY total_views DESC
+      LIMIT $1
+    `, [limit]);
+
+    return result.rows;
+  } catch (error) {
+    logger.error('Failed to get category stats', { error: error.message });
+    return null;
+  }
+};
+
+/**
+ * Get post stats for dashboard
+ */
+const getPostStats = async (limit = 20) => {
+  if (!isAnalyticsEnabled()) return null;
+
+  try {
+    const result = await query(`
+      SELECT 
+        post_id,
+        post_title,
+        category_id,
+        category_name,
+        total_views,
+        first_viewed_at,
+        last_viewed_at
+      FROM post_stats
+      ORDER BY total_views DESC
+      LIMIT $1
+    `, [limit]);
+
+    return result.rows;
+  } catch (error) {
+    logger.error('Failed to get post stats', { error: error.message });
+    return null;
+  }
+};
+
+// ============================================
 // HIGH-LEVEL TRACKING FUNCTION
 // ============================================
 
@@ -385,6 +543,12 @@ const getRealtimeVisitors = async (minutes = 5) => {
   if (!isAnalyticsEnabled()) return null;
 
   try {
+    // First, cleanup old realtime activity (older than 30 minutes)
+    await cleanupRealtimeData(30);
+    
+    // Also expire old sessions (inactive for more than 30 minutes)
+    await expireInactiveSessions(30);
+
     const result = await query(`
       SELECT 
         ra.activity_type,
@@ -724,13 +888,40 @@ const aggregateDailyStats = async (date = null) => {
 /**
  * Cleanup old realtime data
  */
-const cleanupRealtimeData = async (minutes = 60) => {
+const cleanupRealtimeData = async (minutes = 30) => {
   if (!isAnalyticsEnabled()) return;
 
   try {
-    await query(`DELETE FROM realtime_activity WHERE activity_at < NOW() - INTERVAL '${minutes} minutes'`);
+    const result = await query(`DELETE FROM realtime_activity WHERE activity_at < NOW() - INTERVAL '${minutes} minutes'`);
+    if (result.rowCount > 0) {
+      logger.debug('Cleaned up old realtime activity', { deletedRows: result.rowCount });
+    }
   } catch (error) {
     logger.error('Failed to cleanup realtime data', { error: error.message });
+  }
+};
+
+/**
+ * Expire inactive sessions (mark as ended)
+ */
+const expireInactiveSessions = async (inactivityMinutes = 30) => {
+  if (!isAnalyticsEnabled()) return;
+
+  try {
+    const result = await query(`
+      UPDATE sessions 
+      SET 
+        ended_at = last_activity_at,
+        duration_seconds = EXTRACT(EPOCH FROM (last_activity_at - started_at))::INTEGER
+      WHERE 
+        ended_at IS NULL 
+        AND last_activity_at < NOW() - INTERVAL '${inactivityMinutes} minutes'
+    `);
+    if (result.rowCount > 0) {
+      logger.debug('Expired inactive sessions', { expiredCount: result.rowCount });
+    }
+  } catch (error) {
+    logger.error('Failed to expire inactive sessions', { error: error.message });
   }
 };
 
@@ -769,6 +960,14 @@ module.exports = {
   trackPageView,
   logRealtimeActivity,
   
+  // Page/Category/Post stats tracking
+  trackPageStats,
+  trackCategoryStats,
+  trackPostStats,
+  getPageStats,
+  getCategoryStats,
+  getPostStats,
+  
   // Dashboard queries
   getRealtimeVisitors,
   getTodaySummary,
@@ -778,8 +977,9 @@ module.exports = {
   getDeviceBreakdown,
   getHourlyBreakdown,
   
-  // Aggregation
+  // Aggregation & Cleanup
   aggregateDailyStats,
   cleanupRealtimeData,
-  cleanupOldData
+  cleanupOldData,
+  expireInactiveSessions
 };

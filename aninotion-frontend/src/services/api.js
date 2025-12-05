@@ -900,6 +900,17 @@ export const analyticsAPI = {
     });
   },
 
+  // Cleanup realtime data and expire old sessions (admin only)
+  cleanupRealtime: async (minutes = 30) => {
+    return authenticatedFetch(`${API_BASE_URL}/analytics/cleanup-realtime`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ minutes })
+    });
+  },
+
   // Get debug info (admin only)
   getDebug: async () => {
     return authenticatedFetch(`${API_BASE_URL}/analytics/debug`);

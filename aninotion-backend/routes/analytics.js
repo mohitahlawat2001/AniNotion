@@ -153,14 +153,20 @@ router.get('/dashboard', requireAuth, requireRole('admin'), checkAnalyticsEnable
       topContent,
       trafficSources,
       devices,
-      hourlyBreakdown
+      hourlyBreakdown,
+      pageStats,
+      categoryStats,
+      postStats
     ] = await Promise.all([
       analyticsService.getRealtimeVisitors(),
       analyticsService.getTodaySummary(),
       analyticsService.getTopContent(10),
       analyticsService.getTrafficSources(),
       analyticsService.getDeviceBreakdown(),
-      analyticsService.getHourlyBreakdown()
+      analyticsService.getHourlyBreakdown(),
+      analyticsService.getPageStats(10),
+      analyticsService.getCategoryStats(10),
+      analyticsService.getPostStats(10)
     ]);
 
     res.json({
@@ -170,10 +176,61 @@ router.get('/dashboard', requireAuth, requireRole('admin'), checkAnalyticsEnable
       trafficSources,
       devices,
       hourlyBreakdown,
+      pageStats,
+      categoryStats,
+      postStats,
       generatedAt: new Date().toISOString()
     });
   } catch (error) {
     logger.error('Error fetching dashboard data', { error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * @route   GET /api/analytics/page-stats
+ * @desc    Get page view statistics
+ * @access  Admin
+ */
+router.get('/page-stats', requireAuth, requireRole('admin'), checkAnalyticsEnabled, async (req, res) => {
+  try {
+    const { limit = 20 } = req.query;
+    const data = await analyticsService.getPageStats(parseInt(limit));
+    res.json(data);
+  } catch (error) {
+    logger.error('Error fetching page stats', { error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * @route   GET /api/analytics/category-stats
+ * @desc    Get category view statistics
+ * @access  Admin
+ */
+router.get('/category-stats', requireAuth, requireRole('admin'), checkAnalyticsEnabled, async (req, res) => {
+  try {
+    const { limit = 20 } = req.query;
+    const data = await analyticsService.getCategoryStats(parseInt(limit));
+    res.json(data);
+  } catch (error) {
+    logger.error('Error fetching category stats', { error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * @route   GET /api/analytics/post-stats
+ * @desc    Get post view statistics
+ * @access  Admin
+ */
+router.get('/post-stats', requireAuth, requireRole('admin'), checkAnalyticsEnabled, async (req, res) => {
+  try {
+    const { limit = 20 } = req.query;
+    const data = await analyticsService.getPostStats(parseInt(limit));
+    res.json(data);
+  } catch (error) {
+    logger.error('Error fetching post stats', { error: error.message });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -562,17 +619,18 @@ router.post('/cleanup', requireAuth, requireRole('admin'), checkAnalyticsEnabled
 
 /**
  * @route   POST /api/analytics/cleanup-realtime
- * @desc    Cleanup realtime activity table
+ * @desc    Cleanup realtime activity table and expire old sessions
  * @access  Admin
  */
 router.post('/cleanup-realtime', requireAuth, requireRole('admin'), checkAnalyticsEnabled, async (req, res) => {
   try {
     const { minutes = 30 } = req.body;
     await analyticsService.cleanupRealtimeData(parseInt(minutes));
+    await analyticsService.expireInactiveSessions(parseInt(minutes));
 
     res.json({
       success: true,
-      message: `Cleaned up realtime data older than ${minutes} minutes`
+      message: `Cleaned up realtime data and expired sessions older than ${minutes} minutes`
     });
   } catch (error) {
     logger.error('Error cleaning up realtime data', { error: error.message });

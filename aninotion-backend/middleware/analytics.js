@@ -2,6 +2,16 @@
  * Analytics Middleware (Redesigned)
  * Tracks page views using normalized PostgreSQL schema
  * Designed for dashboard-ready, meaningful analytics data
+ * 
+ * IMPORTANT: Only tracks meaningful "page views":
+ * - Viewing a specific post (GET /api/posts/:id)
+ * - Viewing a specific category page (GET /api/posts/category/:id)
+ * - Auth events (login, register)
+ * 
+ * Does NOT track:
+ * - List fetches (GET /api/posts, GET /api/categories)
+ * - Search/filter requests
+ * - API utility endpoints
  */
 
 const analyticsService = require('../services/analyticsService');
@@ -9,17 +19,100 @@ const { isAnalyticsEnabled } = require('../config/analyticsDatabase');
 const logger = require('../config/logger');
 const jwt = require('jsonwebtoken');
 
-// Paths to exclude from analytics tracking
+// Paths to completely exclude from analytics tracking
 const EXCLUDED_PATHS = [
   '/health',
   '/favicon.ico',
   '/robots.txt',
-  '/api/analytics', // Don't track analytics endpoints themselves
-  '/api/v1/analytics'
+  '/api/analytics',
+  '/api/v1/analytics',
+  '/api/auth/me',        // Auth check - not a page view
+  '/api/auth/verify',    // Token verification
+  '/api/users/me',       // User profile fetch
+  '/api/sitemap',
+  '/api/rss'
 ];
 
+// Page tracking patterns - these track as PAGE views (not content)
+const PAGE_PATTERNS = {
+  'home': /^\/api\/posts\/?$/i,                              // Home/All posts
+  'trending': /^\/api\/recommendations\/trending/i,          // Trending page
+  'recommendations': /^\/api\/recommendations\/personalized/i, // Personalized recommendations
+  'similar_posts': /^\/api\/recommendations\/similar/i,      // Similar posts page
+  'saved_posts': /^\/api\/posts\/saved/i,                    // Saved posts
+  'my_posts': /^\/api\/posts\/my-posts/i,                    // My posts
+  'anime_search': /^\/api\/anime\/search/i,                  // Anime search
+  'anime_trending': /^\/api\/anime\/trending/i,              // Anime trending
+};
+
+// Content tracking patterns - these track specific content
+const CONTENT_PATTERNS = {
+  'post': /^\/api\/posts\/([a-f0-9]{24})$/i,                 // Single post view
+  'category': /^\/api\/posts\/category\/([a-f0-9]{24})/i,    // Category page view
+};
+
 // Methods to exclude from tracking
-const EXCLUDED_METHODS = ['OPTIONS', 'HEAD'];
+const EXCLUDED_METHODS = ['OPTIONS', 'HEAD', 'PUT', 'DELETE', 'PATCH'];
+
+/**
+ * Determine what type of tracking this request needs
+ * Returns: { type: 'page'|'post'|'category'|'none', name: string, id?: string }
+ */
+const getTrackingType = (req) => {
+  const path = req.path;
+  const method = req.method;
+  
+  // Skip excluded methods (except POST for auth)
+  if (EXCLUDED_METHODS.includes(method)) {
+    return { type: 'none' };
+  }
+  
+  // Handle POST requests - only track auth events
+  if (method === 'POST') {
+    if (path.includes('/auth/login') || path.includes('/auth/google')) {
+      return { type: 'page', name: 'login', displayName: 'Login' };
+    }
+    if (path.includes('/auth/register')) {
+      return { type: 'page', name: 'register', displayName: 'Register' };
+    }
+    return { type: 'none' };
+  }
+  
+  // Check for content patterns (post, category)
+  for (const [type, pattern] of Object.entries(CONTENT_PATTERNS)) {
+    const match = path.match(pattern);
+    if (match) {
+      return { type, id: match[1] };
+    }
+  }
+  
+  // Check for page patterns
+  for (const [name, pattern] of Object.entries(PAGE_PATTERNS)) {
+    if (pattern.test(path)) {
+      const displayName = name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      return { type: 'page', name, displayName };
+    }
+  }
+  
+  return { type: 'none' };
+};
+
+/**
+ * Check if this request should be tracked
+ */
+const shouldTrack = (req) => {
+  const path = req.path;
+  
+  // Skip excluded paths
+  for (const excluded of EXCLUDED_PATHS) {
+    if (path === excluded || path.startsWith(excluded + '/')) {
+      return false;
+    }
+  }
+  
+  const trackingType = getTrackingType(req);
+  return trackingType.type !== 'none';
+};
 
 /**
  * Extract content information from request path
@@ -27,36 +120,24 @@ const EXCLUDED_METHODS = ['OPTIONS', 'HEAD'];
  */
 const extractContentFromRequest = (req, responseBody) => {
   const path = req.path.toLowerCase();
-  const params = req.params || {};
 
-  // Post access: /api/posts/:id or /api/v1/posts/:id
-  if (path.match(/\/posts\/[a-f0-9]{24}$/i)) {
-    const postId = params.id || path.split('/').pop();
+  // Single post view: /api/posts/:id
+  const postMatch = path.match(/\/posts\/([a-f0-9]{24})$/i);
+  if (postMatch) {
     return {
       type: 'post',
-      mongoId: postId,
+      mongoId: postMatch[1],
       title: responseBody?.title || responseBody?.post?.title || null
     };
   }
 
-  // Category access: /api/categories/:id or by slug
-  if (path.match(/\/categories\/[a-f0-9]{24}$/i) || 
-      (path.includes('/categories/') && params.slug)) {
-    const categoryId = params.id || params.slug || path.split('/').pop();
+  // Category page view: /api/posts/category/:categoryId
+  const categoryMatch = path.match(/\/posts\/category\/([a-f0-9]{24})/i);
+  if (categoryMatch) {
     return {
       type: 'category',
-      mongoId: categoryId,
-      title: responseBody?.name || responseBody?.category?.name || null
-    };
-  }
-
-  // Posts by category: /api/posts/category/:categoryId
-  if (path.includes('/posts/category/')) {
-    const categoryId = params.categoryId || path.split('/').pop();
-    return {
-      type: 'category',
-      mongoId: categoryId,
-      title: null
+      mongoId: categoryMatch[1],
+      title: null // Category name not available here
     };
   }
 
@@ -69,20 +150,10 @@ const extractContentFromRequest = (req, responseBody) => {
 const determinePageType = (req) => {
   const path = req.path.toLowerCase();
 
-  if (path.includes('/auth/login') || path.includes('/login')) return 'login';
-  if (path.includes('/auth/register') || path.includes('/signup')) return 'register';
-  if (path.includes('/auth/')) return 'auth';
-  if (path.match(/\/posts\/[a-f0-9]{24}/i)) return 'post_detail';
-  if (path.includes('/posts')) return 'posts_list';
-  if (path.match(/\/categories\/[a-f0-9]+/i)) return 'category_detail';
-  if (path.includes('/categories')) return 'categories_list';
-  if (path.includes('/anime/search')) return 'anime_search';
-  if (path.includes('/anime/trending')) return 'anime_trending';
-  if (path.includes('/anime')) return 'anime';
-  if (path.includes('/recommendations')) return 'recommendations';
-  if (path.includes('/profile') || path.includes('/users/me')) return 'profile';
-  if (path.includes('/search')) return 'search';
-  if (path === '/' || path === '/api' || path === '/api/v1') return 'home';
+  if (path.includes('/auth/login') || path.includes('/auth/google')) return 'login';
+  if (path.includes('/auth/register')) return 'register';
+  if (path.match(/\/posts\/[a-f0-9]{24}$/i)) return 'post_detail';
+  if (path.match(/\/posts\/category\/[a-f0-9]{24}/i)) return 'category_page';
 
   return 'other';
 };
@@ -100,8 +171,6 @@ const extractUserFromToken = (req) => {
     const token = authHeader.split(' ')[1];
     if (!token) return null;
     
-    // Decode without verifying - we just want user info for analytics
-    // The actual auth verification happens in requireAuth middleware
     const decoded = jwt.decode(token);
     if (decoded && decoded.id) {
       return {
@@ -118,7 +187,7 @@ const extractUserFromToken = (req) => {
 
 /**
  * Main analytics middleware
- * Tracks page views with normalized data
+ * Tracks page views, category views, and post views
  */
 const analyticsMiddleware = () => {
   return async (req, res, next) => {
@@ -127,31 +196,19 @@ const analyticsMiddleware = () => {
       return next();
     }
 
-    // Skip excluded paths
-    if (EXCLUDED_PATHS.some(path => req.path.startsWith(path))) {
-      return next();
-    }
-
-    // Skip excluded methods
-    if (EXCLUDED_METHODS.includes(req.method)) {
-      return next();
-    }
-
-    // Only track GET requests for page views (POST/PUT/DELETE are actions, not views)
-    // But we still want to track auth events
-    const isAuthRequest = req.path.toLowerCase().includes('/auth/');
-    if (req.method !== 'GET' && !isAuthRequest) {
+    // Check if we should track this request
+    if (!shouldTrack(req)) {
       return next();
     }
 
     // Try to extract user info from JWT token
     const tokenUser = extractUserFromToken(req);
     if (tokenUser) {
-      // Attach to req for later use in tracking
       req.analyticsUser = tokenUser;
     }
 
     const startTime = Date.now();
+    const trackingInfo = getTrackingType(req);
 
     // Capture original res.json to intercept response
     const originalJson = res.json.bind(res);
@@ -171,44 +228,86 @@ const analyticsMiddleware = () => {
         }
 
         const latencyMs = Date.now() - startTime;
-        // Try multiple sources for user info: req.user (from auth middleware), req.analyticsUser (from JWT decode), or null
+
+        // Track based on type
+        switch (trackingInfo.type) {
+          case 'page':
+            // Track page view (home, trending, recommendations, etc.)
+            await analyticsService.trackPageStats(trackingInfo.name, trackingInfo.displayName);
+            logger.debug('Tracked page view', { page: trackingInfo.name });
+            break;
+
+          case 'category':
+            // Track category view - extract category name from response if available
+            const categoryName = responseBody?.posts?.[0]?.category?.name || 
+                                 responseBody?.category?.name || 
+                                 null;
+            await analyticsService.trackCategoryStats(trackingInfo.id, categoryName);
+            logger.debug('Tracked category view', { categoryId: trackingInfo.id, categoryName });
+            break;
+
+          case 'post':
+            // Track post view - extract post info from response
+            const postTitle = responseBody?.title || responseBody?.post?.title || null;
+            const postCategoryId = responseBody?.category?._id || responseBody?.post?.category?._id || null;
+            const postCategoryName = responseBody?.category?.name || responseBody?.post?.category?.name || null;
+            await analyticsService.trackPostStats(trackingInfo.id, postTitle, postCategoryId, postCategoryName);
+            logger.debug('Tracked post view', { postId: trackingInfo.id, postTitle });
+            break;
+        }
+
+        // Also track in realtime activity for live dashboard
         const authUser = req.user || req.analyticsUser;
         const userId = authUser?.id || authUser?._id?.toString() || null;
         const userAgent = req.get('User-Agent') || '';
         const referer = req.get('Referer') || '';
-        const pageType = determinePageType(req);
-
-        // Extract content if viewing specific content
-        const contentInfo = extractContentFromRequest(req, responseBody);
-
-        // Prepare content data if present
-        let contentData = null;
-        if (contentInfo) {
-          contentData = {
-            type: contentInfo.type,
-            mongoId: contentInfo.mongoId,
-            title: contentInfo.title
-          };
-        }
-
-        // Attach user info for the service to use
-        if (authUser && !req.user) {
-          req.user = authUser;
-        }
-
-        // Track the page view
-        await analyticsService.trackPageView(req, {
+        const deviceInfo = analyticsService.parseUserAgent(userAgent);
+        
+        // Get or create visitor for realtime tracking
+        const visitorId = await analyticsService.getOrCreateVisitor({
           userId,
-          userAgent,
-          referer,
-          path: req.path,
-          pageType,
-          content: contentData,
-          latencyMs
+          username: authUser?.username,
+          email: authUser?.email,
+          ipAddress: analyticsService.extractClientIP(req),
+          userAgent
         });
 
+        if (visitorId) {
+          const contentTitle = trackingInfo.type === 'post' ? (responseBody?.title || responseBody?.post?.title) :
+                               trackingInfo.type === 'category' ? (responseBody?.posts?.[0]?.category?.name) :
+                               trackingInfo.displayName || trackingInfo.name;
+          
+          // Log realtime activity for live dashboard
+          await analyticsService.logRealtimeActivity({
+            visitorId,
+            activityType: 'pageview',
+            pageType: trackingInfo.type,
+            path: req.path,
+            contentTitle,
+            visitorName: authUser?.username || 'Anonymous',
+            isAuthenticated: !!userId,
+            deviceType: deviceInfo.deviceType
+          });
+
+          // Also track to visits table for Top Content, Traffic Sources, Device Breakdown
+          const contentInfo = trackingInfo.type === 'post' || trackingInfo.type === 'category' 
+            ? { type: trackingInfo.type, mongoId: trackingInfo.id, title: contentTitle }
+            : null;
+          
+          await analyticsService.trackPageView(req, {
+            userId,
+            userAgent,
+            referer,
+            path: req.path,
+            pageType: trackingInfo.type === 'page' ? trackingInfo.name : 
+                      trackingInfo.type === 'post' ? 'post_detail' : 
+                      trackingInfo.type === 'category' ? 'category_page' : 'other',
+            content: contentInfo,
+            latencyMs
+          });
+        }
+
       } catch (error) {
-        // Log error but don't affect the response
         logger.error('Failed to track analytics', { 
           error: error.message,
           path: req.path 

@@ -48,7 +48,10 @@ const initializeAnalyticsDB = async () => {
       'DROP TABLE IF EXISTS visits CASCADE',
       'DROP TABLE IF EXISTS sessions CASCADE',
       'DROP TABLE IF EXISTS content_registry CASCADE',
-      'DROP TABLE IF EXISTS visitors CASCADE'
+      'DROP TABLE IF EXISTS visitors CASCADE',
+      'DROP TABLE IF EXISTS page_stats CASCADE',
+      'DROP TABLE IF EXISTS category_stats CASCADE',
+      'DROP TABLE IF EXISTS post_stats CASCADE'
     ];
     
     for (const q of dropQueries) {
@@ -202,7 +205,58 @@ const initializeAnalyticsDB = async () => {
     await client.query(`CREATE INDEX idx_realtime_time ON realtime_activity(activity_at)`);
     logger.info('Analytics DB: Created realtime_activity table');
 
-    logger.info('✅ Analytics database initialized with new schema (7 tables)');
+    // TABLE 8: page_stats - Track views for pages like home, trending, recommendations
+    await client.query(`
+      CREATE TABLE page_stats (
+        id BIGSERIAL PRIMARY KEY,
+        page_name VARCHAR(100) NOT NULL UNIQUE,
+        display_name VARCHAR(255),
+        total_views INTEGER DEFAULT 0,
+        unique_visitors INTEGER DEFAULT 0,
+        first_viewed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_viewed_at TIMESTAMPTZ
+      )
+    `);
+    await client.query(`CREATE INDEX idx_page_stats_name ON page_stats(page_name)`);
+    await client.query(`CREATE INDEX idx_page_stats_views ON page_stats(total_views DESC)`);
+    logger.info('Analytics DB: Created page_stats table');
+
+    // TABLE 9: category_stats - Track category views with names
+    await client.query(`
+      CREATE TABLE category_stats (
+        id BIGSERIAL PRIMARY KEY,
+        category_id VARCHAR(255) NOT NULL UNIQUE,
+        category_name VARCHAR(255),
+        total_views INTEGER DEFAULT 0,
+        unique_visitors INTEGER DEFAULT 0,
+        first_viewed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_viewed_at TIMESTAMPTZ
+      )
+    `);
+    await client.query(`CREATE INDEX idx_category_stats_id ON category_stats(category_id)`);
+    await client.query(`CREATE INDEX idx_category_stats_views ON category_stats(total_views DESC)`);
+    logger.info('Analytics DB: Created category_stats table');
+
+    // TABLE 10: post_stats - Track post views with titles
+    await client.query(`
+      CREATE TABLE post_stats (
+        id BIGSERIAL PRIMARY KEY,
+        post_id VARCHAR(255) NOT NULL UNIQUE,
+        post_title VARCHAR(500),
+        category_id VARCHAR(255),
+        category_name VARCHAR(255),
+        total_views INTEGER DEFAULT 0,
+        unique_visitors INTEGER DEFAULT 0,
+        first_viewed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_viewed_at TIMESTAMPTZ
+      )
+    `);
+    await client.query(`CREATE INDEX idx_post_stats_id ON post_stats(post_id)`);
+    await client.query(`CREATE INDEX idx_post_stats_views ON post_stats(total_views DESC)`);
+    await client.query(`CREATE INDEX idx_post_stats_category ON post_stats(category_id)`);
+    logger.info('Analytics DB: Created post_stats table');
+
+    logger.info('✅ Analytics database initialized with new schema (10 tables)');
     return true;
   } catch (error) {
     logger.error('❌ Failed to initialize analytics database', { 

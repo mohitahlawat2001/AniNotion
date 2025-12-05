@@ -14,7 +14,10 @@ import {
   RefreshCw,
   Activity,
   FileText,
-  MousePointer
+  MousePointer,
+  Layout,
+  FolderOpen,
+  BookOpen
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { analyticsAPI } from '../services/api';
@@ -133,7 +136,7 @@ const AdminAnalyticsPage = () => {
     );
   }
 
-  const { realtime, today, topContent, trafficSources, devices, hourlyBreakdown } = dashboardData || {};
+  const { realtime, today, topContent, trafficSources, devices, hourlyBreakdown, pageStats, categoryStats, postStats } = dashboardData || {};
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
@@ -207,7 +210,22 @@ const AdminAnalyticsPage = () => {
                   {JSON.stringify(debugData.recentActivity, null, 2)}
                 </pre>
               </div>
-              <div className="pt-4 border-t border-gray-700">
+              <div className="pt-4 border-t border-gray-700 flex gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      await analyticsAPI.cleanupRealtime();
+                      alert('Cleanup completed! Old sessions expired.');
+                      fetchDebugData();
+                      fetchDashboardData();
+                    } catch (err) {
+                      alert('Cleanup failed: ' + err.message);
+                    }
+                  }}
+                  className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm"
+                >
+                  🧹 Cleanup Old Sessions
+                </button>
                 <button
                   onClick={async () => {
                     if (window.confirm('⚠️ This will DELETE all analytics data and reset the tables. Are you sure?')) {
@@ -309,6 +327,111 @@ const AdminAnalyticsPage = () => {
             color={today?.bounce_rate > 50 ? 'red' : 'green'}
             subtitle={today?.bounce_rate > 50 ? 'Needs improvement' : 'Good engagement'}
           />
+        </div>
+      </div>
+
+      {/* Page, Category & Post Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Page Stats */}
+        <div className="bg-gray-800 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Layout className="w-5 h-5 text-blue-500" />
+            Page Views
+          </h3>
+          {pageStats && pageStats.length > 0 ? (
+            <div className="space-y-3">
+              {pageStats.map((page, index) => (
+                <div 
+                  key={page.page_name || index}
+                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500 font-mono text-sm w-6">#{index + 1}</span>
+                    <div>
+                      <p className="font-medium capitalize">
+                        {page.page_name?.replace(/_/g, ' ') || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-gray-400">{page.unique_visitors || 0} unique</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-blue-400">{page.total_views || 0}</p>
+                    <p className="text-xs text-gray-400">views</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">No page data yet</p>
+          )}
+        </div>
+
+        {/* Category Stats */}
+        <div className="bg-gray-800 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-green-500" />
+            Category Views
+          </h3>
+          {categoryStats && categoryStats.length > 0 ? (
+            <div className="space-y-3">
+              {categoryStats.map((cat, index) => (
+                <div 
+                  key={cat.category_id || index}
+                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500 font-mono text-sm w-6">#{index + 1}</span>
+                    <div>
+                      <p className="font-medium truncate max-w-[120px]">
+                        {cat.category_name || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-gray-400">{cat.unique_visitors || 0} unique</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-green-400">{cat.total_views || 0}</p>
+                    <p className="text-xs text-gray-400">views</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">No category data yet</p>
+          )}
+        </div>
+
+        {/* Post Stats */}
+        <div className="bg-gray-800 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-purple-500" />
+            Top Posts
+          </h3>
+          {postStats && postStats.length > 0 ? (
+            <div className="space-y-3">
+              {postStats.map((post, index) => (
+                <div 
+                  key={post.post_id || index}
+                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500 font-mono text-sm w-6">#{index + 1}</span>
+                    <div>
+                      <p className="font-medium truncate max-w-[120px]" title={post.post_title}>
+                        {post.post_title || 'Untitled'}
+                      </p>
+                      <p className="text-xs text-gray-400">{post.category_name || 'No category'}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-purple-400">{post.total_views || 0}</p>
+                    <p className="text-xs text-gray-400">views</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">No post data yet</p>
+          )}
         </div>
       </div>
 
@@ -473,7 +596,7 @@ const AdminAnalyticsPage = () => {
                     {activity.is_authenticated ? 'User' : 'Visitor'} viewed
                   </span>
                   <span className="text-blue-400 truncate max-w-[200px]">
-                    {activity.page_type || activity.path || 'page'}
+                    {activity.content_title || activity.path?.split('/').pop() || 'page'}
                   </span>
                 </div>
                 <span className="text-gray-500 text-xs">
