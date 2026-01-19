@@ -3,7 +3,7 @@ import React, { createContext, useState, useEffect } from 'react';
 export const LayoutContext = createContext();
 
 export const LayoutProvider = ({ children }) => {
-  const [layout, setLayout] = useState('grid');
+  const [layout, setLayout] = useState('list');
 
   // Load layout preference from localStorage on mount
   useEffect(() => {
@@ -11,12 +11,10 @@ export const LayoutProvider = ({ children }) => {
     if (savedLayout && (savedLayout === 'grid' || savedLayout === 'list')) {
       setLayout(savedLayout);
     } else {
-      // Default to list on mobile, grid on desktop
-      const isMobile = window.innerWidth < 768;
-      setLayout(isMobile ? 'list' : 'grid');
+      // Default to list view
+      setLayout('list');
     }
   }, []);
-
   // Save layout preference to localStorage whenever it changes
   const updateLayout = (newLayout) => {
     setLayout(newLayout);

@@ -1,9 +1,16 @@
 import React from 'react';
 import { Grid3X3, List } from 'lucide-react';
 import { useLayout } from '../hooks/useLayout';
+import { useAuth } from '../hooks/useAuth';
 
 const LayoutToggle = ({ className = "" }) => {
   const { layout, toggleLayout } = useLayout();
+  const { isAuthenticated } = useAuth();
+
+  // Only show layout toggle for authenticated users
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <button
