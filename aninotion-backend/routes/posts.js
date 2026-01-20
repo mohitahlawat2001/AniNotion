@@ -512,7 +512,7 @@ router.post('/', requireAuth, requireRole('admin', 'editor', 'viewer'), async (r
       animeName,
       imageCount: imageUrls.length,
       contentLength: content.length,
-      readingTime: readingTimeMinutes,
+      readingTime: savedPost.readingTimeMinutes,
       userId: req.user._id,
       userEmail: req.user.email,
       duration: Date.now() - startTime,

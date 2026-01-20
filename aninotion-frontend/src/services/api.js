@@ -928,3 +928,99 @@ export const analyticsAPI = {
     });
   }
 };
+
+// Comments API
+export const commentsAPI = {
+  // Get comments for a specific post
+  getByPost: async (postId, options = {}) => {
+    const { page = 1, limit = 20, sortOrder = 'desc' } = options;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sortOrder
+    });
+    
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+    
+    const response = await fetch(`${API_BASE_URL}/comments/post/${postId}?${queryParams}`, { headers });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch comments');
+    }
+    return response.json();
+  },
+
+  // Get replies to a specific comment
+  getReplies: async (commentId, options = {}) => {
+    const { page = 1, limit = 10 } = options;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+    
+    const response = await fetch(`${API_BASE_URL}/comments/${commentId}/replies?${queryParams}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch replies');
+    }
+    return response.json();
+  },
+
+  // Create a new comment (requires authentication)
+  create: async (postId, content, parentCommentId = null, images = []) => {
+    return authenticatedFetch(`${API_BASE_URL}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({
+        postId,
+        content,
+        parentCommentId,
+        images
+      })
+    });
+  },
+
+  // Update a comment (requires authentication, owner only)
+  update: async (commentId, content) => {
+    return authenticatedFetch(`${API_BASE_URL}/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content })
+    });
+  },
+
+  // Delete a comment (requires authentication, owner or admin)
+  delete: async (commentId) => {
+    return authenticatedFetch(`${API_BASE_URL}/comments/${commentId}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Get comments by user (requires authentication)
+  getByUser: async (userId, options = {}) => {
+    const { page = 1, limit = 20 } = options;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+    
+    return authenticatedFetch(`${API_BASE_URL}/comments/user/${userId}?${queryParams}`);
+  },
+
+  // Add images to a comment (requires authentication, owner only)
+  addImages: async (commentId, images) => {
+    return authenticatedFetch(`${API_BASE_URL}/comments/${commentId}/images`, {
+      method: 'POST',
+      body: JSON.stringify({ images })
+    });
+  },
+
+  // Remove image from a comment (requires authentication, owner or admin)
+  removeImage: async (commentId, imageIndex) => {
+    return authenticatedFetch(`${API_BASE_URL}/comments/${commentId}/images/${imageIndex}`, {
+      method: 'DELETE'
+    });
+  }
+};

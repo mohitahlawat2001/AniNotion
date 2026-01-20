@@ -19,6 +19,7 @@ const animeRoutes = require('./routes/anime');
 const sitemapRoutes = require('./routes/sitemap');
 const recommendationRoutes = require('./routes/recommendations');
 const analyticsRoutes = require('./routes/analytics');
+const commentRoutes = require('./routes/comments');
 const logger = require('./config/logger');
 const BackupScheduler = require('./utils/backupScheduler');
 
@@ -78,6 +79,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/anime', animeRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/comments', commentRoutes);
 app.use('/api', sitemapRoutes); // Sitemap and RSS routes
 
 // Root route

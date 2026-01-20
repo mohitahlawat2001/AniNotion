@@ -62,6 +62,11 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Comments count for the post
+  commentsCount: {
+    type: Number,
+    default: 0
+  },
   // Content organization
   tags: [{
     type: String,

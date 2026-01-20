@@ -12,6 +12,7 @@ import SEO from '../components/SEO';
 import { generatePostSEO } from '../utils/seoHelpers';
 import RichTextDisplay from '../components/RichTextDisplay';
 import RecommendedPosts from '../components/RecommendedPosts';
+import CommentSection from '../components/CommentSection';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -504,6 +505,18 @@ const PostPage = () => {
 
         
       </div>
+
+      {/* Comments Section */}
+      {post && (
+        <div className="mt-8 lg:mt-12">
+          <CommentSection 
+            postId={post._id}
+            initialLimit={10}
+            showTitle={true}
+            sortOrder="desc"
+          />
+        </div>
+      )}
 
       {/* Full-width Anime Details Section */}
       {post?.animeName && (
