@@ -24,8 +24,9 @@ const HiddenCategoryToggle = ({ showHiddenOnly, onToggle, className = "" }) => {
       className={`
         hidden md:flex relative items-center h-8 w-16 rounded-full
         bg-gray-300
-        transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 
+        transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 
         focus:ring-primary focus:ring-offset-2
+        hover:bg-gray-400 active:scale-95
         ${className}
       `}
       role="switch"
@@ -36,11 +37,16 @@ const HiddenCategoryToggle = ({ showHiddenOnly, onToggle, className = "" }) => {
         className={`
           absolute inline-flex items-center justify-center h-7 w-7 transform rounded-full 
           bg-white shadow-md
-          transition-transform duration-200 ease-in-out
-          ${showHiddenOnly ? 'translate-x-8' : 'translate-x-0.5'}
+          transition-all duration-300 ease-out
+          ${showHiddenOnly ? 'translate-x-8 rotate-180' : 'translate-x-0.5 rotate-0'}
+          hover:scale-110
         `}
       >
-        <span className="text-xs font-extrabold text-gray-900">
+        <span className={`
+          text-xs font-extrabold text-gray-900
+          transition-all duration-300 ease-in-out
+          ${showHiddenOnly ? 'scale-110' : 'scale-100'}
+        `}>
           {showHiddenOnly ? 'X' : 'N'}
         </span>
       </span>

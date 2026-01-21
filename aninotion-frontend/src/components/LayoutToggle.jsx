@@ -18,9 +18,10 @@ const LayoutToggle = ({ className = "" }) => {
       className={`
         hidden md:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg
         border border-gray-300 hover:border-gray-400
-        bg-white hover:bg-gray-50
+        bg-white hover:bg-gray-50 hover:shadow-md
         text-gray-600 hover:text-gray-800
-        transition-all duration-200
+        transition-all duration-300 ease-in-out
+        hover:scale-110 active:scale-90 hover:rotate-12 active:rotate-0
         touch-target
         ${className}
       `}
@@ -28,14 +29,14 @@ const LayoutToggle = ({ className = "" }) => {
       aria-label={`Switch to ${layout === 'grid' ? 'list' : 'grid'} view`}
     >
       {layout === 'grid' ? (
-        <List size={18} className="sm:hidden" />
+        <List size={18} className="sm:hidden transition-all duration-500 ease-out animate-in fade-in spin-in-180 zoom-in-75" />
       ) : (
-        <Grid3X3 size={18} className="sm:hidden" />
+        <Grid3X3 size={18} className="sm:hidden transition-all duration-500 ease-out animate-in fade-in spin-in-180 zoom-in-75" />
       )}
       {layout === 'grid' ? (
-        <List size={20} className="hidden sm:block" />
+        <List size={20} className="hidden sm:block transition-all duration-500 ease-out animate-in fade-in spin-in-180 zoom-in-75" />
       ) : (
-        <Grid3X3 size={20} className="hidden sm:block" />
+        <Grid3X3 size={20} className="hidden sm:block transition-all duration-500 ease-out animate-in fade-in spin-in-180 zoom-in-75" />
       )}
     </button>
   );

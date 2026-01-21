@@ -8,7 +8,7 @@ const logger = require('../config/logger');
 // Get all users (admin only)
 router.get('/', requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const users = await User.find()
+    const users = await User.find({ status: { $ne: 'deleted' } }) // Filter out deleted users
       .select('-passwordHash') // Exclude password hash
       .sort({ createdAt: -1 });
 
