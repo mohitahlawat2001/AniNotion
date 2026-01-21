@@ -20,6 +20,7 @@ import { NavigationProvider } from './contexts/NavigationContext';
 
 function App() {
   const [activeCategory, setActiveCategory] = useState(null);
+  const [showHiddenOnly, setShowHiddenOnly] = useState(false);
 
   return (
     <AuthProvider>
@@ -29,14 +30,22 @@ function App() {
             <Layout 
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
+              showHiddenOnly={showHiddenOnly}
             >
               <Routes>
                 <Route 
                   path="/" 
                   element={
                     activeCategory ? 
-                      <CategoryPage category={activeCategory} /> : 
-                      <Home />
+                      <CategoryPage 
+                        category={activeCategory} 
+                        showHiddenOnly={showHiddenOnly}
+                        onToggleHiddenOnly={() => setShowHiddenOnly(!showHiddenOnly)}
+                      /> : 
+                      <Home 
+                        showHiddenOnly={showHiddenOnly}
+                        onToggleHiddenOnly={() => setShowHiddenOnly(!showHiddenOnly)}
+                      />
                   } 
                 />
                 <Route path="/post/:id" element={<PostPage />} />

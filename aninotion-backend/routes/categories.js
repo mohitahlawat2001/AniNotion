@@ -6,7 +6,7 @@ const { optionalAuth } = require('../middleware/auth');
 
 // Helper function to get role hierarchy value
 const getRoleValue = (role) => {
-  const roleHierarchy = { 'viewer': 1, 'editor': 2, 'admin': 3 };
+  const roleHierarchy = { 'viewer': 1, 'paid': 2, 'editor': 3, 'admin': 4 };
   return roleHierarchy[role] || 0;
 };
 
@@ -64,9 +64,9 @@ router.post('/', async (req, res) => {
     });
     
     // Validate minRole if provided
-    if (minRole && !['viewer', 'editor', 'admin'].includes(minRole)) {
+    if (minRole && !['viewer', 'paid', 'editor', 'admin'].includes(minRole)) {
       return res.status(400).json({ 
-        message: 'Invalid minRole. Must be one of: viewer, editor, admin, or null' 
+        message: 'Invalid minRole. Must be one of: viewer, paid, editor, admin, or null' 
       });
     }
     

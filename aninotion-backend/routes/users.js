@@ -36,7 +36,7 @@ router.put('/:id/role', requireAuth, requireRole(['admin']), async (req, res) =>
     const userId = req.params.id;
 
     // Validate role
-    const validRoles = ['admin', 'editor', 'viewer'];
+    const validRoles = ['admin', 'editor', 'paid', 'viewer'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ message: 'Invalid role' });
     }

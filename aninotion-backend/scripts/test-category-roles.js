@@ -25,6 +25,7 @@ async function testCategoryRoles() {
     const testCategories = [
       { name: 'Public Anime', minRole: null },
       { name: 'Member Content', minRole: 'viewer' },
+      { name: 'Paid Content', minRole: 'paid' },
       { name: 'Editor Content', minRole: 'editor' },
       { name: 'Admin Content', minRole: 'admin' }
     ];
@@ -54,7 +55,7 @@ async function testCategoryRoles() {
 
     // Helper function to simulate role filtering
     const getRoleValue = (role) => {
-      const roleHierarchy = { 'viewer': 1, 'editor': 2, 'admin': 3 };
+      const roleHierarchy = { 'viewer': 1, 'paid': 2, 'editor': 3, 'admin': 4 };
       return roleHierarchy[role] || 0;
     };
 
@@ -96,7 +97,7 @@ async function testCategoryRoles() {
     const editorCat = createdCategories[2];
     const adminCat = createdCategories[3];
 
-    const testRoles = [null, 'viewer', 'editor', 'admin'];
+    const testRoles = [null, 'viewer', 'paid', 'editor', 'admin'];
     
     console.log('Public Category visibility:');
     testRoles.forEach(role => {

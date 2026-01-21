@@ -5,14 +5,14 @@ import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
-const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile }) => {
+const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile, showHiddenOnly = false }) => {
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryMinRole, setNewCategoryMinRole] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, hasRole } = useAuth();
+  const { isAuthenticated, hasRole, user } = useAuth();
 
   useEffect(() => {
     fetchCategories();
@@ -62,6 +62,24 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
         return <Plus size={20} />;
     }
   };
+
+  // Filter categories based on showHiddenOnly toggle
+  const getFilteredCategories = () => {
+    if (!user) {
+      // Not authenticated - show only public categories
+      return categories.filter(category => !category.minRole);
+    }
+
+    if (showHiddenOnly) {
+      // Show only hidden categories (categories with minRole)
+      return categories.filter(category => category.minRole !== null && category.minRole !== undefined);
+    }
+
+    // Default "All" view - show only public/normal categories (without minRole)
+    return categories.filter(category => !category.minRole);
+  };
+
+  const filteredCategories = getFilteredCategories();
 
   return (
     <div className="w-54 lg:w-54 bg-white shadow-lg h-screen p-4 overflow-y-auto">
@@ -135,7 +153,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
         </Link> */}
         
         {/* Categories */}
-        {categories.map((category) => (
+        {filteredCategories.map((category) => (
           <button
             key={category._id}
             onClick={() => handleNavClick(() => {
@@ -171,6 +189,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
               >
                 <option value="">Visible to all (public)</option>
                 <option value="viewer">Viewer and above</option>
+                <option value="paid">Paid and above</option>
                 <option value="editor">Editor and above</option>
                 <option value="admin">Admin only</option>
               </select>

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Category = require('./models/Category');
 
 const getRoleValue = (role) => {
-  const roleHierarchy = { 'viewer': 1, 'editor': 2, 'admin': 3 };
+  const roleHierarchy = { 'viewer': 1, 'paid': 2, 'editor': 3, 'admin': 4 };
   return roleHierarchy[role] || 0;
 };
 

@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import PostFormWithToggle from '../components/PostFormWithToggle';
 import PostsContainer from '../components/PostsContainer';
 import LayoutToggle from '../components/LayoutToggle';
+import HiddenCategoryToggle from '../components/HiddenCategoryToggle';
 import AuthButton from '../components/AuthButton';
 import UserProfile from '../components/UserProfile';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -12,7 +13,7 @@ import LoginPromptSidebar from '../components/LoginPromptSidebar';
 import { postsAPI } from '../services/api';
 import { LayoutContext } from '../context/LayoutContext';
 
-const CategoryPage = ({ category }) => {
+const CategoryPage = ({ category, showHiddenOnly = false, onToggleHiddenOnly }) => {
   const [posts, setPosts] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -105,6 +106,10 @@ const CategoryPage = ({ category }) => {
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
           <h1 className="text-2xl sm:text-3xl font-bold">{category.name} Posts</h1>
           <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+            <HiddenCategoryToggle 
+              showHiddenOnly={showHiddenOnly}
+              onToggle={onToggleHiddenOnly}
+            />
             <LayoutToggle />
             <AuthButton
               onClick={() => setIsFormOpen(true)}
@@ -132,6 +137,10 @@ const CategoryPage = ({ category }) => {
       <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold">{category.name} Posts</h1>
         <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+          <HiddenCategoryToggle 
+            showHiddenOnly={showHiddenOnly}
+            onToggle={onToggleHiddenOnly}
+          />
           <LayoutToggle />
           <AuthButton
             onClick={() => setIsFormOpen(true)}

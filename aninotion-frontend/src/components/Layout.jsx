@@ -3,7 +3,7 @@ import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
-const Layout = ({ children, activeCategory, onCategoryChange }) => {
+const Layout = ({ children, activeCategory, onCategoryChange, showHiddenOnly = false }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -49,6 +49,7 @@ const Layout = ({ children, activeCategory, onCategoryChange }) => {
           onCategoryChange={onCategoryChange}
           onMobileItemClick={closeMobileMenu}
           isMobile={isMobileMenuOpen}
+          showHiddenOnly={showHiddenOnly}
         />
       </div>
 

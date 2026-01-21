@@ -17,7 +17,7 @@ const categorySchema = new mongoose.Schema({
   },
   minRole: {
     type: String,
-    enum: ['viewer', 'editor', 'admin', null],
+    enum: ['viewer', 'paid', 'editor', 'admin', null],
     default: null, // null means visible to all (including non-authenticated users)
     required: false
   }
@@ -33,8 +33,8 @@ categorySchema.methods.canView = function(userRole) {
   // If no user role provided (not authenticated), can only see categories with no minRole
   if (!userRole) return false;
   
-  // Role hierarchy: admin > editor > viewer
-  const roleHierarchy = { 'viewer': 1, 'editor': 2, 'admin': 3 };
+  // Role hierarchy: admin > editor > paid > viewer
+  const roleHierarchy = { 'viewer': 1, 'paid': 2, 'editor': 3, 'admin': 4 };
   
   return roleHierarchy[userRole] >= roleHierarchy[this.minRole];
 };

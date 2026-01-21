@@ -50,7 +50,7 @@ const requireRole = (allowedRoles) => {
 // Helper functions for common role checks
 const requireAdmin = requireRole(['admin']);
 const requireEditor = requireRole(['admin', 'editor']);
-const requireAnyUser = requireRole(['admin', 'editor', 'viewer']);
+const requireAnyUser = requireRole(['admin', 'editor', 'paid', 'viewer']);
 
 module.exports = {
   requireRole,
