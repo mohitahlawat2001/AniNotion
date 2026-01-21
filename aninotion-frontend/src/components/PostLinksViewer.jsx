@@ -10,7 +10,7 @@ const PostLinksViewer = ({ postId }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
-  const [showPreview, setShowPreview] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     url: '',
