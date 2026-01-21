@@ -8,6 +8,7 @@ const UserManagement = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [availableRoles, setAvailableRoles] = useState([]);
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
@@ -21,6 +22,7 @@ const UserManagement = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       fetchUsers();
+      fetchRoles();
     }
   }, [isOpen]);
 
@@ -34,6 +36,22 @@ const UserManagement = ({ isOpen, onClose }) => {
       setUsers([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const roles = await authAPI.getUserRoles();
+      setAvailableRoles(roles);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      // Fallback to default roles if API fails
+      setAvailableRoles([
+        { value: 'viewer', label: 'Viewer' },
+        { value: 'paid', label: 'Paid' },
+        { value: 'editor', label: 'Editor' },
+        { value: 'admin', label: 'Admin' }
+      ]);
     }
   };
 
@@ -184,9 +202,11 @@ const UserManagement = ({ isOpen, onClose }) => {
                           onChange={(e) => handleRoleChange(user._id, e.target.value)}
                           className="text-sm border border-gray-300 rounded px-2 py-1"
                         >
-                          <option value="viewer">Viewer</option>
-                          <option value="editor">Editor</option>
-                          <option value="admin">Admin</option>
+                          {availableRoles.map(role => (
+                            <option key={role.value} value={role.value}>
+                              {role.label}
+                            </option>
+                          ))}
                         </select>
                         <button
                           onClick={() => handleDeleteUser(user._id)}
@@ -280,9 +300,11 @@ const UserManagement = ({ isOpen, onClose }) => {
                     onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
-                    <option value="viewer">Viewer</option>
-                    <option value="editor">Editor</option>
-                    <option value="admin">Admin</option>
+                    {availableRoles.map(role => (
+                      <option key={role.value} value={role.value}>
+                        {role.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

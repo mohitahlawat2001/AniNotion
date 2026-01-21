@@ -5,6 +5,57 @@ const { requireAuth } = require('../middleware/auth');
 const { requireRole } = require('../middleware/roleAuth');
 const logger = require('../config/logger');
 
+// Default roles as fallback
+const DEFAULT_ROLES = [
+  { value: 'viewer', label: 'Viewer' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'editor', label: 'Editor' },
+  { value: 'admin', label: 'Admin' }
+];
+
+// Get available user roles (admin only)
+router.get('/roles', requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    let roles = DEFAULT_ROLES;
+
+    // Check if roles are defined in environment variable
+    if (process.env.USER_ROLES) {
+      try {
+        // Expected format: "viewer:Viewer,paid:Paid,editor:Editor,admin:Admin"
+        const envRoles = process.env.USER_ROLES.split(',').map(roleStr => {
+          const [value, label] = roleStr.trim().split(':');
+          return { value, label: label || value };
+        });
+        
+        if (envRoles.length > 0) {
+          roles = envRoles;
+          logger.info("✅ Using roles from environment variable", {
+            count: roles.length
+          });
+        }
+      } catch (parseError) {
+        logger.warn("⚠️ Failed to parse USER_ROLES from env, using default roles", {
+          error: parseError.message
+        });
+      }
+    }
+
+    logger.info("✅ User roles fetched successfully", {
+      userId: req.user._id,
+      userRole: req.user.role,
+      rolesCount: roles.length
+    });
+
+    res.json(roles);
+  } catch (error) {
+    logger.error("❌ Error fetching user roles", {
+      error: error.message,
+      userId: req.user._id
+    });
+    res.status(500).json({ message: 'Error fetching user roles' });
+  }
+});
+
 // Get all users (admin only)
 router.get('/', requireAuth, requireRole(['admin']), async (req, res) => {
   try {

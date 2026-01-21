@@ -141,6 +141,11 @@ export const authAPI = {
     return authenticatedFetch(`${API_BASE_URL}/users`);
   },
 
+  // Get available user roles (admin only)
+  getUserRoles: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/users/roles`);
+  },
+
   // Update user role (admin only)
   updateUserRole: async (userId, role) => {
     return authenticatedFetch(`${API_BASE_URL}/users/${userId}/role`, {
