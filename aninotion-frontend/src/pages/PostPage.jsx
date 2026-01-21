@@ -13,6 +13,7 @@ import { generatePostSEO } from '../utils/seoHelpers';
 import RichTextDisplay from '../components/RichTextDisplay';
 import RecommendedPosts from '../components/RecommendedPosts';
 import CommentSection from '../components/CommentSection';
+import PostLinksViewer from '../components/PostLinksViewer';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -505,6 +506,13 @@ const PostPage = () => {
 
         
       </div>
+
+      {/* Watch/Read Links Section */}
+      {post && (
+        <div className="mt-8 lg:mt-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <PostLinksViewer postId={post._id} />
+        </div>
+      )}
 
       {/* Comments Section */}
       {post && (

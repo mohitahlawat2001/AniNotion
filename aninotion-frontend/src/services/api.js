@@ -1029,3 +1029,38 @@ export const commentsAPI = {
     });
   }
 };
+
+// Post Links API
+export const postLinksAPI = {
+  // Get all links for a post
+  getByPost: async (postId) => {
+    const response = await fetch(`${API_BASE_URL}/post-links/post/${postId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch post links');
+    }
+    return response.json();
+  },
+
+  // Add a new link (requires authentication)
+  create: async (linkData) => {
+    return authenticatedFetch(`${API_BASE_URL}/post-links`, {
+      method: 'POST',
+      body: JSON.stringify(linkData)
+    });
+  },
+
+  // Update a link (requires authentication and ownership)
+  update: async (linkId, linkData) => {
+    return authenticatedFetch(`${API_BASE_URL}/post-links/${linkId}`, {
+      method: 'PUT',
+      body: JSON.stringify(linkData)
+    });
+  },
+
+  // Delete a link (requires authentication and ownership)
+  delete: async (linkId) => {
+    return authenticatedFetch(`${API_BASE_URL}/post-links/${linkId}`, {
+      method: 'DELETE'
+    });
+  }
+};
