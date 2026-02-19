@@ -115,6 +115,9 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
     });
   };
 
+  const truncateAnimeName = (name, max = 20) =>
+    name && name.length > max ? name.substring(0, max) + '…' : name;
+
   // Get images array - prioritize 'images' array, fallback to single 'image'
   const getImages = () => {
     if (post.images && post.images.length > 0) {
@@ -175,9 +178,10 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
                 }}
                 onMouseEnter={() => setShowCustomTooltip(true)}
                 onMouseLeave={() => setShowCustomTooltip(false)}
-                className="text-gray-600 hover:text-primary hover:bg-primary/5 hover:animate-pulse text-xs sm:text-sm transition-all duration-200 px-1 py-0.5 rounded cursor-pointer"
+                className="text-gray-600 hover:text-primary hover:bg-primary/5 hover:animate-pulse text-xs sm:text-sm transition-all duration-200 px-1 py-0.5 rounded cursor-pointer max-w-[220px] truncate block"
+                title={post.animeName}
               >
-                📺 {post.animeName}
+                📺 {truncateAnimeName(post.animeName)}
                 {post.seasonNumber && post.episodeNumber 
                   ? ` - S${post.seasonNumber}E${post.episodeNumber}`
                   : post.seasonNumber
@@ -372,9 +376,10 @@ const { savedPosts, toggleSavePost, isAuthenticated } = useContext(AuthContext);
               }}
               onMouseEnter={() => setShowCustomTooltip(true)}
               onMouseLeave={() => setShowCustomTooltip(false)}
-              className="text-xs sm:text-sm text-gray-600 hover:text-primary hover:bg-primary/5 hover:animate-pulse mb-2 sm:mb-3 font-medium transition-all duration-200 px-1 py-0.5 rounded cursor-pointer text-left"
+              className="text-xs sm:text-sm text-gray-600 hover:text-primary hover:bg-primary/5 hover:animate-pulse mb-2 sm:mb-3 font-medium transition-all duration-200 px-1 py-0.5 rounded cursor-pointer text-left max-w-full truncate block"
+              title={post.animeName}
             >
-              📺 {post.animeName}
+              📺 {truncateAnimeName(post.animeName)}
               {post.seasonNumber && post.episodeNumber 
                 ? ` - S${post.seasonNumber}E${post.episodeNumber}`
                 : post.seasonNumber
