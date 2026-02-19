@@ -11,6 +11,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import TrendingSidebar from '../components/TrendingSidebar';
 import RecommendationsSidebar from '../components/RecommendationsSidebar';
 import LoginPromptSidebar from '../components/LoginPromptSidebar';
+import UpgradeSidebar from '../components/UpgradeSidebar';
 import SEO from '../components/SEO';
 import { postsAPI } from '../services/api';
 import { LayoutContext } from '../context/LayoutContext';
@@ -235,8 +236,9 @@ const Home = ({ showHiddenOnly = false, onToggleHiddenOnly }) => {
         {isList && (
           <aside className="hidden lg:block w-80 flex-shrink-0">
             <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-              {/* Show LoginPromptSidebar if not authenticated, otherwise show Trending and Recommendations */}
+              {/* Show LoginPromptSidebar if not authenticated, UpgradeSidebar if not premium */}
               <LoginPromptSidebar />
+              <UpgradeSidebar />
               <TrendingSidebar limit={5} timeframe={7} />
               <RecommendationsSidebar limit={5} />
             </div>

@@ -1064,3 +1064,58 @@ export const postLinksAPI = {
     });
   }
 };
+
+// Crypto Payments API
+export const paymentsAPI = {
+  // Get wallet addresses and pricing configuration
+  getConfig: async () => {
+    const response = await fetch(`${API_BASE_URL}/payments/config`);
+    if (!response.ok) throw new Error('Failed to fetch payment config');
+    return response.json();
+  },
+
+  // Get current crypto prices
+  getPrices: async () => {
+    const response = await fetch(`${API_BASE_URL}/payments/prices`);
+    if (!response.ok) throw new Error('Failed to fetch crypto prices');
+    return response.json();
+  },
+
+  // Create a payment request
+  create: async (paymentData) => {
+    return authenticatedFetch(`${API_BASE_URL}/payments/create`, {
+      method: 'POST',
+      body: JSON.stringify(paymentData)
+    });
+  },
+
+  // Verify a crypto transaction
+  verify: async (verificationData) => {
+    return authenticatedFetch(`${API_BASE_URL}/payments/verify`, {
+      method: 'POST',
+      body: JSON.stringify(verificationData)
+    });
+  },
+
+  // Get payment history
+  getHistory: async (limit = 20) => {
+    return authenticatedFetch(`${API_BASE_URL}/payments/history?limit=${limit}`);
+  },
+
+  // Get premium status
+  getStatus: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/payments/status`);
+  },
+
+  // Admin: Get pending payments
+  getPendingPayments: async () => {
+    return authenticatedFetch(`${API_BASE_URL}/payments/admin/pending`);
+  },
+
+  // Admin: Manually verify a payment
+  adminVerify: async (paymentId) => {
+    return authenticatedFetch(`${API_BASE_URL}/payments/admin/verify/${paymentId}`, {
+      method: 'POST'
+    });
+  }
+};

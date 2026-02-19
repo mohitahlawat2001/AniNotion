@@ -62,6 +62,16 @@ const userSchema = new mongoose.Schema({
   deletedAt: {
     type: Date
   },
+  // Crypto wallet integration
+  walletAddress: {
+    type: String,
+    lowercase: true,
+    sparse: true
+  },
+  premiumExpiresAt: {
+    type: Date,
+    default: null
+  },
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   createdPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }]
