@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Film, BookOpen, Plus, X, Database, Bookmark, FileText, BarChart3 } from 'lucide-react';
+import { Home, Film, BookOpen, Plus, X, Database, Bookmark, FileText, BarChart3, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthButton from './AuthButton';
 import { categoriesAPI } from '../services/api';
@@ -126,6 +126,20 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
           </Link>
         )}
 
+        {/* Anime Releases */}
+        {isAuthenticated && (
+          <Link
+            to="/anime-releases"
+            onClick={() => handleNavClick(() => {})}
+            className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+              location.pathname === '/anime-releases' ? 'bg-primary/10 text-primary' : ''
+            }`}
+          >
+            <Bell size={20} />
+            <span className="text-sm lg:text-base">Anime Releases</span>
+          </Link>
+        )}
+
         {/* Analytics (Admin Only) */}
         {isAuthenticated && hasRole('admin') && (
           <Link
@@ -137,6 +151,20 @@ const Sidebar = ({ activeCategory, onCategoryChange, onMobileItemClick, isMobile
           >
             <BarChart3 size={20} />
             <span className="text-sm lg:text-base">Analytics</span>
+          </Link>
+        )}
+
+        {/* Scraping Admin (Admin Only) */}
+        {isAuthenticated && hasRole('admin') && (
+          <Link
+            to="/admin/scraping"
+            onClick={() => handleNavClick(() => {})}
+            className={`w-full flex items-center space-x-3 p-3 lg:p-3 rounded-lg text-left hover:bg-gray-100 transition-colors ${
+              location.pathname === '/admin/scraping' ? 'bg-primary/10 text-primary' : ''
+            }`}
+          >
+            <Database size={20} />
+            <span className="text-sm lg:text-base">Scraping Config</span>
           </Link>
         )}
 
