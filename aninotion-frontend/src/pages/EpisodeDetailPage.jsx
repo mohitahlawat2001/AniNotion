@@ -96,7 +96,13 @@ export default function EpisodeDetailPage() {
       }
     } catch (err) {
       console.error('Error fetching episode details:', err);
-      setError(err.response?.data?.message || 'Failed to load episode details');
+      const errorMessage = err.response?.data?.message || 'Failed to load episode details';
+      // Show "Coming Soon" for not found episodes
+      if (errorMessage.toLowerCase().includes('not found') || err.response?.status === 404) {
+        setError('coming-soon');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -121,11 +127,27 @@ export default function EpisodeDetailPage() {
   }
 
   if (error) {
+    const isComingSoon = error === 'coming-soon';
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
-          <p className="text-gray-400 mb-6">{error}</p>
+          {isComingSoon ? (
+            <>
+              <div className="mb-6">
+                <div className="text-6xl mb-4">🎬</div>
+                <h2 className="text-4xl font-bold text-blue-400 mb-2">Coming Soon</h2>
+                <p className="text-gray-400 text-lg">This episode will be available shortly!</p>
+              </div>
+              <p className="text-gray-500 mb-6 text-sm">
+                We're working on getting this episode ready for you.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
+              <p className="text-gray-400 mb-6">{error}</p>
+            </>
+          )}
           <button
             onClick={() => navigate(-1)}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
