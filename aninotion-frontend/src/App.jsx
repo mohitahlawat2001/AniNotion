@@ -6,6 +6,7 @@ import CategoryPage from './pages/CategoryPage';
 import RawPage from './pages/RawPage';
 import PostPage from './pages/PostPage';
 import AnimeInfoPage from './pages/AnimeInfoPage';
+import EpisodeDetailPage from './pages/EpisodeDetailPage';
 import AuthCallback from './pages/AuthCallback';
 import SavedPage from './pages/SavedPage';
 import MyPostsPage from './pages/MyPostsPage';
@@ -54,6 +55,7 @@ function App() {
                 <Route path="/post/:id/edit" element={<PostPage />} />
                 <Route path="/post/:postId/similar" element={<SimilarPostsPage />} />
                 <Route path="/anime/:animeName" element={<AnimeInfoPage />} />
+                <Route path="/anime/:animeName/episode/:episodeNumber" element={<EpisodeDetailPage />} />
                 <Route path="/trending" element={<TrendingPage />} />
                 <Route path="/trending/category/:categoryId" element={<CategoryTrendingPage />} />
                 <Route path="/recommendations" element={<PersonalizedPage />} />

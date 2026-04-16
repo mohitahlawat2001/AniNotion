@@ -11,11 +11,23 @@ router.get('/', scrapingConfigController.getAllConfigs);
 // Get scraping statistics
 router.get('/stats', scrapingConfigController.getScrapingStats);
 
+// NEW: Get available site adapters
+router.get('/adapters/available', scrapingConfigController.getAvailableAdapters);
+
 // Get single configuration
 router.get('/:id', scrapingConfigController.getConfigById);
 
 // Create new configuration (Admin only)
 router.post('/', scrapingConfigController.createConfig);
+
+// NEW: Test scraping any URL (without saving)
+router.post('/test-url', scrapingConfigController.testScrapeUrl);
+
+// NEW: Quick scrape and save from any URL
+router.post('/quick-scrape', scrapingConfigController.quickScrapeUrl);
+
+// NEW: Create config from URL (auto-detect site)
+router.post('/from-url', scrapingConfigController.createConfigFromUrl);
 
 // Update configuration (Admin only)
 router.put('/:id', scrapingConfigController.updateConfig);

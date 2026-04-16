@@ -60,6 +60,25 @@
 - **Real-time Updates** - Dynamic content updates
 - **Accessibility** - WCAG compliant interface
 
+### 🔥 **NEW: Multi-Site Anime Scraper**
+
+- **🌐 Universal Scraping** - Architecture supports ANY anime site
+- **🤖 Auto Selector Discovery** - Automatically finds CSS selectors for any site
+- **🔄 Multi-Source Episodes** - Aggregates episodes from multiple streaming sites
+- **⚡ Automatic Tools** - Test, inspect, and discover selectors automatically
+- **🛡️ Cloudflare Bypass** - Built-in stealth mode for protected sites
+- **📦 Pre-Configured** - Ready adapters for popular anime sites
+- **🎯 Smart Detection** - Automatic site recognition and adapter selection
+- **📊 Test Mode** - Preview results before saving to database
+
+> **📖 Essential Docs**: 
+> - **[SUMMARY.md](./SUMMARY.md)** - Start here for complete overview
+> - **[ANIME_SCRAPING_STATUS.md](./ANIME_SCRAPING_STATUS.md)** - Current status & solutions
+> - **[ANIME_SITES_WORKING_GUIDE.md](./ANIME_SITES_WORKING_GUIDE.md)** - Working guide
+> - **[Multi-Site Architecture](./MULTI_SITE_ARCHITECTURE.md)** - Technical architecture
+> - **[Cloudflare Protection](./scraping-notification-backend/docs/CLOUDFLARE_PROTECTION.md)** - Bypass strategies
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites

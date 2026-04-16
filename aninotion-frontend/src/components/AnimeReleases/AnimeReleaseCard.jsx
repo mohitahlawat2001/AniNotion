@@ -1,12 +1,21 @@
 import React from 'react';
-import { ExternalLink, Play, Calendar } from 'lucide-react';
+import { ExternalLink, Play, Calendar, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AnimeReleaseCard = ({ release, onMarkAsSeen, currentUserId }) => {
+  const navigate = useNavigate();
+  
   const handleWatch = () => {
     // Mark as seen when user clicks watch
     if (currentUserId && onMarkAsSeen) {
       onMarkAsSeen([release._id]);
     }
+  };
+
+  const handleAnimeClick = (e) => {
+    e.stopPropagation();
+    // Navigate to anime detail page
+    navigate(`/anime/${encodeURIComponent(release.animeName)}`);
   };
 
   // Format release date
@@ -62,10 +71,16 @@ const AnimeReleaseCard = ({ release, onMarkAsSeen, currentUserId }) => {
 
       {/* Content */}
       <div className="p-4">
-        {/* Anime Title */}
-        <h3 className="font-bold text-gray-900 text-base mb-2 line-clamp-2 min-h-[3rem]" title={release.animeName}>
-          {release.animeName}
-        </h3>
+        {/* Anime Title - Clickable */}
+        <button
+          onClick={handleAnimeClick}
+          className="w-full text-left group-anime mb-2"
+        >
+          <h3 className="font-bold text-gray-900 text-base mb-2 line-clamp-2 min-h-[3rem] hover:text-primary transition-colors cursor-pointer" title={release.animeName}>
+            {release.animeName}
+            <Info className="w-3 h-3 inline-block ml-1 opacity-0 group-anime-hover:opacity-100 transition-opacity" />
+          </h3>
+        </button>
 
         {/* Episode Info */}
         <div className="flex items-center justify-between mb-3">
@@ -109,18 +124,14 @@ const AnimeReleaseCard = ({ release, onMarkAsSeen, currentUserId }) => {
             Watch
           </a>
 
-          {/* Info Button */}
-          {release.animePageUrl && (
-            <a 
-              href={release.animePageUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200"
-              title="View anime info"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          )}
+          {/* Anime Info Button */}
+          <button
+            onClick={handleAnimeClick}
+            className="px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors duration-200"
+            title="View all episodes for this anime"
+          >
+            <Info className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

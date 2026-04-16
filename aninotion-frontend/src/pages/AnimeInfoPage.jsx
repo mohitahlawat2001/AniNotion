@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { postsAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Calendar, FileText, PlayCircle, Tv } from 'lucide-react';
+import AnimeEpisodesSection from '../components/AnimeReleases/AnimeEpisodesSection';
 
 const AnimeInfoPage = () => {
   const { animeName } = useParams();
@@ -119,29 +120,7 @@ const AnimeInfoPage = () => {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <button
-            onClick={() => navigate('/')}
-            className="mb-6 text-primary hover:text-primary-dark transition-colors"
-          >
-            ← Back to Home
-          </button>
-          <div className="text-center py-12">
-            <Tv className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              No Posts Found
-            </h2>
-            <p className="text-gray-600">
-              No posts found for "{decodeURIComponent(animeName)}"
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Don't return early if no posts - we still want to show episodes section!
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -178,6 +157,27 @@ const AnimeInfoPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Available Episodes Section (New Schema) */}
+        <div className="mb-8">
+          <AnimeEpisodesSection animeName={decodeURIComponent(animeName)} />
+        </div>
+
+        {/* No Posts Message - Only show if there are no posts at all */}
+        {posts.length === 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <div className="text-center">
+              <FileText className="w-12 h-12 mx-auto text-blue-500 mb-3" />
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                No Blog Posts Yet
+              </h3>
+              <p className="text-blue-700">
+                No blog posts have been written about "{decodeURIComponent(animeName)}" yet. 
+                Check the available episodes above to start watching!
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Whole Series Posts */}
         {groupedPosts.wholeSeries.length > 0 && (

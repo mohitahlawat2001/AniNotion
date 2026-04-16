@@ -5,6 +5,7 @@ const connectDB = require('./config/database');
 const { startScheduler } = require('./config/scheduler');
 const animeReleasesRoutes = require('./routes/animeReleases');
 const scrapingConfigRoutes = require('./routes/scrapingConfig');
+const animeRoutes = require('./routes/anime');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -46,13 +47,16 @@ app.get('/', (req, res) => {
       stats: '/api/anime-releases/stats',
       unseen: '/api/anime-releases/unseen',
       markSeen: 'POST /api/anime-releases/mark-seen',
-      scrape: 'POST /api/anime-releases/scrape'
+      scrape: 'POST /api/anime-releases/scrape',
+      anime: '/api/anime',
+      episodes: '/api/episodes'
     }
   });
 });
 
 app.use('/api/anime-releases', animeReleasesRoutes);
 app.use('/api/scraping-config', scrapingConfigRoutes);
+app.use('/api', animeRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

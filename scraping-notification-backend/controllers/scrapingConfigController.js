@@ -364,3 +364,142 @@ exports.getScrapingStats = async (req, res) => {
     });
   }
 };
+
+// NEW: Test scraping any URL without saving
+exports.testScrapeUrl = async (req, res) => {
+  try {
+    const { url, maxReleases, enablePagination, maxPages } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL is required'
+      });
+    }
+    
+    console.log(`[API] Testing scrape for URL: ${url}`);
+    
+    const options = {
+      maxReleases: maxReleases || 20,
+      enablePagination: enablePagination || false,
+      maxPages: maxPages || 1
+    };
+    
+    const result = await scrapingService.testScrape(url, options);
+    
+    res.json({
+      success: result.success,
+      data: result
+    });
+    
+  } catch (error) {
+    console.error('Error testing scrape:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error testing scrape',
+      error: error.message
+    });
+  }
+};
+
+// NEW: Quick scrape and save from any URL
+exports.quickScrapeUrl = async (req, res) => {
+  try {
+    const { url, maxReleases, enablePagination, maxPages } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL is required'
+      });
+    }
+    
+    console.log(`[API] Quick scrape and save for URL: ${url}`);
+    
+    const options = {
+      maxReleases: maxReleases || 50,
+      enablePagination: enablePagination !== undefined ? enablePagination : false,
+      maxPages: maxPages || 1
+    };
+    
+    const result = await scrapingService.quickScrapeAndSave(url, options);
+    
+    res.json({
+      success: true,
+      message: `Scraped and saved ${result.savedCount} new releases (${result.duplicateCount} duplicates skipped)`,
+      data: result
+    });
+    
+  } catch (error) {
+    console.error('Error in quick scrape:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error scraping and saving releases',
+      error: error.message
+    });
+  }
+};
+
+// NEW: Create config from URL (auto-detect site)
+exports.createConfigFromUrl = async (req, res) => {
+  try {
+    const { url, configName } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL is required'
+      });
+    }
+    
+    console.log(`[API] Creating config for URL: ${url}`);
+    
+    const config = await scrapingService.createConfigFromUrl(url, configName);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Scraping configuration created successfully',
+      data: config
+    });
+    
+  } catch (error) {
+    console.error('Error creating config from URL:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating configuration',
+      error: error.message
+    });
+  }
+};
+
+// NEW: Get available site adapters
+exports.getAvailableAdapters = async (req, res) => {
+  try {
+    const { getAllAdapters } = require('../config/siteAdapters');
+    const adapters = getAllAdapters();
+    
+    // Format adapters for display
+    const formattedAdapters = Object.entries(adapters).map(([key, adapter]) => ({
+      key,
+      name: adapter.name,
+      sourceWebsite: adapter.sourceWebsite,
+      domains: adapter.domains,
+      defaultUrl: adapter.defaultUrl,
+      supportsPagination: adapter.settings?.enablePagination || false,
+      usesPuppeteer: adapter.settings?.usePuppeteer || false
+    }));
+    
+    res.json({
+      success: true,
+      data: formattedAdapters
+    });
+    
+  } catch (error) {
+    console.error('Error fetching adapters:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching available adapters',
+      error: error.message
+    });
+  }
+};

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Filter } from 'lucide-react';
 import AnimeReleaseCard from './AnimeReleaseCard';
+import EpisodeCard from './EpisodeCard';
 import animeReleaseService from '../../services/animeReleaseService';
+import episodeService from '../../services/episodeService';
+import animeService from '../../services/animeService';
 
-const NotificationSection = ({ currentUserId }) => {
+const NotificationSection = ({ currentUserId, useNewSchema = false }) => {
   const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,24 +20,42 @@ const NotificationSection = ({ currentUserId }) => {
   });
   const [showNewOnly, setShowNewOnly] = useState(false);
 
-  // Fetch releases
+  // Fetch releases/episodes
   const fetchReleases = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
 
       let response;
-      if (showNewOnly && currentUserId) {
-        response = await animeReleaseService.getUnseenReleases(currentUserId, {
-          page,
-          limit: pagination.limit
-        });
+      
+      if (useNewSchema) {
+        // Use new Episode API
+        if (showNewOnly && currentUserId) {
+          response = await episodeService.getUnseenEpisodes(currentUserId, {
+            page,
+            limit: pagination.limit
+          });
+        } else {
+          response = await episodeService.getAllEpisodes({
+            page,
+            limit: pagination.limit,
+            isNew: showNewOnly || undefined
+          });
+        }
       } else {
-        response = await animeReleaseService.getAnimeReleases({
-          page,
-          limit: pagination.limit,
-          isNew: showNewOnly || undefined
-        });
+        // Use old AnimeRelease API
+        if (showNewOnly && currentUserId) {
+          response = await animeReleaseService.getUnseenReleases(currentUserId, {
+            page,
+            limit: pagination.limit
+          });
+        } else {
+          response = await animeReleaseService.getAnimeReleases({
+            page,
+            limit: pagination.limit,
+            isNew: showNewOnly || undefined
+          });
+        }
       }
 
       if (response.success) {
@@ -52,7 +73,10 @@ const NotificationSection = ({ currentUserId }) => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await animeReleaseService.getStats(currentUserId);
+      const response = useNewSchema 
+        ? await animeService.getStats(currentUserId)
+        : await animeReleaseService.getStats(currentUserId);
+        
       if (response.success) {
         setStats(response.data);
       }
@@ -65,14 +89,18 @@ const NotificationSection = ({ currentUserId }) => {
   useEffect(() => {
     fetchReleases(1);
     fetchStats();
-  }, [showNewOnly, currentUserId]);
+  }, [showNewOnly, currentUserId, useNewSchema]);
 
   // Handle mark as seen
-  const handleMarkAsSeen = async (releaseIds) => {
+  const handleMarkAsSeen = async (releaseId) => {
     if (!currentUserId) return;
 
     try {
-      await animeReleaseService.markAsSeen(releaseIds, currentUserId);
+      if (useNewSchema) {
+        await episodeService.markAsSeen(releaseId, currentUserId);
+      } else {
+        await animeReleaseService.markAsSeen([releaseId], currentUserId);
+      }
       // Refresh stats
       fetchStats();
     } catch (err) {
@@ -85,6 +113,9 @@ const NotificationSection = ({ currentUserId }) => {
     fetchReleases(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Choose the appropriate card component
+  const CardComponent = useNewSchema ? EpisodeCard : AnimeReleaseCard;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -123,7 +154,7 @@ const NotificationSection = ({ currentUserId }) => {
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-blue-600 animate-bounce" />
               <p className="text-blue-800 font-medium">
-                You have <span className="font-bold">{stats.unseenCount}</span> unseen anime release{stats.unseenCount !== 1 ? 's' : ''}
+                You have <span className="font-bold">{stats.unseenCount}</span> unseen {useNewSchema ? 'episode' : 'anime release'}{stats.unseenCount !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
@@ -161,9 +192,9 @@ const NotificationSection = ({ currentUserId }) => {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {releases.map((release) => (
-                  <AnimeReleaseCard
+                  <CardComponent
                     key={release._id}
-                    release={release}
+                    {...(useNewSchema ? { episode: release } : { release: release })}
                     onMarkAsSeen={handleMarkAsSeen}
                     currentUserId={currentUserId}
                   />
@@ -240,7 +271,7 @@ const NotificationSection = ({ currentUserId }) => {
                   <p className="text-sm text-gray-600">
                     Page <span className="font-semibold">{pagination.page}</span> of{' '}
                     <span className="font-semibold">{pagination.totalPages}</span> •{' '}
-                    <span className="font-semibold">{pagination.total}</span> total releases
+                    <span className="font-semibold">{pagination.total}</span> total {useNewSchema ? 'episodes' : 'releases'}
                   </p>
                 </div>
               )}
