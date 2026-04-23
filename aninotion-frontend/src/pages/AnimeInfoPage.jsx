@@ -128,10 +128,10 @@ const AnimeInfoPage = () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
             className="mb-4 text-primary hover:text-primary-dark transition-colors flex items-center"
           >
-            ← Back to Home
+            ← Back
           </button>
           
           <div className="bg-white rounded-xl shadow-md p-6">

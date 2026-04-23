@@ -42,7 +42,7 @@ scripts/
   ├── check-oauth.sh                ← NEW: Verification script
   └── test-oauth-endpoints.js       ← NEW: API testing
 
-README_OAUTH.md                     ← NEW: Main backend docs
+docs/README_OAUTH.md                ← NEW: Main backend docs
 ```
 
 ### Frontend (4 new files)
@@ -57,7 +57,7 @@ docs/
   ├── GOOGLE_OAUTH_FRONTEND.md      ← NEW: Frontend docs
   └── OAUTH_TESTING_GUIDE.md        ← NEW: Testing guide
 
-README_OAUTH.md                     ← NEW: Main frontend docs
+docs/README_OAUTH.md                ← NEW: Main frontend docs
 ```
 
 ### Modified Files
@@ -324,14 +324,14 @@ cd aninotion-frontend && npm run dev
 ## 📚 Documentation Index
 
 ### Backend Docs
-📖 `aninotion-backend/README_OAUTH.md` - Main backend guide
+📖 `aninotion-backend/docs/README_OAUTH.md` - Main backend guide
 📖 `aninotion-backend/docs/GOOGLE_OAUTH_API.md` - API reference
 📖 `aninotion-backend/docs/OAUTH_FLOW_DIAGRAM.md` - Visual diagrams
 📖 `aninotion-backend/docs/GOOGLE_CLOUD_CONSOLE_SETUP.md` - Google setup
 📖 `aninotion-backend/docs/OAUTH_TROUBLESHOOTING.md` - Issue fixes
 
 ### Frontend Docs
-📖 `aninotion-frontend/README_OAUTH.md` - Main frontend guide
+📖 `aninotion-frontend/docs/README_OAUTH.md` - Main frontend guide
 📖 `aninotion-frontend/docs/GOOGLE_OAUTH_FRONTEND.md` - Implementation details
 📖 `aninotion-frontend/docs/OAUTH_TESTING_GUIDE.md` - Testing guide
 
@@ -536,5 +536,5 @@ You've successfully implemented a **complete, production-ready Google OAuth2 aut
 ---
 
 **Need help?** Check the documentation in:
-- `aninotion-backend/README_OAUTH.md`
-- `aninotion-frontend/README_OAUTH.md`
+- `aninotion-backend/docs/README_OAUTH.md`
+- `aninotion-frontend/docs/README_OAUTH.md`

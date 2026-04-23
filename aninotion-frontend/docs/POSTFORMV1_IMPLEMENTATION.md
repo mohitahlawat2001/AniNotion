@@ -115,7 +115,7 @@ The new PostFormV1 makes the form look exactly like how the post will appear in 
 
 1. `/workspaces/AniNotion/aninotion-frontend/src/components/PostFormV1.jsx` - NEW
 2. `/workspaces/AniNotion/aninotion-frontend/src/components/PostFormWithToggle.jsx` - NEW
-3. `/workspaces/AniNotion/aninotion-frontend/src/components/README.md` - UPDATED
+3. `/workspaces/AniNotion/aninotion-frontend/docs/components/README.md` - UPDATED
 4. `/workspaces/AniNotion/aninotion-frontend/src/pages/Home.jsx` - UPDATED
 5. `/workspaces/AniNotion/aninotion-frontend/src/pages/CategoryPage.jsx` - UPDATED
 6. `/workspaces/AniNotion/aninotion-frontend/src/pages/PostPage.jsx` - UPDATED

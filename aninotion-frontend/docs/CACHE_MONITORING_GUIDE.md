@@ -164,4 +164,4 @@ With proper caching, you should see:
 4. **Load same data again** → Should use cache
 
 The cache debugger component provides real-time statistics to help you monitor performance!</content>
-<parameter name="filePath">/workspaces/AniNotion/aninotion-frontend/CACHE_MONITORING_GUIDE.md
+<parameter name="filePath">/workspaces/AniNotion/aninotion-frontend/docs/CACHE_MONITORING_GUIDE.md

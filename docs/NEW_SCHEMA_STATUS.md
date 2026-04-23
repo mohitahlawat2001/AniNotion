@@ -202,8 +202,8 @@ Run: `node scripts/migrateToNewSchema.js rollback`
 
 ## Documentation
 
-- **Full Migration Guide**: `scraping-notification-backend/SCHEMA_MIGRATION_GUIDE.md`
-- **Quick Start**: `scraping-notification-backend/SCHEMA_QUICKSTART.md`
+- **Full Migration Guide**: `scraping-notification-backend/docs/SCHEMA_MIGRATION_GUIDE.md`
+- **Quick Start**: `scraping-notification-backend/docs/SCHEMA_QUICKSTART.md`
 - **Frontend Updates**: `aninotion-frontend/FRONTEND_SCHEMA_UPDATE.md`
 
 ## Support

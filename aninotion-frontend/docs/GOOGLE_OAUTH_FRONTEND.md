@@ -360,7 +360,7 @@ Edit `src/pages/AuthCallback.jsx`:
 
 ## 📚 Related Documentation
 
-- **Backend OAuth**: `aninotion-backend/README_OAUTH.md`
+- **Backend OAuth**: `aninotion-backend/docs/README_OAUTH.md`
 - **OAuth Flow**: `aninotion-backend/docs/OAUTH_FLOW_DIAGRAM.md`
 - **API Reference**: `aninotion-backend/docs/GOOGLE_OAUTH_API.md`
 - **Troubleshooting**: `aninotion-backend/docs/OAUTH_TROUBLESHOOTING.md`

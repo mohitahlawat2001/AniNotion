@@ -272,7 +272,7 @@ open http://localhost:3000
 
 ### Detailed Docs
 📖 `SIGNUP_FEATURE_DOCS.md` - Complete signup docs
-📖 `aninotion-backend/README_OAUTH.md` - Backend OAuth guide
+📖 `aninotion-backend/docs/README_OAUTH.md` - Backend OAuth guide
 📖 `aninotion-backend/docs/GOOGLE_OAUTH_API.md` - API reference
 📖 `aninotion-frontend/docs/GOOGLE_OAUTH_FRONTEND.md` - Frontend guide
 

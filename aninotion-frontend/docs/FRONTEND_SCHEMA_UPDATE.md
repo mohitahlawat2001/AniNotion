@@ -332,8 +332,8 @@ npm run dev
 
 ## Documentation Links
 
-- **Backend Schema**: `/scraping-notification-backend/SCHEMA_MIGRATION_GUIDE.md`
-- **Quick Start**: `/scraping-notification-backend/SCHEMA_QUICKSTART.md`
+- **Backend Schema**: `/scraping-notification-backend/docs/SCHEMA_MIGRATION_GUIDE.md`
+- **Quick Start**: `/scraping-notification-backend/docs/SCHEMA_QUICKSTART.md`
 - **API Routes**: `/scraping-notification-backend/routes/anime.js`
 - **Models**: `/scraping-notification-backend/models/`
 

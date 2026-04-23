@@ -145,7 +145,7 @@ See: `docs/OAUTH_TESTING_GUIDE.md`
 |----------|-------------|
 | `GOOGLE_OAUTH_FRONTEND.md` | Complete implementation guide |
 | `OAUTH_TESTING_GUIDE.md` | Testing instructions |
-| Backend docs | `../aninotion-backend/README_OAUTH.md` |
+| Backend docs | `../aninotion-backend/docs/README_OAUTH.md` |
 
 ---
 
@@ -219,7 +219,7 @@ See: `docs/OAUTH_TESTING_GUIDE.md`
 **Documentation**:
 - Frontend: `docs/GOOGLE_OAUTH_FRONTEND.md`
 - Testing: `docs/OAUTH_TESTING_GUIDE.md`
-- Backend: `../aninotion-backend/README_OAUTH.md`
+- Backend: `../aninotion-backend/docs/README_OAUTH.md`
 
 **Issues?** Check:
 1. Backend server running?

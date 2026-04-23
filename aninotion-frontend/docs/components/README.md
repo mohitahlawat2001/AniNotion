@@ -189,4 +189,4 @@ The PostCard component now uses these reusable components:
 ```
 
 This approach makes the code cleaner, more maintainable, and allows for easy reuse across the application.</content>
-<parameter name="filePath">/workspaces/AniNotion/aninotion-frontend/src/components/README.md
+<parameter name="filePath">/workspaces/AniNotion/aninotion-frontend/docs/components/README.md

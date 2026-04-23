@@ -438,7 +438,7 @@ To upgrade permissions, an admin must change the user's role to `editor` or `adm
 
 ## 📚 Related Documentation
 
-- **OAuth Implementation**: `../aninotion-backend/README_OAUTH.md`
+- **OAuth Implementation**: `../aninotion-backend/docs/README_OAUTH.md`
 - **Auth API**: `../aninotion-backend/docs/GOOGLE_OAUTH_API.md`
 - **User Management**: Check admin dashboard docs
 

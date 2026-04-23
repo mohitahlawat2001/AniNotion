@@ -254,7 +254,7 @@ If all checks pass, your Google OAuth integration is working perfectly!
 
 Check these docs:
 - `GOOGLE_OAUTH_FRONTEND.md` - Frontend implementation details
-- `../aninotion-backend/README_OAUTH.md` - Backend details
+- `../aninotion-backend/docs/README_OAUTH.md` - Backend details
 - `../aninotion-backend/docs/OAUTH_TROUBLESHOOTING.md` - Troubleshooting guide
 
 ---
