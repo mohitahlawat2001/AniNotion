@@ -1,6 +1,6 @@
 import {
-  Github,
-  Twitter,
+  GitBranch,
+  Send,
   Mail,
   Heart,
   ExternalLink,
@@ -15,13 +15,13 @@ const Footer = () => {
   const socialLinks = [
     {
       name: 'GitHub',
-      icon: Github,
+      icon: GitBranch,
       href: 'https://github.com/mohitahlawat2001/AniNotion',
       color: 'hover:text-gray-800',
     },
     {
       name: 'Twitter',
-      icon: Twitter,
+      icon: Send,
       href: 'https://twitter.com/aninotion',
       color: 'hover:text-blue-400',
     },

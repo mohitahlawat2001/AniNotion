@@ -6,17 +6,17 @@
     "client": "cd aninotion-frontend && npm run dev",
     "seed": "cd aninotion-backend && node scripts/seedCategories.js",
     "prepare": "husky install",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.4",
-    "eslint": "^9.37.0",
-    "prettier": "^3.2.5",
-    "@eslint/js": "^9.37.0"
+    "lint-staged": "^17.0.8",
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.4",
+    "@eslint/js": "^10.0.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

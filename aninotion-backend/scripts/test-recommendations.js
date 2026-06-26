@@ -1,6 +1,6 @@
 /**
  * Test script for the Recommendation Engine
- * 
+ *
  * Run with: node scripts/test-recommendations.js
  */
 
@@ -13,16 +13,13 @@ const logger = require('../config/logger');
 async function testRecommendationEngine() {
   try {
     // Connect to database
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    await mongoose.connect(process.env.MONGODB_URI);
     logger.info('Connected to MongoDB');
 
     // Get published posts
     const posts = await Post.find({
       status: 'published',
-      isDeleted: false
+      isDeleted: false,
     })
       .populate('category', 'name slug')
       .limit(100)
@@ -54,12 +51,14 @@ async function testRecommendationEngine() {
       posts,
       {
         limit: 5,
-        minScore: 0.1
+        minScore: 0.1,
       }
     );
     const duration = Date.now() - startTime;
 
-    console.log(`\nFound ${similarPosts.length} similar posts in ${duration}ms:\n`);
+    console.log(
+      `\nFound ${similarPosts.length} similar posts in ${duration}ms:\n`
+    );
 
     similarPosts.forEach((item, index) => {
       console.log(`${index + 1}. ${item.post.title}`);
@@ -77,9 +76,10 @@ async function testRecommendationEngine() {
     console.log('TEST 2: Text Preprocessing');
     console.log('========================================\n');
 
-    const sampleText = '<p>This is a <strong>sample</strong> anime post about Demon Slayer!</p>';
+    const sampleText =
+      '<p>This is a <strong>sample</strong> anime post about Demon Slayer!</p>';
     const processed = recommendationService.preprocessText(sampleText);
-    
+
     console.log('Original:', sampleText);
     console.log('Processed:', processed);
 
@@ -102,16 +102,36 @@ async function testRecommendationEngine() {
     console.log('========================================\n');
 
     const testCases = [
-      { animeA: 'Demon Slayer', seasonA: 1, animeB: 'Demon Slayer', seasonB: 1 },
-      { animeA: 'Demon Slayer', seasonA: 1, animeB: 'Demon Slayer', seasonB: 2 },
-      { animeA: 'Demon Slayer', seasonA: 1, animeB: 'Attack on Titan', seasonB: 1 },
+      {
+        animeA: 'Demon Slayer',
+        seasonA: 1,
+        animeB: 'Demon Slayer',
+        seasonB: 1,
+      },
+      {
+        animeA: 'Demon Slayer',
+        seasonA: 1,
+        animeB: 'Demon Slayer',
+        seasonB: 2,
+      },
+      {
+        animeA: 'Demon Slayer',
+        seasonA: 1,
+        animeB: 'Attack on Titan',
+        seasonB: 1,
+      },
     ];
 
-    testCases.forEach(tc => {
+    testCases.forEach((tc) => {
       const score = recommendationService.animeSimilarity(
-        tc.animeA, tc.animeB, tc.seasonA, tc.seasonB
+        tc.animeA,
+        tc.animeB,
+        tc.seasonA,
+        tc.seasonB
       );
-      console.log(`${tc.animeA} S${tc.seasonA} vs ${tc.animeB} S${tc.seasonB}: ${score.toFixed(3)}`);
+      console.log(
+        `${tc.animeA} S${tc.seasonA} vs ${tc.animeB} S${tc.seasonB}: ${score.toFixed(3)}`
+      );
     });
 
     // Test 5: Personalized recommendations
@@ -132,12 +152,14 @@ async function testRecommendationEngine() {
         posts,
         {
           limit: 5,
-          diversityFactor: 0.3
+          diversityFactor: 0.3,
         }
       );
       const personalizedDuration = Date.now() - personalizedStartTime;
 
-      console.log(`\nGenerated ${personalized.length} recommendations in ${personalizedDuration}ms:\n`);
+      console.log(
+        `\nGenerated ${personalized.length} recommendations in ${personalizedDuration}ms:\n`
+      );
 
       personalized.forEach((item, index) => {
         console.log(`${index + 1}. ${item.post.title}`);
@@ -154,12 +176,12 @@ async function testRecommendationEngine() {
 
     const iterations = 10;
     const perfStartTime = Date.now();
-    
+
     for (let i = 0; i < iterations; i++) {
       const randomPost = posts[Math.floor(Math.random() * posts.length)];
       recommendationService.findSimilarPosts(randomPost, posts, { limit: 5 });
     }
-    
+
     const perfDuration = Date.now() - perfStartTime;
     const avgTime = perfDuration / iterations;
 
@@ -178,15 +200,18 @@ async function testRecommendationEngine() {
     console.log('\nRecommendation Engine Status:');
     console.log(`  - Total Posts: ${posts.length}`);
     console.log(`  - Average Processing Time: ${avgTime.toFixed(2)}ms`);
-    console.log(`  - Performance: ${avgTime < 500 ? 'Excellent' : avgTime < 2000 ? 'Good' : 'Needs Optimization'}`);
+    console.log(
+      `  - Performance: ${avgTime < 500 ? 'Excellent' : avgTime < 2000 ? 'Good' : 'Needs Optimization'}`
+    );
     console.log('\nNext Steps:');
     console.log('  1. Test API endpoints with curl or Postman');
     console.log('  2. Monitor cache hit rates in production');
-    console.log('  3. Consider pre-computing for popular posts if dataset grows');
+    console.log(
+      '  3. Consider pre-computing for popular posts if dataset grows'
+    );
 
     await mongoose.connection.close();
     process.exit(0);
-
   } catch (error) {
     logger.error('Test failed:', error);
     console.error('Error:', error.message);
